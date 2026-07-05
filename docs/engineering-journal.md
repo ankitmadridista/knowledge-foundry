@@ -40,3 +40,25 @@ The default .NET templates are not compatible with Central Package Management wi
 ### Questions for Future Me
 
 Should prompt versioning eventually become editable from the Admin UI?
+
+---
+
+## Sprint 1 – Frontend Foundation
+
+### Learned
+
+- Why application composition should be separated from feature modules.
+- Benefits of centralized HTTP clients and environment configuration.
+- How feature-oriented folder structures improve scalability.
+
+### Decisions
+
+- Adopted React Router as the routing solution.
+- Centralized HTTP communication through a shared Axios client.
+- Introduced application composition root under `src/app`.
+
+### Future Improvements
+
+- Add route guards for authenticated areas.
+- Introduce global providers for authentication and theming.
+- Add request interceptors for JWT and correlation IDs.
