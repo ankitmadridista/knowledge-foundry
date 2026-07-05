@@ -1,0 +1,39 @@
+###############################################################################
+# Knowledge Foundry
+# Git Attributes
+###############################################################################
+
+# Auto detect text files
+* text=auto
+
+# Source code
+*.cs text
+*.csproj text
+*.sln text
+*.props text
+*.targets text
+*.json text
+*.ts text
+*.tsx text
+*.js text
+*.jsx text
+*.css text
+*.scss text
+*.html text
+*.md text
+*.yml text
+*.yaml text
+*.xml text
+
+# Scripts
+*.sh text eol=lf
+*.ps1 text eol=crlf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
