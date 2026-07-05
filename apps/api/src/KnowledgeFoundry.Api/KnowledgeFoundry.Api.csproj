@@ -4,4 +4,10 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
   </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\KnowledgeFoundry.Application\KnowledgeFoundry.Application.csproj" />
+        <ProjectReference Include="..\KnowledgeFoundry.AIPlatform\KnowledgeFoundry.AIPlatform.csproj" />
+        <ProjectReference Include="..\KnowledgeFoundry.Infrastructure\KnowledgeFoundry.Infrastructure.csproj" />
+    </ItemGroup>
+
 </Project>
