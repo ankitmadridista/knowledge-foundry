@@ -1,0 +1,6 @@
+@KnowledgeFoundry.Api_HostAddress = http://localhost:5177
+
+GET {{KnowledgeFoundry.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
