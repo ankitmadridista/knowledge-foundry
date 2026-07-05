@@ -1,3 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+  <ItemGroup>
+    <ProjectReference Include="..\KnowledgeFoundry.Domain\KnowledgeFoundry.Domain.csproj" />
+    <ProjectReference Include="..\KnowledgeFoundry.Application\KnowledgeFoundry.Application.csproj" />
+    <ProjectReference Include="..\KnowledgeFoundry.AIPlatform\KnowledgeFoundry.AIPlatform.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+  </ItemGroup>
 </Project>
