@@ -1,9 +1,16 @@
+import { Footer, Navbar } from "@/shared/components/branding";
 import { Outlet } from "react-router-dom";
 
-export default function MainLayout() {
-  return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <Outlet />
-    </div>
-  );
+export function MainLayout() {
+    return (
+        <>
+            <Navbar />
+
+            <main>
+                <Outlet />
+            </main>
+
+            <Footer />
+        </>
+    );
 }
