@@ -4,13 +4,13 @@ using KnowledgeFoundry.Domain.PromptTemplates.ValueObjects;
 
 namespace KnowledgeFoundry.Domain.PromptTemplates;
 
-public sealed class PromptTemplateVersion
+public sealed class PromptTemplateVersion : Entity
 {
     private readonly List<PromptMessage> _messages = new();
 
     public int VersionNumber { get; private set; }
 
-    public IReadOnlyCollection<PromptMessage> Messages => _messages;
+    public IReadOnlyCollection<PromptMessage> Messages => _messages.AsReadOnly();
 
     public PromptCapability Capability { get; private set; }
 
@@ -30,9 +30,9 @@ public sealed class PromptTemplateVersion
     {
         if (versionNumber <= 0)
         {
-            throw new ArgumentException(
-                "Version number must be greater than zero.",
-                nameof(versionNumber));
+            throw new ArgumentOutOfRangeException(
+                nameof(versionNumber),
+                "Version number must be greater than zero.");
         }
 
         ArgumentNullException.ThrowIfNull(messages);
@@ -47,11 +47,20 @@ public sealed class PromptTemplateVersion
         }
 
         VersionNumber = versionNumber;
+
         _messages.AddRange(messageList);
 
         Capability = capability;
+
         Status = PromptStatus.Draft;
 
         CreatedAt = DateTime.UtcNow;
     }
+
+
+    // Future behavior will be added here:
+    //
+    // Publish()
+    // Activate()
+    // Archive()
 }
