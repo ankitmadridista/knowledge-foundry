@@ -4,6 +4,7 @@ import {
     FeaturesSection,
     WorkflowSection,
     ArchitectureSection,
+    RoadmapSection,
 } from "@/features/home/components";
 
 export function HomePage() {
@@ -18,6 +19,8 @@ export function HomePage() {
             <WorkflowSection/>
 
             <ArchitectureSection />
+
+            <RoadmapSection />
         </>
     );
 }

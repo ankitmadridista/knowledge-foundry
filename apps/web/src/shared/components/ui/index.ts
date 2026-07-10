@@ -7,3 +7,4 @@ export * from "./FeatureCard";
 export * from "./TechnologyCard";
 export * from "./WorkflowStep";
 export * from "./ArchitectureCard";
+export * from "./RoadmapCard";
