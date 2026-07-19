@@ -8,7 +8,7 @@ public sealed class PromptTemplateVersion : Entity
 {
     private readonly List<PromptMessage> _messages = new();
 
-    public int VersionNumber { get; private set; }
+    public PromptVersionNumber VersionNumber { get; }
 
     public IReadOnlyCollection<PromptMessage> Messages => _messages.AsReadOnly();
 
@@ -24,17 +24,11 @@ public sealed class PromptTemplateVersion : Entity
 
 
     public PromptTemplateVersion(
-        int versionNumber,
+        PromptVersionNumber versionNumber,
         IEnumerable<PromptMessage> messages,
         PromptCapability capability)
     {
-        if (versionNumber <= 0)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(versionNumber),
-                "Version number must be greater than zero.");
-        }
-
+        ArgumentNullException.ThrowIfNull(versionNumber);
         ArgumentNullException.ThrowIfNull(messages);
 
         var messageList = messages.ToList();

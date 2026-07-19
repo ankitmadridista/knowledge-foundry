@@ -1,6 +1,5 @@
 using KnowledgeFoundry.Domain.Common.Base;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
-using KnowledgeFoundry.Domain.PromptTemplates.ValueObjects;
 
 namespace KnowledgeFoundry.Domain.PromptTemplates;
 
