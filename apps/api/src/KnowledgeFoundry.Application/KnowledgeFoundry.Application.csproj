@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <PackageReference Include="MediatR" />
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" />
     <ProjectReference Include="..\KnowledgeFoundry.Domain\KnowledgeFoundry.Domain.csproj" />
     <ProjectReference Include="..\KnowledgeFoundry.AIPlatform\KnowledgeFoundry.AIPlatform.csproj" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
