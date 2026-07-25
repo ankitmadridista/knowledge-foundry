@@ -1,4 +1,5 @@
 using KnowledgeFoundry.Domain.Common.Base;
+using KnowledgeFoundry.Domain.Common.Exceptions;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using KnowledgeFoundry.Domain.PromptTemplates.ValueObjects;
 
@@ -21,9 +22,11 @@ public sealed class PromptTemplateVersion : Entity
     public DateTime? PublishedAt { get; private set; }
 
     public DateTime? ActivatedAt { get; private set; }
+    public DateTime? ArchivedAt { get; private set; }
+    public DateTime? DeprecatedAt { get; private set; }
 
 
-    public PromptTemplateVersion(
+    private PromptTemplateVersion(
         PromptVersionNumber versionNumber,
         IEnumerable<PromptMessage> messages,
         PromptCapability capability)
@@ -35,9 +38,14 @@ public sealed class PromptTemplateVersion : Entity
 
         if (!messageList.Any())
         {
-            throw new ArgumentException(
-                "A prompt version must contain at least one message.",
-                nameof(messages));
+            throw new DomainException(
+                "A prompt version must contain at least one message.");
+        }
+
+        if (Status != PromptStatus.Draft)
+        {
+            throw new DomainException(
+                "Only draft versions can be published.");
         }
 
         VersionNumber = versionNumber;
@@ -51,10 +59,39 @@ public sealed class PromptTemplateVersion : Entity
         CreatedAt = DateTime.UtcNow;
     }
 
+    internal static PromptTemplateVersion Create(
+    PromptVersionNumber versionNumber,
+    IEnumerable<PromptMessage> messages,
+    PromptCapability capability)
+    {
+        return new PromptTemplateVersion(
+            versionNumber,
+            messages,
+            capability
+            );
+    }
 
-    // Future behavior will be added here:
-    //
-    // Publish()
-    // Activate()
-    // Archive()
+    internal void Publish()
+    {
+        Status = PromptStatus.Published;
+        PublishedAt = DateTime.UtcNow;
+    }
+
+    internal void Activate()
+    {
+        Status = PromptStatus.Active;
+        ActivatedAt = DateTime.UtcNow;
+    }
+
+    internal void Archive()
+    {
+        Status = PromptStatus.Archived;
+        ArchivedAt = DateTime.UtcNow;
+    }
+    internal void Deprecate()
+    {
+        Status = PromptStatus.Deprecated;
+        DeprecatedAt = DateTime.UtcNow;
+    }
+
 }
