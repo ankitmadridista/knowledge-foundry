@@ -30,4 +30,13 @@ public class PromptVersionNumberTests
 
         version.ToString().Should().Be("v1");
     }
+
+    [Fact]
+    public void Versions_with_same_value_should_be_equal()
+    {
+        var left = new PromptVersionNumber(2);
+        var right = new PromptVersionNumber(2);
+
+        left.Should().Be(right);
+    }
 }
