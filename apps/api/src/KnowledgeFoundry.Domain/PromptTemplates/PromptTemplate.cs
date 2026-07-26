@@ -7,7 +7,7 @@ using KnowledgeFoundry.Domain.PromptTemplates.ValueObjects;
 public sealed class PromptTemplate : Entity
 {
     private readonly List<PromptTemplateVersion> _versions = new();
-    private readonly List<string> _tags = new();
+    private readonly List<PromptTag> _tags = new();
 
     public PromptIdentifier Identifier { get; }
     public PromptName Name { get; }
@@ -17,7 +17,7 @@ public sealed class PromptTemplate : Entity
     public IReadOnlyCollection<PromptTemplateVersion> Versions =>
         _versions.AsReadOnly();
 
-    public IReadOnlyCollection<string> Tags =>
+    public IReadOnlyCollection<PromptTag> Tags =>
         _tags.AsReadOnly();
 
     private PromptTemplate(
@@ -25,7 +25,7 @@ public sealed class PromptTemplate : Entity
         PromptName name,
         PromptDescription description,
         PromptPurpose purpose,
-        IEnumerable<string>? tags = null)
+        IEnumerable<PromptTag>? tags = null)
     {
         if (string.IsNullOrWhiteSpace(identifier))
             throw new ArgumentException(
@@ -42,9 +42,10 @@ public sealed class PromptTemplate : Entity
         Description = description;
         Purpose = purpose;
 
-        if (tags != null)
+        if (tags is not null)
         {
-            _tags.AddRange(tags);
+            _tags.AddRange(
+                tags.Select(tag => new PromptTag(tag)));
         }
     }
 
@@ -60,7 +61,7 @@ public sealed class PromptTemplate : Entity
             new PromptName(name),
             new PromptDescription(description),
             purpose,
-            tags);
+            (IEnumerable<PromptTag>)tags);
     }
 
     public PromptTemplateVersion CreateVersion(
