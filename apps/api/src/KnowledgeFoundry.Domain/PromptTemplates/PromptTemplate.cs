@@ -9,9 +9,9 @@ public sealed class PromptTemplate : Entity
     private readonly List<PromptTemplateVersion> _versions = new();
     private readonly List<string> _tags = new();
 
-    public string Identifier { get; private set; }
-    public string Name { get; private set; }
-    public string Description { get; private set; }
+    public PromptIdentifier Identifier { get; }
+    public PromptName Name { get; }
+    public PromptDescription Description { get; }
     public PromptPurpose Purpose { get; private set; }
 
     public IReadOnlyCollection<PromptTemplateVersion> Versions =>
@@ -21,9 +21,9 @@ public sealed class PromptTemplate : Entity
         _tags.AsReadOnly();
 
     private PromptTemplate(
-        string identifier,
-        string name,
-        string description,
+        PromptIdentifier identifier,
+        PromptName name,
+        PromptDescription description,
         PromptPurpose purpose,
         IEnumerable<string>? tags = null)
     {
@@ -56,9 +56,9 @@ public sealed class PromptTemplate : Entity
         IEnumerable<string>? tags = null)
     {
         return new PromptTemplate(
-            identifier,
-            name,
-            description,
+            new PromptIdentifier(identifier),
+            new PromptName(name),
+            new PromptDescription(description),
             purpose,
             tags);
     }
