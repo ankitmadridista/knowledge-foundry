@@ -7,25 +7,25 @@ using KnowledgeFoundry.Domain.PromptTemplates.ValueObjects;
 public sealed class PromptTemplate : Entity
 {
     private readonly List<PromptTemplateVersion> _versions = new();
-    private readonly List<string> _tags = new();
+    private readonly List<PromptTag> _tags = new();
 
-    public string Identifier { get; private set; }
-    public string Name { get; private set; }
-    public string Description { get; private set; }
+    public PromptIdentifier Identifier { get; }
+    public PromptName Name { get; }
+    public PromptDescription Description { get; }
     public PromptPurpose Purpose { get; private set; }
 
     public IReadOnlyCollection<PromptTemplateVersion> Versions =>
         _versions.AsReadOnly();
 
-    public IReadOnlyCollection<string> Tags =>
+    public IReadOnlyCollection<PromptTag> Tags =>
         _tags.AsReadOnly();
 
     private PromptTemplate(
-        string identifier,
-        string name,
-        string description,
+        PromptIdentifier identifier,
+        PromptName name,
+        PromptDescription description,
         PromptPurpose purpose,
-        IEnumerable<string>? tags = null)
+        IEnumerable<PromptTag>? tags = null)
     {
         if (string.IsNullOrWhiteSpace(identifier))
             throw new ArgumentException(
@@ -42,9 +42,10 @@ public sealed class PromptTemplate : Entity
         Description = description;
         Purpose = purpose;
 
-        if (tags != null)
+        if (tags is not null)
         {
-            _tags.AddRange(tags);
+            _tags.AddRange(
+                tags.Select(tag => new PromptTag(tag)));
         }
     }
 
@@ -56,11 +57,11 @@ public sealed class PromptTemplate : Entity
         IEnumerable<string>? tags = null)
     {
         return new PromptTemplate(
-            identifier,
-            name,
-            description,
+            new PromptIdentifier(identifier),
+            new PromptName(name),
+            new PromptDescription(description),
             purpose,
-            tags);
+            (IEnumerable<PromptTag>)tags);
     }
 
     public PromptTemplateVersion CreateVersion(
