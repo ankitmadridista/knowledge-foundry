@@ -3,12 +3,14 @@ namespace KnowledgeFoundry.Application.Common.Results;
 public class Result<T> : Result
 {
     private Result(T value)
-        : base(true, null)
+    : base(true, Error.None)
     {
+        ArgumentNullException.ThrowIfNull(value);
+
         Value = value;
     }
 
-    private Result(string error)
+    private Result(Error error)
         : base(false, error)
     {
     }
@@ -18,6 +20,6 @@ public class Result<T> : Result
     public static Result<T> Success(T value)
         => new(value);
 
-    public new static Result<T> Failure(string error)
+    public new static Result<T> Failure(Error error)
         => new(error);
 }

@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\KnowledgeFoundry.Application\KnowledgeFoundry.Application.csproj" />
     <ProjectReference Include="..\..\src\KnowledgeFoundry.Domain\KnowledgeFoundry.Domain.csproj" />
   </ItemGroup>
 
