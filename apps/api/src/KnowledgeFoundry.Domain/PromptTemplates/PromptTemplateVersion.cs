@@ -42,12 +42,6 @@ public sealed class PromptTemplateVersion : Entity
                 "A prompt version must contain at least one message.");
         }
 
-        if (Status != PromptStatus.Draft)
-        {
-            throw new DomainException(
-                "Only draft versions can be published.");
-        }
-
         VersionNumber = versionNumber;
 
         _messages.AddRange(messageList);
@@ -73,6 +67,10 @@ public sealed class PromptTemplateVersion : Entity
 
     internal void Publish()
     {
+        if (Status != PromptStatus.Draft)
+            throw new DomainException(
+                "Only draft versions can be published.");
+
         Status = PromptStatus.Published;
         PublishedAt = DateTime.UtcNow;
     }

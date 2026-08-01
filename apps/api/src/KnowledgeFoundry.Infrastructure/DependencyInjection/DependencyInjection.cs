@@ -1,3 +1,7 @@
+using KnowledgeFoundry.Application.Abstractions.Persistence;
+using KnowledgeFoundry.Infrastructure.Persistence;
+using KnowledgeFoundry.Infrastructure.Persistence.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,6 +13,13 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        services.AddDbContext<KnowledgeFoundryDbContext>(options =>
+            options.UseNpgsql(
+                configuration.GetConnectionString("DefaultConnection")));
+
+        services.AddScoped<IPromptTemplateRepository,
+            PromptTemplateRepository>();
+
         return services;
     }
 }

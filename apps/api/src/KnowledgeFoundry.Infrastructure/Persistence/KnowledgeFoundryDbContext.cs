@@ -11,11 +11,9 @@ public sealed class KnowledgeFoundryDbContext
     {
     }
 
-    public DbSet<PromptTemplate> PromptTemplates =>
-        Set<PromptTemplate>();
+    public DbSet<PromptTemplate> PromptTemplates => Set<PromptTemplate>();
 
-    protected override void OnModelCreating(
-        ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(
             typeof(KnowledgeFoundryDbContext).Assembly);

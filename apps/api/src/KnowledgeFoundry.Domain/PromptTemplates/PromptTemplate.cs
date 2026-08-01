@@ -1,4 +1,3 @@
-using KnowledgeFoundry.Domain.Common.Base;
 using KnowledgeFoundry.Domain.Common.Exceptions;
 using KnowledgeFoundry.Domain.PromptTemplates;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
@@ -6,12 +5,15 @@ using KnowledgeFoundry.Domain.PromptTemplates.ValueObjects;
 
 public sealed class PromptTemplate : Entity
 {
+    private PromptTemplate()
+    {
+    }
     private readonly List<PromptTemplateVersion> _versions = new();
     private readonly List<PromptTag> _tags = new();
 
-    public PromptIdentifier Identifier { get; }
-    public PromptName Name { get; }
-    public PromptDescription Description { get; }
+    public PromptIdentifier Identifier { get; private set; } = null!;
+    public PromptName Name { get; private set; } = null!;
+    public PromptDescription Description { get; private set; } = null!;
     public PromptPurpose Purpose { get; private set; }
 
     public IReadOnlyCollection<PromptTemplateVersion> Versions =>
@@ -27,19 +29,9 @@ public sealed class PromptTemplate : Entity
         PromptPurpose purpose,
         IEnumerable<PromptTag>? tags = null)
     {
-        if (string.IsNullOrWhiteSpace(identifier))
-            throw new ArgumentException(
-                "Identifier cannot be empty.",
-                nameof(identifier));
-
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException(
-                "Name cannot be empty.",
-                nameof(name));
-
-        Identifier = identifier;
-        Name = name;
-        Description = description;
+        Identifier = identifier ?? throw new ArgumentNullException("Identifier cannot be empty.", nameof(identifier));
+        Name = name ?? throw new ArgumentNullException("Name cannot be empty.", nameof(name));
+        Description = description ?? throw new ArgumentNullException("Description cannot be empty.", nameof(description));
         Purpose = purpose;
 
         if (tags is not null)
@@ -61,7 +53,7 @@ public sealed class PromptTemplate : Entity
             new PromptName(name),
             new PromptDescription(description),
             purpose,
-            (IEnumerable<PromptTag>)tags);
+            tags?.Select(t => new PromptTag(t)));
     }
 
     public PromptTemplateVersion CreateVersion(
@@ -131,7 +123,7 @@ public sealed class PromptTemplate : Entity
 
     public void RollbackTo(PromptVersionNumber versionNumber)
     {
-        ActivateVersion(versionNumber);
+        throw new NotImplementedException();
     }
 
     public void ArchiveVersion(PromptVersionNumber versionNumber)
