@@ -4,6 +4,10 @@ namespace KnowledgeFoundry.Domain.PromptTemplates.ValueObjects;
 
 public sealed class PromptTag : ValueObject
 {
+    private PromptTag()
+    {
+        Value = string.Empty;
+    }
     public string Value { get; }
 
     public PromptTag(string value)

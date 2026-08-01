@@ -1,6 +1,9 @@
-namespace KnowledgeFoundry.Domain.Common.Base;
-
 public abstract class Entity
 {
-    public Guid Id { get; protected set; } = Guid.NewGuid();
+    public Guid Id { get; protected set; }
+
+    protected Entity()
+    {
+        Id = Guid.NewGuid();
+    }
 }

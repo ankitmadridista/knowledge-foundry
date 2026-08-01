@@ -1,9 +1,6 @@
-using KnowledgeFoundry.Domain.PromptTemplates;
-
 namespace KnowledgeFoundry.Application.Abstractions.Persistence;
 
 public interface IPromptTemplateRepository
-    : IRepository<PromptTemplate>
 {
     Task AddAsync(
         PromptTemplate template,
@@ -13,7 +10,6 @@ public interface IPromptTemplateRepository
         Guid id,
         CancellationToken cancellationToken);
 
-    Task<PromptTemplate?> GetByIdentifierAsync(
-        string identifier,
+    Task SaveChangesAsync(
         CancellationToken cancellationToken);
 }

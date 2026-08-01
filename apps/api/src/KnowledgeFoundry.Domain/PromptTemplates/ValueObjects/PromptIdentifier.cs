@@ -4,6 +4,10 @@ namespace KnowledgeFoundry.Domain.PromptTemplates.ValueObjects;
 
 public sealed class PromptIdentifier : ValueObject
 {
+    private PromptIdentifier()
+    {
+        Value = string.Empty;
+    }
     public string Value { get; }
 
     public PromptIdentifier(string value)

@@ -7,6 +7,9 @@ using MediatR;
 
 var builder = WebApplication.CreateBuilder(args);
 
+Console.WriteLine(
+    builder.Configuration.GetConnectionString("DefaultConnection"));
+
 builder.Services
     .AddApplication()
     .AddAIPlatform()
