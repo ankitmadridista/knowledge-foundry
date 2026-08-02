@@ -2,6 +2,8 @@ using KnowledgeFoundry.Domain.Common.Exceptions;
 using KnowledgeFoundry.Domain.PromptTemplates;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using KnowledgeFoundry.Domain.PromptTemplates.ValueObjects;
+using KnowledgeFoundry.Domain.PromptTemplates.Events;
+
 
 public sealed class PromptTemplate : Entity
 {
@@ -98,6 +100,11 @@ public sealed class PromptTemplate : Entity
                 "Version is already published.");
 
         version.Publish();
+
+        RaiseDomainEvent(new PromptVersionPublishedDomainEvent(
+            Id,
+            version.VersionNumber,
+            version.PublishedAt!.Value));
     }
 
     public void ActivateVersion(PromptVersionNumber versionNumber)
