@@ -42,7 +42,40 @@ internal sealed class PromptTemplateConfiguration
             .HasConversion<int>()
             .IsRequired();
 
-        builder.Ignore(x => x.Versions);
+        builder.OwnsMany(x => x.Versions, version =>
+        {
+            version.ToTable("PromptTemplateVersions");
+
+            version.WithOwner()
+                   .HasForeignKey("PromptTemplateId");
+
+            version.HasKey(x => x.Id);
+
+            version.OwnsOne(x => x.VersionNumber, number =>
+            {
+                number.Property(x => x.Value)
+                    .HasColumnName("VersionNumber");
+            });
+
+            version.Property(x => x.Capability)
+                .HasConversion<int>();
+
+            version.Property(x => x.Status)
+                .HasConversion<int>();
+
+            version.Property(x => x.CreatedAt);
+
+            version.Property(x => x.PublishedAt);
+
+            version.Property(x => x.ActivatedAt);
+
+            version.Property(x => x.ArchivedAt);
+
+            version.Property(x => x.DeprecatedAt);
+
+            version.Ignore(x => x.Messages);
+
+        });
 
         builder.Ignore(x => x.Tags);
     }
