@@ -73,7 +73,24 @@ internal sealed class PromptTemplateConfiguration
 
             version.Property(x => x.DeprecatedAt);
 
-            version.Ignore(x => x.Messages);
+            version.OwnsMany(x => x.Messages, message =>
+            {
+                message.ToTable("PromptMessages");
+
+                message.WithOwner()
+                    .HasForeignKey("PromptTemplateVersionId");
+
+                message.Property<Guid>("Id");
+
+                message.HasKey("Id");
+
+                message.Property(x => x.Role);
+
+                message.Property(x => x.Content);
+
+                message.Property(x => x.Order);
+
+            });
 
         });
 
