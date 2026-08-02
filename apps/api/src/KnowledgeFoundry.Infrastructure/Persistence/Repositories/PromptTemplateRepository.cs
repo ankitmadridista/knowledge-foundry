@@ -24,12 +24,15 @@ internal sealed class PromptTemplateRepository
     }
 
     public async Task<PromptTemplate?> GetByIdAsync(
-        Guid id,
-        CancellationToken cancellationToken)
+    Guid id,
+    CancellationToken cancellationToken)
     {
-        return await _dbContext.PromptTemplates.FirstOrDefaultAsync(
-            x => x.Id == id,
-            cancellationToken);
+        return await _dbContext.PromptTemplates
+            .Include(x => x.Versions)
+            .Include(x => x.Tags)
+            .FirstOrDefaultAsync(
+                x => x.Id == id,
+                cancellationToken);
     }
 
     public Task SaveChangesAsync(

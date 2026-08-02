@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace KnowledgeFoundry.Infrastructure.Persistence.Configurations;
 
@@ -42,8 +43,78 @@ internal sealed class PromptTemplateConfiguration
             .HasConversion<int>()
             .IsRequired();
 
-        builder.Ignore(x => x.Versions);
+        builder.OwnsMany(x => x.Versions, version =>
+        {
+            version.ToTable("PromptTemplateVersions");
 
-        builder.Ignore(x => x.Tags);
+            version.WithOwner()
+                   .HasForeignKey("PromptTemplateId");
+
+            version.HasKey(x => x.Id);
+
+            version.OwnsOne(x => x.VersionNumber, number =>
+            {
+                number.Property(x => x.Value)
+                    .HasColumnName("VersionNumber");
+            });
+
+            version.Property(x => x.Capability)
+                .HasConversion<int>();
+
+            version.Property(x => x.Status)
+                .HasConversion<int>();
+
+            version.Property(x => x.CreatedAt);
+
+            version.Property(x => x.PublishedAt);
+
+            version.Property(x => x.ActivatedAt);
+
+            version.Property(x => x.ArchivedAt);
+
+            version.Property(x => x.DeprecatedAt);
+
+            version.OwnsMany(x => x.Messages, message =>
+            {
+                message.ToTable("PromptMessages");
+
+                message.WithOwner()
+                    .HasForeignKey("PromptTemplateVersionId");
+
+                message.Property<Guid>("Id");
+
+                message.HasKey("Id");
+
+                message.Property(x => x.Role);
+
+                message.Property(x => x.Content);
+
+                message.Property(x => x.Order);
+
+            });
+
+        });
+
+        builder.OwnsMany(x => x.Tags, tag =>
+        {
+            tag.ToTable("PromptTags");
+
+            tag.WithOwner()
+                .HasForeignKey("PromptTemplateId");
+
+            tag.Property<Guid>("Id");
+
+            tag.HasKey("Id");
+
+            tag.Property(x => x.Value)
+                .HasColumnName("Value")
+                .HasMaxLength(100)
+                .IsRequired();
+
+            tag.HasIndex(
+                "PromptTemplateId",
+                "Value")
+                .IsUnique();
+        });
     }
 }

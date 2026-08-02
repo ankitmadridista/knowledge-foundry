@@ -9,7 +9,7 @@ public sealed class PromptTemplateVersion : Entity
 {
     private readonly List<PromptMessage> _messages = new();
 
-    public PromptVersionNumber VersionNumber { get; }
+    public PromptVersionNumber VersionNumber { get; private set; } = null!;
 
     public IReadOnlyCollection<PromptMessage> Messages => _messages.AsReadOnly();
 
@@ -25,6 +25,9 @@ public sealed class PromptTemplateVersion : Entity
     public DateTime? ArchivedAt { get; private set; }
     public DateTime? DeprecatedAt { get; private set; }
 
+    private PromptTemplateVersion()
+    {
+    }
 
     private PromptTemplateVersion(
         PromptVersionNumber versionNumber,

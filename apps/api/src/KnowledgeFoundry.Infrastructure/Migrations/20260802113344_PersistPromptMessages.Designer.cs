@@ -3,6 +3,7 @@ using System;
 using KnowledgeFoundry.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace KnowledgeFoundry.Infrastructure.Migrations
 {
     [DbContext(typeof(KnowledgeFoundryDbContext))]
-    partial class KnowledgeFoundryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260802113344_PersistPromptMessages")]
+    partial class PersistPromptMessages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -189,32 +192,6 @@ namespace KnowledgeFoundry.Infrastructure.Migrations
                                 .HasForeignKey("PromptTemplateId");
                         });
 
-                    b.OwnsMany("KnowledgeFoundry.Domain.PromptTemplates.ValueObjects.PromptTag", "Tags", b1 =>
-                        {
-                            b1.Property<Guid>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("uuid");
-
-                            b1.Property<Guid>("PromptTemplateId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("Value")
-                                .IsRequired()
-                                .HasMaxLength(100)
-                                .HasColumnType("character varying(100)")
-                                .HasColumnName("Value");
-
-                            b1.HasKey("Id");
-
-                            b1.HasIndex("PromptTemplateId", "Value")
-                                .IsUnique();
-
-                            b1.ToTable("PromptTags", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("PromptTemplateId");
-                        });
-
                     b.Navigation("Description")
                         .IsRequired();
 
@@ -223,8 +200,6 @@ namespace KnowledgeFoundry.Infrastructure.Migrations
 
                     b.Navigation("Name")
                         .IsRequired();
-
-                    b.Navigation("Tags");
 
                     b.Navigation("Versions");
                 });
