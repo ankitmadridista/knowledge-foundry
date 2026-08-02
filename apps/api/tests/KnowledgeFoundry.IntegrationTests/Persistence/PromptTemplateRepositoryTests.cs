@@ -3,7 +3,7 @@ using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using KnowledgeFoundry.Domain.PromptTemplates.ValueObjects;
 using KnowledgeFoundry.IntegrationTests.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using FluentAssertions;
+using Shouldly;
 
 namespace KnowledgeFoundry.IntegrationTests.Persistence
 {
@@ -60,51 +60,42 @@ namespace KnowledgeFoundry.IntegrationTests.Persistence
                     template.Id,
                     CancellationToken.None);
 
-            loaded.Should().NotBeNull();
+            loaded.ShouldNotBeNull();
 
             loaded.Identifier
-                .Should()
-                .Be(template.Identifier);
+                .ShouldBe(template.Identifier);
 
             loaded.Name
-                .Should()
-                .Be(template.Name);
+                .ShouldBe(template.Name);
 
             loaded.Purpose
-                .Should()
-                .Be(template.Purpose);
+                .ShouldBe(template.Purpose);
 
             loaded.Versions
-                .Should()
-                .HaveCount(1);
+                .Count.ShouldBe(1);
 
             var loadedVersion =
                 loaded.Versions.Single();
 
             loadedVersion.Messages
-                .Should()
-                .HaveCount(2);
+                .Count.ShouldBe(2);
 
             loadedVersion.Messages
                 .Select(x => x.Order)
-                .Should()
-                .ContainInOrder(1, 2);
+                    .ShouldBe([1, 2]);
 
             loadedVersion.Messages
                 .First()
                 .Content
-                .Should()
-                .Be("You are a teacher.");
+                .ShouldBe("You are a teacher.");
 
             loadedVersion.Messages
                 .First()
                 .Role
-                .Should()
-                .Be(PromptMessageRole.System);
+                .ShouldBe(PromptMessageRole.System);
 
             loadedVersion.Status
-                .Should()
-                .Be(PromptStatus.Published);
+                .ShouldBe(PromptStatus.Published);
 
         }
 
