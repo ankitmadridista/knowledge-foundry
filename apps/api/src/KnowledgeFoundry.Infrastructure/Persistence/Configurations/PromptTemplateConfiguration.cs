@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace KnowledgeFoundry.Infrastructure.Persistence.Configurations;
 
@@ -94,6 +95,26 @@ internal sealed class PromptTemplateConfiguration
 
         });
 
-        builder.Ignore(x => x.Tags);
+        builder.OwnsMany(x => x.Tags, tag =>
+        {
+            tag.ToTable("PromptTags");
+
+            tag.WithOwner()
+                .HasForeignKey("PromptTemplateId");
+
+            tag.Property<Guid>("Id");
+
+            tag.HasKey("Id");
+
+            tag.Property(x => x.Value)
+                .HasColumnName("Value")
+                .HasMaxLength(100)
+                .IsRequired();
+
+            tag.HasIndex(
+                "PromptTemplateId",
+                "Value")
+                .IsUnique();
+        });
     }
 }
