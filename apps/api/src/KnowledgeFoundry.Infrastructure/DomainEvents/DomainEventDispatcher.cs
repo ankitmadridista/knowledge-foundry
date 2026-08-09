@@ -18,10 +18,15 @@ internal sealed class DomainEventDispatcher
         KnowledgeFoundryDbContext dbContext,
         CancellationToken cancellationToken)
     {
-        var domainEvents =
+        var entities =
             dbContext.ChangeTracker
                 .Entries<Entity>()
                 .Select(entry => entry.Entity)
+                .Where(entity => entity.DomainEvents.Count > 0)
+                .ToList();
+
+        var domainEvents =
+            entities
                 .SelectMany(entity => entity.DomainEvents)
                 .ToList();
 
@@ -32,10 +37,7 @@ internal sealed class DomainEventDispatcher
                 cancellationToken);
         }
 
-        foreach (var entity in
-                 dbContext.ChangeTracker
-                     .Entries<Entity>()
-                     .Select(entry => entry.Entity))
+        foreach (var entity in entities)
         {
             entity.ClearDomainEvents();
         }
