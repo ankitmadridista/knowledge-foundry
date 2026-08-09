@@ -8,7 +8,7 @@ using Shouldly;
 
 namespace KnowledgeFoundry.IntegrationTests.Persistence
 {
-    [Collection("IntegrationTests")]
+    [Collection("Integration tests")]
     public class PromptTemplateRepositoryTests
     {
         private readonly IntegrationTestFixture _fixture;

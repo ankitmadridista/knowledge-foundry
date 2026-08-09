@@ -1,6 +1,6 @@
 namespace KnowledgeFoundry.IntegrationTests.Infrastructure;
 
-[CollectionDefinition("IntegrationTests")]
+[CollectionDefinition("Integration tests")]
 public sealed class IntegrationTestCollection
     : ICollectionFixture<IntegrationTestFixture>
 {

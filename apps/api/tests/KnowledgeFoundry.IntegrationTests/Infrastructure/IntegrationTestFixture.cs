@@ -46,6 +46,30 @@ namespace KnowledgeFoundry.IntegrationTests.Infrastructure
             await dbContext.SaveChangesAsync();
         }
 
+        public ServiceProvider CreateServiceProvider(
+            Action<IServiceCollection>? configure = null)
+        {
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: false)
+                .AddEnvironmentVariables()
+                .Build();
+
+            var services = new ServiceCollection();
+
+            services
+                .AddApplication()
+                .AddInfrastructure(configuration);
+
+            services.AddTransient<
+                INotificationHandler<PromptVersionPublishedDomainEvent>,
+                PromptVersionPublishedDomainEventHandlerSpy>();
+
+            configure?.Invoke(services);
+
+            return services.BuildServiceProvider();
+        }
+
         public Task DisposeAsync()
         {
             return Task.CompletedTask;
