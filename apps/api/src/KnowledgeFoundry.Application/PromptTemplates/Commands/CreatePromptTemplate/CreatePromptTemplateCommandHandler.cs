@@ -1,11 +1,12 @@
 using MediatR;
+using KnowledgeFoundry.Application.Common.Results;
 
 namespace KnowledgeFoundry.Application.PromptTemplates.Commands.CreatePromptTemplate;
 
 public sealed class CreatePromptTemplateCommandHandler
-    : IRequestHandler<CreatePromptTemplateCommand, Guid>
+    : IRequestHandler<CreatePromptTemplateCommand, Result<Guid>>
 {
-    public async Task<Guid> Handle(
+    public async Task<Result<Guid>> Handle(
         CreatePromptTemplateCommand request,
         CancellationToken cancellationToken)
     {
@@ -14,6 +15,6 @@ public sealed class CreatePromptTemplateCommandHandler
 
         await Task.CompletedTask;
 
-        return Guid.NewGuid();
+        return Result<Guid>.Success(Guid.NewGuid());
     }
 }

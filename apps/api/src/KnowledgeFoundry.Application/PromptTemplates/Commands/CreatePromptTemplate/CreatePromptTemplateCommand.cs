@@ -1,3 +1,4 @@
+using KnowledgeFoundry.Application.Common.Results;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using MediatR;
 
@@ -8,4 +9,4 @@ public sealed record CreatePromptTemplateCommand(
     string Description,
     PromptPurpose Purpose,
     IReadOnlyCollection<string> Tags
-) : IRequest<Guid>;
+) : IRequest<Result<Guid>>;
