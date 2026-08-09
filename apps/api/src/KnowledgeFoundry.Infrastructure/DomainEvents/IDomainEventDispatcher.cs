@@ -2,7 +2,7 @@ using KnowledgeFoundry.Infrastructure.Persistence;
 
 namespace KnowledgeFoundry.Infrastructure.DomainEvents;
 
-internal interface IDomainEventDispatcher
+public interface IDomainEventDispatcher
 {
     Task DispatchAsync(
         KnowledgeFoundryDbContext dbContext,

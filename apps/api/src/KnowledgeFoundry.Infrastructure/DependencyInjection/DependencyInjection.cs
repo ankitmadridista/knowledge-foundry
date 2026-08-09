@@ -18,11 +18,9 @@ public static class DependencyInjection
             options.UseNpgsql(
                 configuration.GetConnectionString("DefaultConnection")));
 
-        services.AddScoped<IPromptTemplateRepository,
-            PromptTemplateRepository>();
+        services.AddScoped<IPromptTemplateRepository, PromptTemplateRepository>();
 
-        services.AddScoped<IDomainEventDispatcher,
-            DomainEventDispatcher>();
+        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
         return services;
     }

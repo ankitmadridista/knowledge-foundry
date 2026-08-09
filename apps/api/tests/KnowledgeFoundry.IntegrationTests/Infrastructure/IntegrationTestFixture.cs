@@ -1,6 +1,9 @@
 using KnowledgeFoundry.Application.DependencyInjection;
+using KnowledgeFoundry.Domain.PromptTemplates.Events;
 using KnowledgeFoundry.Infrastructure;
 using KnowledgeFoundry.Infrastructure.Persistence;
+using KnowledgeFoundry.IntegrationTests.DomainEvents;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +26,10 @@ namespace KnowledgeFoundry.IntegrationTests.Infrastructure
             services
                 .AddApplication()
                 .AddInfrastructure(configuration);
+
+            services.AddTransient<
+                INotificationHandler<PromptVersionPublishedDomainEvent>,
+                PromptVersionPublishedDomainEventHandlerSpy>();
 
             ServiceProvider = services.BuildServiceProvider();
 
