@@ -1,6 +1,7 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using KnowledgeFoundry.Domain.PromptTemplates.ValueObjects;
+using KnowledgeFoundry.IntegrationTests.DomainEvents;
 using KnowledgeFoundry.IntegrationTests.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
@@ -19,6 +20,8 @@ namespace KnowledgeFoundry.IntegrationTests.Persistence
         [Fact]
         public async Task Should_persist_complete_prompt_template_aggregate()
         {
+            PromptVersionPublishedDomainEventHandlerSpy.Reset();
+
             var template = PromptTemplate.Create(
                 "PT-000001",
                 "Lesson Generator",
@@ -96,6 +99,9 @@ namespace KnowledgeFoundry.IntegrationTests.Persistence
 
             loadedVersion.Status
                 .ShouldBe(PromptStatus.Published);
+
+            PromptVersionPublishedDomainEventHandlerSpy.WasCalled
+                .ShouldBeTrue();
 
         }
 

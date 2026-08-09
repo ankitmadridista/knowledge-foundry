@@ -1,5 +1,3 @@
-using Xunit;
-
 namespace KnowledgeFoundry.IntegrationTests.Infrastructure;
 
 [CollectionDefinition("IntegrationTests")]

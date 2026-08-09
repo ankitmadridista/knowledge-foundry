@@ -1,4 +1,5 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
+using KnowledgeFoundry.Infrastructure.DomainEvents;
 using KnowledgeFoundry.Infrastructure.Persistence;
 using KnowledgeFoundry.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -17,8 +18,9 @@ public static class DependencyInjection
             options.UseNpgsql(
                 configuration.GetConnectionString("DefaultConnection")));
 
-        services.AddScoped<IPromptTemplateRepository,
-            PromptTemplateRepository>();
+        services.AddScoped<IPromptTemplateRepository, PromptTemplateRepository>();
+
+        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
         return services;
     }
