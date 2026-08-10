@@ -1,6 +1,8 @@
 using KnowledgeFoundry.Application.Common.Errors;
+using KnowledgeFoundry.Application.PromptTemplates.Commands.ActivatePromptVersion;
 using KnowledgeFoundry.Application.PromptTemplates.Commands.CreatePromptTemplate;
 using KnowledgeFoundry.Application.PromptTemplates.Commands.CreatePromptVersion;
+using KnowledgeFoundry.Application.PromptTemplates.Commands.PublishPromptVersion;
 using KnowledgeFoundry.Application.PromptTemplates.Queries.GetPromptTemplate;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using MediatR;
@@ -40,6 +42,9 @@ public static class PromptTemplateEndpoints
             .WithName("GetPromptTemplate");
 
         group.MapPost("/{id:guid}/versions", CreatePromptVersion);
+
+        group.MapPost("/{id:guid}/versions/{versionNumber:int}/publish", PublishPromptVersion);
+        group.MapPost("/{id:guid}/versions/{versionNumber:int}/activate", ActivatePromptVersion);
     }
 
     private static async Task<IResult> CreatePromptTemplate(
@@ -73,15 +78,12 @@ public static class PromptTemplateEndpoints
         CancellationToken cancellationToken)
     {
         var query = new GetPromptTemplateQuery(id);
-
         var result = await sender.Send(query, cancellationToken);
 
         if (result.IsFailure)
         {
             if (result.Error == PromptTemplateErrors.NotFound)
-            {
                 return Results.NotFound(result.Error);
-            }
 
             return Results.BadRequest(result.Error);
         }
@@ -95,29 +97,61 @@ public static class PromptTemplateEndpoints
         ISender sender,
         CancellationToken cancellationToken)
     {
-        // Map API DTO to Application DTO
         var messages = request.Messages
             .Select(m => new PromptMessageDto(m.Role, m.Content, m.Order))
             .ToList();
 
-        var command = new CreatePromptVersionCommand(
-            id,
-            messages,
-            request.Capability);
-
+        var command = new CreatePromptVersionCommand(id, messages, request.Capability);
         var result = await sender.Send(command, cancellationToken);
 
         if (result.IsFailure)
         {
             if (result.Error == PromptTemplateErrors.NotFound)
-            {
                 return Results.NotFound(result.Error);
-            }
 
             return Results.BadRequest(result.Error);
         }
 
-        // Return 200 OK with the newly generated version number
         return Results.Ok(new { VersionNumber = result.Value });
+    }
+
+    private static async Task<IResult> PublishPromptVersion(
+        Guid id,
+        int versionNumber,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var command = new PublishPromptVersionCommand(id, versionNumber);
+        var result = await sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            if (result.Error == PromptTemplateErrors.NotFound)
+                return Results.NotFound(result.Error);
+
+            return Results.BadRequest(result.Error); // Could be a domain error (e.g. "already published")
+        }
+
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> ActivatePromptVersion(
+        Guid id,
+        int versionNumber,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var command = new ActivatePromptVersionCommand(id, versionNumber);
+        var result = await sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            if (result.Error == PromptTemplateErrors.NotFound)
+                return Results.NotFound(result.Error);
+
+            return Results.BadRequest(result.Error); // Could be a domain error (e.g. "must be published first")
+        }
+
+        return Results.NoContent();
     }
 }
