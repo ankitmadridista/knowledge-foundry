@@ -94,6 +94,22 @@ internal sealed class PromptTemplateConfiguration
 
             });
 
+            version.OwnsMany(x => x.Variables, variable =>
+            {
+                variable.ToTable("PromptVariables");
+
+                variable.WithOwner()
+                    .HasForeignKey("PromptTemplateVersionId");
+
+                variable.Property<Guid>("Id");
+                variable.HasKey("Id");
+
+                variable.Property(x => x.Name)
+                    .HasColumnName("Name")
+                    .HasMaxLength(100)
+                    .IsRequired();
+            });
+
         });
 
         builder.OwnsMany(x => x.Tags, tag =>

@@ -51,6 +51,8 @@ internal sealed class PromptTemplateRepository
         return await _dbContext.PromptTemplates
             .Include(x => x.Versions)
                 .ThenInclude(v => v.Messages)
+            .Include(x => x.Versions)
+                .ThenInclude(v => v.Variables)
             .Include(x => x.Tags)
             .FirstOrDefaultAsync(
                 x => x.Identifier.Value == normalizedIdentifier,

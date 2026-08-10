@@ -44,9 +44,15 @@ public sealed class GetActivePromptPayloadQueryHandler
                 m.Content))
             .ToList();
 
+        // Map the variables!
+        var variables = activeVersion.Variables
+            .Select(v => v.Name)
+            .ToList();
+
         var dto = new PromptPayloadDto(
             template.Identifier.Value,
             messages,
+            variables,
             activeVersion.Capability.ToString());
 
         return Result<PromptPayloadDto>.Success(dto);
