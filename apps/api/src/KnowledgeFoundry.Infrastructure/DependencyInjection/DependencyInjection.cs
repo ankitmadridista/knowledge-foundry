@@ -18,6 +18,9 @@ public static class DependencyInjection
             options.UseNpgsql(
                 configuration.GetConnectionString("DefaultConnection")));
 
+        services.AddScoped<IUnitOfWork>(sp =>
+            sp.GetRequiredService<KnowledgeFoundryDbContext>());
+
         services.AddScoped<IPromptTemplateRepository, PromptTemplateRepository>();
 
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();

@@ -9,7 +9,4 @@ public interface IPromptTemplateRepository
     Task<PromptTemplate?> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken);
-
-    Task SaveChangesAsync(
-        CancellationToken cancellationToken);
 }

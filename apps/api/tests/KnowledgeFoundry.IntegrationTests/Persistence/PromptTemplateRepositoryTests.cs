@@ -51,11 +51,13 @@ namespace KnowledgeFoundry.IntegrationTests.Persistence
             var repository =
                 scope.ServiceProvider.GetRequiredService<IPromptTemplateRepository>();
 
+            var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
             await repository.AddAsync(
                 template,
                 CancellationToken.None);
 
-            await repository.SaveChangesAsync(
+            await unitOfWork.SaveChangesAsync(
                 CancellationToken.None);
 
             var loaded =
