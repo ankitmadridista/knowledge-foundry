@@ -45,6 +45,8 @@ public static class PromptTemplateEndpoints
 
         group.MapPost("/{id:guid}/versions/{versionNumber:int}/publish", PublishPromptVersion);
         group.MapPost("/{id:guid}/versions/{versionNumber:int}/activate", ActivatePromptVersion);
+
+        group.MapGet("/{identifier}/active-payload", GetActivePromptPayload);
     }
 
     private static async Task<IResult> CreatePromptTemplate(
@@ -153,5 +155,23 @@ public static class PromptTemplateEndpoints
         }
 
         return Results.NoContent();
+    }
+
+    private static async Task<IResult> GetActivePromptPayload(
+        string identifier,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var query = new KnowledgeFoundry.Application.PromptTemplates.Queries.GetActivePromptPayload.GetActivePromptPayloadQuery(identifier);
+        var result = await sender.Send(query, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return result.Error.Code == "PromptTemplate.NotFound"
+                ? Results.NotFound(result.Error)
+                : Results.BadRequest(result.Error);
+        }
+
+        return Results.Ok(result.Value);
     }
 }
