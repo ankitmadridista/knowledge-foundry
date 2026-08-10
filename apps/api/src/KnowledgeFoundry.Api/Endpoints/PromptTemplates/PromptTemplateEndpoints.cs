@@ -27,6 +27,9 @@ public sealed record CreatePromptVersionRequest(
     PromptMessageRequest[] Messages,
     PromptCapability Capability);
 
+public sealed record ExecutePromptRequest(
+    Dictionary<string, string> Variables);
+
 // --- Endpoints ---
 
 public static class PromptTemplateEndpoints
@@ -47,6 +50,8 @@ public static class PromptTemplateEndpoints
         group.MapPost("/{id:guid}/versions/{versionNumber:int}/activate", ActivatePromptVersion);
 
         group.MapGet("/{identifier}/active-payload", GetActivePromptPayload);
+
+        group.MapPost("/{identifier}/execute", ExecutePrompt);
     }
 
     private static async Task<IResult> CreatePromptTemplate(
@@ -173,5 +178,25 @@ public static class PromptTemplateEndpoints
         }
 
         return Results.Ok(result.Value);
+    }
+
+    private static async Task<IResult> ExecutePrompt(
+        string identifier,
+        ExecutePromptRequest request,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var command = new KnowledgeFoundry.Application.PromptExecutions.Commands.ExecutePrompt.ExecutePromptCommand(
+            identifier,
+            request.Variables ?? new Dictionary<string, string>());
+
+        var result = await sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return Results.BadRequest(result.Error);
+        }
+
+        return Results.Ok(new { Response = result.Value });
     }
 }
