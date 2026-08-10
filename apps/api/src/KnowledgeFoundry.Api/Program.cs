@@ -30,6 +30,7 @@ app.MapPost("/test-command", async (ISender sender) =>
 {
     var id = await sender.Send(
         new CreatePromptTemplateCommand(
+            "1_PT",
             "Lesson Generator",
             "Generates educational lessons",
             PromptPurpose.LessonGeneration,

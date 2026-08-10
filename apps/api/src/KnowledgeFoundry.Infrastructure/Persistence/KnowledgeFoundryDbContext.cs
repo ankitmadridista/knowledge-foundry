@@ -1,10 +1,11 @@
+using KnowledgeFoundry.Application.Abstractions.Persistence;
 using KnowledgeFoundry.Infrastructure.DomainEvents;
 using Microsoft.EntityFrameworkCore;
 
 namespace KnowledgeFoundry.Infrastructure.Persistence;
 
 public sealed class KnowledgeFoundryDbContext
-    : DbContext
+    : DbContext, IUnitOfWork
 {
     private readonly IDomainEventDispatcher? _domainEventDispatcher;
 

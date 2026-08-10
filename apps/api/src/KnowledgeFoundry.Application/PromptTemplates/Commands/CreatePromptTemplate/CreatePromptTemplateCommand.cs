@@ -5,6 +5,7 @@ using MediatR;
 namespace KnowledgeFoundry.Application.PromptTemplates.Commands.CreatePromptTemplate;
 
 public sealed record CreatePromptTemplateCommand(
+    string Identifier,
     string Name,
     string Description,
     PromptPurpose Purpose,

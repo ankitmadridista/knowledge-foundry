@@ -1,3 +1,4 @@
+using KnowledgeFoundry.Application.Abstractions.Persistence;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using KnowledgeFoundry.Domain.PromptTemplates.Events;
 using KnowledgeFoundry.Domain.PromptTemplates.ValueObjects;
@@ -5,8 +6,6 @@ using KnowledgeFoundry.IntegrationTests.Infrastructure;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
-using KnowledgeFoundry.Domain.PromptTemplates.Events;
-using MediatR;
 
 namespace KnowledgeFoundry.IntegrationTests.DomainEvents;
 
@@ -56,11 +55,9 @@ public sealed class DomainEventDispatchingTests
         using var scope =
             serviceProvider.CreateScope();
 
-        var repository =
-            scope.ServiceProvider
-                .GetRequiredService<
-                    KnowledgeFoundry.Application.Abstractions.Persistence
-                        .IPromptTemplateRepository>();
+        var repository = scope.ServiceProvider.GetRequiredService<IPromptTemplateRepository>();
+
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
         await repository.AddAsync(
             template,
@@ -68,7 +65,7 @@ public sealed class DomainEventDispatchingTests
 
         var exception =
             await Assert.ThrowsAsync<InvalidOperationException>(
-                () => repository.SaveChangesAsync(
+                () => unitOfWork.SaveChangesAsync(
                     CancellationToken.None));
 
         exception.Message
