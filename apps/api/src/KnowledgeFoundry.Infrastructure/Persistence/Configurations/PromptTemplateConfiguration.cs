@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace KnowledgeFoundry.Infrastructure.Persistence.Configurations;
 
@@ -51,6 +50,8 @@ internal sealed class PromptTemplateConfiguration
                    .HasForeignKey("PromptTemplateId");
 
             version.HasKey(x => x.Id);
+
+            version.Property(x => x.Id).ValueGeneratedNever();
 
             version.OwnsOne(x => x.VersionNumber, number =>
             {

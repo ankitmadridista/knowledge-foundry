@@ -59,8 +59,8 @@ public sealed class PromptTemplate : Entity
     }
 
     public PromptTemplateVersion CreateVersion(
-    IEnumerable<PromptMessage> messages,
-    PromptCapability capability)
+        IEnumerable<PromptMessage> messages,
+        PromptCapability capability)
     {
         var versionNumber = _versions.Count == 0
             ? new PromptVersionNumber(1)
