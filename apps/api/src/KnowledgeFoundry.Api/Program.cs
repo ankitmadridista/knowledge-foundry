@@ -1,14 +1,9 @@
 using KnowledgeFoundry.AIPlatform;
+using KnowledgeFoundry.Api.Endpoints.PromptTemplates;
 using KnowledgeFoundry.Application.DependencyInjection;
-using KnowledgeFoundry.Application.PromptTemplates.Commands.CreatePromptTemplate;
-using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using KnowledgeFoundry.Infrastructure;
-using MediatR;
 
 var builder = WebApplication.CreateBuilder(args);
-
-Console.WriteLine(
-    builder.Configuration.GetConnectionString("DefaultConnection"));
 
 builder.Services
     .AddApplication()
@@ -24,19 +19,9 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
-app.MapPost("/test-command", async (ISender sender) =>
-{
-    var id = await sender.Send(
-        new CreatePromptTemplateCommand(
-            "1_PT",
-            "Lesson Generator",
-            "Generates educational lessons",
-            PromptPurpose.LessonGeneration,
-            new[] { "education", "lesson" }));
-
-    return Results.Ok(id);
-});
+// Map our feature endpoints
+app.MapPromptTemplateEndpoints();
 
 app.Run();
