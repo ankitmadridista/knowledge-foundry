@@ -40,4 +40,20 @@ internal sealed class PromptTemplateRepository
     {
         return _dbContext.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<PromptTemplate?> GetByIdentifierAsync(
+        string identifier,
+        CancellationToken cancellationToken)
+    {
+        // Notice we are normalizing the identifier to upper case just in case
+        var normalizedIdentifier = identifier.ToUpperInvariant();
+
+        return await _dbContext.PromptTemplates
+            .Include(x => x.Versions)
+                .ThenInclude(v => v.Messages)
+            .Include(x => x.Tags)
+            .FirstOrDefaultAsync(
+                x => x.Identifier.Value == normalizedIdentifier,
+                cancellationToken);
+    }
 }

@@ -9,4 +9,8 @@ public interface IPromptTemplateRepository
     Task<PromptTemplate?> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken);
+
+    Task<PromptTemplate?> GetByIdentifierAsync(
+        string identifier,
+        CancellationToken cancellationToken = default);
 }
