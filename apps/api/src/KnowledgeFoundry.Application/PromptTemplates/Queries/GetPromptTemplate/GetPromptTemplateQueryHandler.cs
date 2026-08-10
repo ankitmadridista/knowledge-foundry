@@ -1,17 +1,41 @@
+using KnowledgeFoundry.Application.Abstractions.Persistence;
+using KnowledgeFoundry.Application.Common.Errors;
 using KnowledgeFoundry.Application.Common.Models;
+using KnowledgeFoundry.Application.Common.Results;
 using MediatR;
 
 namespace KnowledgeFoundry.Application.PromptTemplates.Queries.GetPromptTemplate;
 
 public sealed class GetPromptTemplateQueryHandler
-    : IRequestHandler<GetPromptTemplateQuery, PromptTemplateDto?>
+    : IRequestHandler<GetPromptTemplateQuery, Result<PromptTemplateDto>>
 {
-    public async Task<PromptTemplateDto?> Handle(
+    private readonly IPromptTemplateRepository _repository;
+
+    public GetPromptTemplateQueryHandler(IPromptTemplateRepository repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task<Result<PromptTemplateDto>> Handle(
         GetPromptTemplateQuery request,
         CancellationToken cancellationToken)
     {
-        await Task.CompletedTask;
+        var template = await _repository.GetByIdAsync(request.Id, cancellationToken);
 
-        return null;
+        if (template is null)
+        {
+            return Result<PromptTemplateDto>.Failure(PromptTemplateErrors.NotFound);
+        }
+
+        // Map the Domain Entity to the Application DTO
+        var dto = new PromptTemplateDto(
+            template.Id,
+            template.Identifier.Value,
+            template.Name.Value,
+            template.Description.Value,
+            template.Purpose,
+            template.Tags.Select(t => t.Value).ToList().AsReadOnly());
+
+        return Result<PromptTemplateDto>.Success(dto);
     }
 }
