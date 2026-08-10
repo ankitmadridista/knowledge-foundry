@@ -77,7 +77,7 @@ public sealed class PromptTemplate : Entity
     }
     private PromptTemplateVersion GetVersion(PromptVersionNumber versionNumber)
     {
-        var version = _versions.SingleOrDefault(v => v.VersionNumber == versionNumber);
+        var version = _versions.SingleOrDefault(v => v.VersionNumber.Value == versionNumber.Value);
 
         if (version is null)
             throw new InvalidOperationException(
@@ -119,7 +119,7 @@ public sealed class PromptTemplate : Entity
         .SingleOrDefault(v => v.Status == PromptStatus.Active);
 
         if (activeVersion != null &&
-        activeVersion.VersionNumber != versionNumber)
+        activeVersion.VersionNumber.Value != versionNumber.Value)
         {
             activeVersion.Deprecate();
         }
@@ -135,7 +135,7 @@ public sealed class PromptTemplate : Entity
 
     public void ArchiveVersion(PromptVersionNumber versionNumber)
     {
-        var version = _versions.Single(v => v.VersionNumber == versionNumber);
+        var version = _versions.Single(v => v.VersionNumber.Value == versionNumber.Value);
 
         version.Archive();
     }
