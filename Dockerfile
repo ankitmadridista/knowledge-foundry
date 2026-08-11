@@ -7,6 +7,7 @@ COPY ["apps/api/src/KnowledgeFoundry.Api/KnowledgeFoundry.Api.csproj", "apps/api
 COPY ["apps/api/src/KnowledgeFoundry.Application/KnowledgeFoundry.Application.csproj", "apps/api/src/KnowledgeFoundry.Application/"]
 COPY ["apps/api/src/KnowledgeFoundry.Domain/KnowledgeFoundry.Domain.csproj", "apps/api/src/KnowledgeFoundry.Domain/"]
 COPY ["apps/api/src/KnowledgeFoundry.Infrastructure/KnowledgeFoundry.Infrastructure.csproj", "apps/api/src/KnowledgeFoundry.Infrastructure/"]
+COPY ["apps/api/src/KnowledgeFoundry.AIPlatform/KnowledgeFoundry.AIPlatform.csproj", "apps/api/src/KnowledgeFoundry.AIPlatform/"]
 
 # 3. Restore NuGet packages
 RUN dotnet restore "apps/api/src/KnowledgeFoundry.Api/KnowledgeFoundry.Api.csproj"
