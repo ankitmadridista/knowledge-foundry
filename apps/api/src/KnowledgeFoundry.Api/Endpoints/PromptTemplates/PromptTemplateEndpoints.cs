@@ -52,6 +52,8 @@ public static class PromptTemplateEndpoints
         group.MapGet("/{identifier}/active-payload", GetActivePromptPayload);
 
         group.MapPost("/{identifier}/execute", ExecutePrompt);
+
+        group.MapGet("/", GetPromptTemplates);
     }
 
     private static async Task<IResult> CreatePromptTemplate(
@@ -198,5 +200,20 @@ public static class PromptTemplateEndpoints
         }
 
         return Results.Ok(new { Response = result.Value });
+    }
+
+    private static async Task<IResult> GetPromptTemplates(
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var query = new Application.PromptTemplates.Queries.GetPromptTemplates.GetPromptTemplatesQuery();
+        var result = await sender.Send(query, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return Results.BadRequest(result.Error);
+        }
+
+        return Results.Ok(result.Value);
     }
 }

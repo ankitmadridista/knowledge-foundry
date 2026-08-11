@@ -1,5 +1,6 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Immutable;
 
 namespace KnowledgeFoundry.Infrastructure.Persistence.Repositories;
 
@@ -57,5 +58,14 @@ internal sealed class PromptTemplateRepository
             .FirstOrDefaultAsync(
                 x => x.Identifier.Value == normalizedIdentifier,
                 cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<PromptTemplate>> GetAllAsync(
+        CancellationToken cancellationToken)
+    {
+        return await _dbContext.PromptTemplates
+            .Include(x => x.Tags)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
     }
 }
