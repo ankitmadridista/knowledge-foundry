@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { getPromptTemplates, type PromptTemplateSummary } from "@/features/prompt-templates/api/promptTemplatesApi";
+import { useNavigate } from "react-router-dom";
 
 export function TemplatesPage() {
   const [templates, setTemplates] = useState<PromptTemplateSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -45,12 +47,17 @@ export function TemplatesPage() {
       {!isLoading && !error && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {templates.map((template) => (
-            <div key={template.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow">
+            <div 
+              key={template.id} 
+              onClick={() => navigate(`/templates/${template.identifier}`)}
+              className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg transition-shadow cursor-pointer flex flex-col"
+            >
               <div className="flex justify-between items-start mb-4">
                 <span className="text-xs font-mono bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded">
                   {template.identifier}
                 </span>
               </div>
+              
               <h3 className="text-lg font-semibold mb-2 dark:text-white">{template.name}</h3>
               <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
                 {template.description}
@@ -65,12 +72,6 @@ export function TemplatesPage() {
               </div>
             </div>
           ))}
-          
-          {templates.length === 0 && (
-            <div className="col-span-full text-center py-12 text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">
-              No prompt templates found. Create your first one!
-            </div>
-          )}
         </div>
       )}
     </div>
