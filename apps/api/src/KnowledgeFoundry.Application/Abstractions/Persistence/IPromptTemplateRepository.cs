@@ -13,4 +13,6 @@ public interface IPromptTemplateRepository
     Task<PromptTemplate?> GetByIdentifierAsync(
         string identifier,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<PromptTemplate>> GetAllAsync(CancellationToken cancellationToken = default);
 }
