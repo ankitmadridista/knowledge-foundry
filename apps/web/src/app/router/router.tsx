@@ -1,11 +1,8 @@
-import {
-  createBrowserRouter,
-} from "react-router-dom";
-
-
+import { createBrowserRouter } from "react-router-dom";
 import { HomePage } from "@/pages/Home/HomePage";
 import NotFoundPage from "@/pages/NotFound/NotFoundPage";
 import { MainLayout } from "@/app/layouts/MainLayout";
+import { TemplatesPage } from "@/pages/Templates/TemplatesPage"; // <-- ADD THIS IMPORT
 
 export const router = createBrowserRouter([
   {
@@ -16,6 +13,10 @@ export const router = createBrowserRouter([
         index: true,
         element: <HomePage />,
       },
+      {
+        path: "templates",
+        element: <TemplatesPage />,
+      }
     ],
   },
   {
