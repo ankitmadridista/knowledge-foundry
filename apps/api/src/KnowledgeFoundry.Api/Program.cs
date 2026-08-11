@@ -2,6 +2,7 @@ using KnowledgeFoundry.AIPlatform;
 using KnowledgeFoundry.Api.Endpoints.PromptTemplates;
 using KnowledgeFoundry.Application.DependencyInjection;
 using KnowledgeFoundry.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,7 +35,7 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Knowledge Foundry API v1");
-    c.RoutePrefix = string.Empty; // This makes Swagger UI load automatically at http://localhost:5177/ instead of needing /swagger
+    c.RoutePrefix = string.Empty;
     c.EnableTryItOutByDefault();
 });
 
@@ -44,5 +45,12 @@ app.UseCors("AllowFrontend");
 
 // Map our feature endpoints
 app.MapPromptTemplateEndpoints();
+
+// Apply database migrations automatically on startup
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<KnowledgeFoundry.Infrastructure.Persistence.KnowledgeFoundryDbContext>();
+    dbContext.Database.Migrate();
+}
 
 app.Run();
