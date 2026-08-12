@@ -5,6 +5,7 @@ import { MainLayout } from "@/app/layouts/MainLayout";
 import { TemplatesPage } from "@/pages/Templates/TemplatesPage";
 import { TemplateExecutionPage } from "@/pages/Templates/TemplateExecutionPage";
 import { CreateTemplatePage } from "@/pages/Templates/CreateTemplatePage";
+import { TemplateDetailsPage } from "@/pages/Templates/TemplateDetailsPage";
 
 export const router = createBrowserRouter([
     {
@@ -25,6 +26,10 @@ export const router = createBrowserRouter([
             },
             {
                 path: "templates/:identifier",
+                element: <TemplateDetailsPage />,
+            },
+            {
+                path: "templates/:identifier/execute",
                 element: <TemplateExecutionPage />,
             },
         ],
