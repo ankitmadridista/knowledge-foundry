@@ -53,6 +53,23 @@ export interface AddPromptVersionRequest {
     capability: number; // Default 0
 }
 
+export interface PromptVersionDto {
+    versionNumber: number;
+    status: string; // "Draft", "Published", "Active", "Deprecated", "Archived"
+    capability: number;
+    createdAt: string;
+}
+
+export interface PromptTemplateDetailsDto {
+    id: string;
+    identifier: string;
+    name: string;
+    description: string;
+    purpose: number;
+    tags: string[];
+    versions: PromptVersionDto[];
+}
+
 export const getPromptTemplates = async (): Promise<
     PromptTemplateSummary[]
 > => {
@@ -110,5 +127,23 @@ export const activatePromptVersion = async (
 ): Promise<void> => {
     await httpClient.post(
         `/prompt-templates/${id}/versions/${versionNumber}/activate`,
+    );
+};
+
+export const getPromptTemplate = async (
+    identifier: string,
+): Promise<PromptTemplateDetailsDto> => {
+    const response = await httpClient.get<PromptTemplateDetailsDto>(
+        `/prompt-templates/${identifier}`,
+    );
+    return response.data;
+};
+
+export const publishPromptVersion = async (
+    id: string,
+    versionNumber: number,
+): Promise<void> => {
+    await httpClient.post(
+        `/prompt-templates/${id}/versions/${versionNumber}/publish`,
     );
 };

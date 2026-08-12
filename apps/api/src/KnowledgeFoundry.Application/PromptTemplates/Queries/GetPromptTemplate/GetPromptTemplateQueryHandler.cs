@@ -34,7 +34,13 @@ public sealed class GetPromptTemplateQueryHandler
             template.Name.Value,
             template.Description.Value,
             template.Purpose,
-            template.Tags.Select(t => t.Value).ToList().AsReadOnly());
+            template.Tags.Select(t => t.Value).ToList().AsReadOnly(),
+            Versions: template.Versions.Select(v => new PromptVersionDto(
+                v.VersionNumber.Value,
+                v.Status.ToString(), // Converts Enum to string like "Draft"
+                (int)v.Capability,
+                v.CreatedAt
+            )).ToList());
 
         return Result<PromptTemplateDto>.Success(dto);
     }

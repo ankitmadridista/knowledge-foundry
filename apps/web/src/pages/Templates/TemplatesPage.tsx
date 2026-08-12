@@ -64,7 +64,7 @@ export function TemplatesPage() {
                         <div
                             key={template.id}
                             onClick={() =>
-                                navigate(`/templates/${template.identifier}`)
+                                navigate(`/templates/${template.id}`)
                             }
                             className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg transition-shadow cursor-pointer flex flex-col"
                         >
