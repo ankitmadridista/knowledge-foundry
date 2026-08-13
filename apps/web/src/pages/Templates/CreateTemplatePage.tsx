@@ -216,7 +216,7 @@ export function CreateTemplatePage() {
                         disabled={isSubmitting}
                         className="px-6 py-2 rounded-md font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400"
                     >
-                        {isSubmitting ? "Creating & Activating..." : "Save"}
+                        {isSubmitting ? "Saving..." : "Save"}
                     </button>
                 </div>
             </form>
