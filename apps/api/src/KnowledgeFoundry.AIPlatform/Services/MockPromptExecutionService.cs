@@ -1,7 +1,6 @@
-using KnowledgeFoundry.Application.Abstractions.Services;
 using KnowledgeFoundry.Application.PromptTemplates.Queries.GetActivePromptPayload;
 
-namespace KnowledgeFoundry.Infrastructure.Services;
+namespace KnowledgeFoundry.Application.Abstractions.Services;
 
 internal sealed class MockPromptExecutionService : IPromptExecutionService
 {

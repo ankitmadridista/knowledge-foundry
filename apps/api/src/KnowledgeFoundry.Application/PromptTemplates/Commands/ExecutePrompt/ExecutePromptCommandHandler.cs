@@ -53,7 +53,7 @@ public sealed class ExecutePromptCommandHandler
             var result = await _executionService.ExecuteAsync(injectedMessages, cancellationToken);
             return Result<string>.Success(result);
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
             return Result<string>.Failure(new Error("Execution.Failed", ex.Message));
         }

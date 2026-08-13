@@ -29,6 +29,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddAIPlatform();
+
 var app = builder.Build();
 
 app.UseSwagger();
