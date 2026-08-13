@@ -70,6 +70,20 @@ export interface PromptTemplateDetailsDto {
     versions: PromptVersionDto[];
 }
 
+export interface PromptMessageDetailsDto {
+    role: number;
+    content: string;
+    order: number;
+}
+
+export interface PromptVersionDetailsDto {
+    versionNumber: number;
+    status: number | string; // Handle both integer and string enum serialization
+    capability: number;
+    createdAt: string;
+    messages: PromptMessageDetailsDto[];
+}
+
 export const getPromptTemplates = async (): Promise<
     PromptTemplateSummary[]
 > => {
@@ -146,4 +160,14 @@ export const publishPromptVersion = async (
     await httpClient.post(
         `/prompt-templates/${id}/versions/${versionNumber}/publish`,
     );
+};
+
+export const getPromptVersion = async (
+    id: string,
+    versionNumber: number,
+): Promise<PromptVersionDetailsDto> => {
+    const response = await httpClient.get<PromptVersionDetailsDto>(
+        `/prompt-templates/${id}/versions/${versionNumber}`,
+    );
+    return response.data;
 };
