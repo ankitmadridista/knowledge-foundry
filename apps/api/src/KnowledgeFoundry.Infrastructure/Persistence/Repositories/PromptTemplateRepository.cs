@@ -1,6 +1,6 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
+using KnowledgeFoundry.Domain.PromptTemplates;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Immutable;
 
 namespace KnowledgeFoundry.Infrastructure.Persistence.Repositories;
 
@@ -67,5 +67,22 @@ internal sealed class PromptTemplateRepository
             .Include(x => x.Tags)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<PromptTemplateVersion?> GetVersionAsync(
+        Guid templateId,
+        int versionNumber,
+        CancellationToken cancellationToken)
+    {
+        // 1. Fetch the Aggregate Root, and only Include the specific version we want
+        var template = await _dbContext.PromptTemplates
+            .Include(t => t.Versions.Where(v => v.VersionNumber.Value == versionNumber))
+                .ThenInclude(v => v.Messages) // We need the messages for the UI!
+            .FirstOrDefaultAsync(
+                t => t.Id == templateId,
+                cancellationToken);
+
+         //2. Return the single version, or null if not found
+        return template?.Versions.FirstOrDefault();
     }
 }

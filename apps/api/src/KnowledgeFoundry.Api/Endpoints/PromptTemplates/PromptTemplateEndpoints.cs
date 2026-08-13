@@ -1,9 +1,12 @@
 using KnowledgeFoundry.Application.Common.Errors;
+using KnowledgeFoundry.Application.Common.Models;
 using KnowledgeFoundry.Application.PromptTemplates.Commands.ActivatePromptVersion;
 using KnowledgeFoundry.Application.PromptTemplates.Commands.CreatePromptTemplate;
 using KnowledgeFoundry.Application.PromptTemplates.Commands.CreatePromptVersion;
 using KnowledgeFoundry.Application.PromptTemplates.Commands.PublishPromptVersion;
 using KnowledgeFoundry.Application.PromptTemplates.Queries.GetPromptTemplate;
+using KnowledgeFoundry.Application.PromptTemplates.Queries.GetPromptTemplates;
+using KnowledgeFoundry.Application.PromptTemplates.Queries.GetPromptVersion;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using MediatR;
 
@@ -54,6 +57,9 @@ public static class PromptTemplateEndpoints
         group.MapPost("/{identifier}/execute", ExecutePrompt);
 
         group.MapGet("/", GetPromptTemplates);
+
+        group.MapGet("{id:guid}/versions/{versionNumber:int}", GetPromptVersion)
+            .WithName("GetPromptVersion"); ;
     }
 
     private static async Task<IResult> CreatePromptTemplate(
@@ -206,7 +212,24 @@ public static class PromptTemplateEndpoints
         ISender sender,
         CancellationToken cancellationToken)
     {
-        var query = new Application.PromptTemplates.Queries.GetPromptTemplates.GetPromptTemplatesQuery();
+        var query = new GetPromptTemplatesQuery();
+        var result = await sender.Send(query, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return Results.BadRequest(result.Error);
+        }
+
+        return Results.Ok(result.Value);
+    }
+
+    private static async Task<IResult> GetPromptVersion(
+        Guid id,
+        int versionNumber,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetPromptVersionQuery(id, versionNumber);
         var result = await sender.Send(query, cancellationToken);
 
         if (result.IsFailure)

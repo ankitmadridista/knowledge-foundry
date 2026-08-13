@@ -1,3 +1,5 @@
+using KnowledgeFoundry.Domain.PromptTemplates;
+
 namespace KnowledgeFoundry.Application.Abstractions.Persistence;
 
 public interface IPromptTemplateRepository
@@ -15,4 +17,10 @@ public interface IPromptTemplateRepository
         CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<PromptTemplate>> GetAllAsync(CancellationToken cancellationToken = default);
+
+
+    Task<PromptTemplateVersion?> GetVersionAsync(
+        Guid templateId,
+        int versionNumber,
+        CancellationToken cancellationToken);
 }

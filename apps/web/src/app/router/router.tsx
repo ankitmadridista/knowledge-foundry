@@ -6,6 +6,7 @@ import { TemplatesPage } from "@/pages/Templates/TemplatesPage";
 import { TemplateExecutionPage } from "@/pages/Templates/TemplateExecutionPage";
 import { CreateTemplatePage } from "@/pages/Templates/CreateTemplatePage";
 import { TemplateDetailsPage } from "@/pages/Templates/TemplateDetailsPage";
+import { CreateVersionPage } from "@/pages/Templates/CreateVersionPage";
 
 export const router = createBrowserRouter([
     {
@@ -27,6 +28,10 @@ export const router = createBrowserRouter([
             {
                 path: "templates/:identifier",
                 element: <TemplateDetailsPage />,
+            },
+            {
+                path: "templates/:identifier/versions/new",
+                element: <CreateVersionPage />,
             },
             {
                 path: "templates/:identifier/execute",

@@ -136,7 +136,14 @@ export function TemplateDetailsPage() {
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                         Version History
                     </h2>
-                    <button className="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded hover:bg-blue-100 transition-colors">
+                    <button
+                        onClick={() =>
+                            navigate(
+                                `/templates/${template.id}/versions/new`,
+                            )
+                        }
+                        className="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded hover:bg-blue-100 transition-colors font-medium border border-blue-200 shadow-sm"
+                    >
                         + New Version
                     </button>
                 </div>
