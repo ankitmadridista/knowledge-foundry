@@ -210,9 +210,9 @@ export function TemplateExecutionPage() {
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             {varName}
                                         </label>
-                                        <input
-                                            type="text"
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white font-mono text-sm"
+                                        <textarea
+                                            rows={5}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm resize-y"
                                             placeholder={`Enter ${varName}...`}
                                             value={
                                                 variableValues[varName] || ""
