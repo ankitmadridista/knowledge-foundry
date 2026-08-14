@@ -35,7 +35,7 @@ export function HeroSection() {
                             variant="secondary"
                             onClick={() =>
                                 window.open(
-                                    "https://github.com/your-username/knowledge-foundry",
+                                    "https://github.com/ankitmadridista/knowledge-foundry",
                                     "_blank",
                                 )
                             }
