@@ -8,6 +8,11 @@ import {
 } from "@/features/prompt-templates/api/promptTemplatesApi";
 import ReactMarkdown, { type Components } from "react-markdown";
 
+// Import your custom Design System components
+import { Section, Container } from "@/shared/components/layout";
+import { Heading, Text, Button, Card, Label, Textarea, Badge } from "@/shared/components/ui";
+
+// 1. Fully type-safe helper: No 'any', no unused variables!
 const cleanProps = <T extends object>(props: T) => {
     const rest = { ...props } as Record<string, unknown>;
     delete rest.node;
@@ -15,64 +20,47 @@ const cleanProps = <T extends object>(props: T) => {
     return rest as Omit<T, "node" | "inline">;
 };
 
+// 2. Premium Markdown styling using your Zinc/Indigo theme
 const markdownComponents: Components = {
     h1: (props) => (
-        <h1
-            className="text-2xl font-bold mb-4 text-gray-900 dark:text-white"
-            {...cleanProps(props)}
-        />
+        <h1 className="text-2xl font-bold mb-4 text-zinc-100" {...cleanProps(props)} />
     ),
     h2: (props) => (
-        <h2
-            className="text-xl font-bold mb-3 mt-6 text-gray-900 dark:text-white"
-            {...cleanProps(props)}
-        />
+        <h2 className="text-xl font-bold mb-3 mt-6 text-zinc-100 border-b border-zinc-800 pb-2" {...cleanProps(props)} />
     ),
     h3: (props) => (
-        <h3
-            className="text-lg font-bold mb-2 mt-4 text-gray-900 dark:text-white"
-            {...cleanProps(props)}
-        />
+        <h3 className="text-lg font-bold mb-2 mt-4 text-zinc-100" {...cleanProps(props)} />
     ),
-    p: (props) => <p className="mb-4 leading-relaxed" {...cleanProps(props)} />,
+    p: (props) => <p className="mb-4 leading-relaxed text-zinc-300" {...cleanProps(props)} />,
     ul: (props) => (
-        <ul className="list-disc pl-6 mb-4 space-y-1" {...cleanProps(props)} />
+        <ul className="list-disc pl-6 mb-4 space-y-1 text-zinc-300" {...cleanProps(props)} />
     ),
     ol: (props) => (
-        <ol
-            className="list-decimal pl-6 mb-4 space-y-1"
-            {...cleanProps(props)}
-        />
+        <ol className="list-decimal pl-6 mb-4 space-y-1 text-zinc-300" {...cleanProps(props)} />
     ),
     li: (props) => <li className="pl-1" {...cleanProps(props)} />,
     strong: (props) => (
-        <strong
-            className="font-semibold text-gray-900 dark:text-white"
-            {...cleanProps(props)}
-        />
+        <strong className="font-semibold text-zinc-100" {...cleanProps(props)} />
     ),
     blockquote: (props) => (
         <blockquote
-            className="border-l-4 border-blue-500 pl-4 py-1 mb-4 bg-blue-50 dark:bg-gray-800 italic"
+            className="border-l-4 border-indigo-500 pl-4 py-2 mb-4 bg-indigo-500/10 italic text-zinc-300 rounded-r-lg"
             {...cleanProps(props)}
         />
     ),
     code: (props) => {
         const rest = cleanProps(props);
-
-        // Check if code is inline (no language class and no line breaks)
-        const isInline =
-            !props.className && !String(props.children).includes("\n");
+        const isInline = !props.className && !String(props.children).includes("\n");
 
         return isInline ? (
             <code
-                className="bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded text-sm font-mono text-pink-600 dark:text-pink-400"
+                className="bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono text-indigo-300"
                 {...rest}
             >
                 {props.children}
             </code>
         ) : (
-            <pre className="bg-gray-800 text-gray-100 p-4 rounded-md overflow-x-auto mb-4 text-sm font-mono shadow-inner">
+            <pre className="bg-zinc-950 border border-zinc-800 text-zinc-300 p-4 rounded-xl overflow-x-auto mb-4 text-sm font-mono shadow-inner">
                 <code className={props.className} {...rest}>
                     {props.children}
                 </code>
@@ -85,13 +73,8 @@ export function TemplateExecutionPage() {
     const { identifier } = useParams<{ identifier: string }>();
     const navigate = useNavigate();
 
-    const [payload, setPayload] = useState<PromptTemplatePayloadDto | null>(
-        null,
-    );
-    const [variableValues, setVariableValues] = useState<
-        Record<string, string>
-    >({});
-
+    const [payload, setPayload] = useState<PromptTemplatePayloadDto | null>(null);
+    const [variableValues, setVariableValues] = useState<Record<string, string>>({});
     const [isLoading, setIsLoading] = useState(true);
     const [isExecuting, setIsExecuting] = useState(false);
     const [result, setResult] = useState<ExecuteTemplateResponse | null>(null);
@@ -105,16 +88,13 @@ export function TemplateExecutionPage() {
                 const data = await getActivePayload(identifier);
                 setPayload(data);
 
-                // Initialize state with default values if they exist
                 const initialVars: Record<string, string> = {};
                 data.variables.forEach((v) => {
                     initialVars[v.name] = v.defaultValue || "";
                 });
                 setVariableValues(initialVars);
             } catch (err) {
-                setError(
-                    `Failed to load template payload. It may not exist or has no published versions. ${err}`,
-                );
+                setError(`Failed to load template payload. It may not exist or has no active versions. ${err}`);
             } finally {
                 setIsLoading(false);
             }
@@ -137,9 +117,7 @@ export function TemplateExecutionPage() {
             });
             setResult(response);
         } catch (err) {
-            setError(
-                `Execution failed. Please check your inputs and try again. ${err}`,
-            );
+            setError(`Execution failed. Please check your inputs and try again. ${err}`);
         } finally {
             setIsExecuting(false);
         }
@@ -147,146 +125,117 @@ export function TemplateExecutionPage() {
 
     if (isLoading)
         return (
-            <div className="text-center py-12">
-                Loading template configuration...
+            <div className="text-center py-20">
+                <Text className="text-zinc-500 animate-pulse">Loading execution environment...</Text>
             </div>
         );
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
-            <button
-                onClick={() => navigate("/templates")}
-                className="text-blue-600 hover:underline mb-6 flex items-center gap-2"
-            >
-                &larr; Back to Templates
-            </button>
+        <Section>
+            <Container>
+                {/* Back Button */}
+                <button
+                    onClick={() => navigate("/templates")}
+                    className="text-indigo-400 hover:text-indigo-300 transition-colors mb-6 flex items-center gap-2 text-sm font-medium"
+                >
+                    &larr; Back to Templates
+                </button>
 
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                        Execute: {identifier}
-                    </h1>
-                    <p className="text-gray-500 mt-2">
-                        Version {payload?.versionNumber}
-                    </p>
-                </div>
-            </div>
-
-            {error && (
-                <div className="bg-red-50 text-red-600 p-4 rounded-md mb-6 border border-red-200">
-                    {error}
-                </div>
-            )}
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Left Side: Inputs */}
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                    <h2 className="text-xl font-semibold mb-4 dark:text-white">
-                        Variables
-                    </h2>
-
-                    {payload?.variables.length === 0 ? (
-                        <p className="text-gray-500 italic mb-6">
-                            This template does not require any variables.
-                        </p>
-                    ) : (
-                        <div className="space-y-4 mb-6">
-                            {payload?.variables
-                                // 1. Safely extract the string name regardless of backend JSON structure
-                                .map((v) =>
-                                    typeof v === "string"
-                                        ? v
-                                        : v.name || v.defaultValue,
-                                )
-                                // 2. Deduplicate
-                                .filter(
-                                    (varName): varName is string =>
-                                        typeof varName === "string" &&
-                                        varName.length > 0,
-                                )
-                                // 3. Render
-                                .map((varName) => (
-                                    <div key={varName}>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            {varName}
-                                        </label>
-                                        <textarea
-                                            rows={5}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm resize-y"
-                                            placeholder={`Enter ${varName}...`}
-                                            value={
-                                                variableValues[varName] || ""
-                                            }
-                                            onChange={(e) =>
-                                                handleVariableChange(
-                                                    varName,
-                                                    e.target.value,
-                                                )
-                                            }
-                                        />
-                                    </div>
-                                ))}
-                        </div>
-                    )}
-
-                    <button
-                        onClick={handleExecute}
-                        disabled={isExecuting}
-                        className={`w-full py-3 rounded-md font-medium text-white transition-colors ${
-                            isExecuting
-                                ? "bg-blue-400 cursor-not-allowed"
-                                : "bg-blue-600 hover:bg-blue-700"
-                        }`}
-                    >
-                        {isExecuting ? "Generating..." : "Execute Prompt"}
-                    </button>
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                    <div>
+                        <Heading className="flex items-center gap-4">
+                            {identifier}
+                            <Badge variant="brand">v{payload?.versionNumber}</Badge>
+                        </Heading>
+                        <Text className="mt-2 text-zinc-400">
+                            Provide the necessary variables to execute this prompt.
+                        </Text>
+                    </div>
                 </div>
 
-                {/* Right Side: Result */}
-                <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700 min-h-100 flex flex-col">
-                    <h2 className="text-xl font-semibold mb-4 dark:text-white">
-                        AI Output
-                    </h2>
+                {error && (
+                    <Card className="p-4 mb-6 border-red-500/20 bg-red-500/10">
+                        <Text className="text-red-400">{error}</Text>
+                    </Card>
+                )}
 
-                    {result ? (
-                        <div className="flex-1 flex flex-col">
-                            <div className="flex-1 p-4 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 shadow-inner overflow-y-auto">
-                                <div className="text-gray-800 dark:text-gray-300">
-                                    <ReactMarkdown
-                                        components={markdownComponents}
-                                    >
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Left Side: Inputs */}
+                    <Card className="p-6 md:p-8 flex flex-col">
+                        <h2 className="text-xl font-bold text-zinc-100 mb-6 border-b border-zinc-800 pb-4">
+                            Variables
+                        </h2>
+
+                        {payload?.variables.length === 0 ? (
+                            <Text className="text-zinc-500 italic mb-6">
+                                This template does not require any variables.
+                            </Text>
+                        ) : (
+                            <div className="space-y-6 mb-8 flex-1">
+                                {payload?.variables
+                                    .map((v) => (typeof v === "string" ? v : v.name || v.defaultValue))
+                                    .filter((varName): varName is string => typeof varName === "string" && varName.length > 0)
+                                    .map((varName) => (
+                                        <div key={varName}>
+                                            <Label>{varName}</Label>
+                                            <Textarea
+                                                rows={5}
+                                                className="font-mono text-sm"
+                                                placeholder={`Enter ${varName}...`}
+                                                value={variableValues[varName] || ""}
+                                                onChange={(e) => handleVariableChange(varName, e.target.value)}
+                                            />
+                                        </div>
+                                    ))}
+                            </div>
+                        )}
+
+                        <Button
+                            onClick={handleExecute}
+                            disabled={isExecuting}
+                            className={`w-full justify-center ${isExecuting ? "opacity-50 cursor-not-allowed" : ""}`}
+                        >
+                            {isExecuting ? "Generating..." : "Execute Prompt"}
+                        </Button>
+                    </Card>
+
+                    {/* Right Side: Result */}
+                    <Card className="p-6 md:p-8 min-h-125 flex flex-col">
+                        <h2 className="text-xl font-bold text-zinc-100 mb-6 border-b border-zinc-800 pb-4">
+                            AI Output
+                        </h2>
+
+                        {result ? (
+                            <div className="flex-1 flex flex-col">
+                                {/* Markdown Container */}
+                                <div className="flex-1 bg-zinc-950/50 rounded-xl border border-zinc-800 p-6 overflow-y-auto max-h-150">
+                                    <ReactMarkdown components={markdownComponents}>
                                         {result.response}
                                     </ReactMarkdown>
                                 </div>
+
+                                {/* Telemetry Footer */}
+                                <div className="mt-6 flex flex-wrap gap-4 pt-4 border-t border-zinc-800">
+                                    <Badge variant="neutral">
+                                        Model: <span className="text-zinc-100 ml-1">{result.model}</span>
+                                    </Badge>
+                                    <Badge variant="neutral">
+                                        Tokens: <span className="text-zinc-100 ml-1">{result.tokensUsed}</span>
+                                    </Badge>
+                                    <Badge variant="neutral">
+                                        Time: <span className="text-zinc-100 ml-1">{result.executionTimeMs}ms</span>
+                                    </Badge>
+                                </div>
                             </div>
-                            <div className="mt-4 flex gap-4 text-xs text-gray-500">
-                                <span>
-                                    Model:{" "}
-                                    <span className="font-medium">
-                                        {result.model}
-                                    </span>
-                                </span>
-                                <span>
-                                    Tokens:{" "}
-                                    <span className="font-medium">
-                                        {result.tokensUsed}
-                                    </span>
-                                </span>
-                                <span>
-                                    Time:{" "}
-                                    <span className="font-medium">
-                                        {result.executionTimeMs}ms
-                                    </span>
-                                </span>
+                        ) : (
+                            <div className="flex-1 flex items-center justify-center border-2 border-dashed border-zinc-800 rounded-xl bg-zinc-900/50">
+                                <Text className="text-zinc-500">Waiting for execution...</Text>
                             </div>
-                        </div>
-                    ) : (
-                        <div className="flex-1 flex items-center justify-center text-gray-400 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-md">
-                            Waiting for execution...
-                        </div>
-                    )}
+                        )}
+                    </Card>
                 </div>
-            </div>
-        </div>
+            </Container>
+        </Section>
     );
 }

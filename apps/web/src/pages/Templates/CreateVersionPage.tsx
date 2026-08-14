@@ -7,13 +7,15 @@ import {
     type PromptTemplateDetailsDto,
 } from "@/features/prompt-templates/api/promptTemplatesApi";
 
+// Import your custom Design System components
+import { Section, Container } from "@/shared/components/layout";
+import { Heading, Text, Button, Card, Label, Textarea } from "@/shared/components/ui";
+
 export function CreateVersionPage() {
     const { identifier } = useParams<{ identifier: string }>();
     const navigate = useNavigate();
 
-    const [template, setTemplate] = useState<PromptTemplateDetailsDto | null>(
-        null,
-    );
+    const [template, setTemplate] = useState<PromptTemplateDetailsDto | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -39,7 +41,7 @@ export function CreateVersionPage() {
                         ...templateData.versions.map((v) => v.versionNumber),
                     );
 
-                    // 2. Fetch the actual text for that version using your new endpoint!
+                    // 2. Fetch the actual text for that version
                     const versionData = await getPromptVersion(
                         templateData.id,
                         latestVersionNum,
@@ -102,98 +104,106 @@ export function CreateVersionPage() {
 
     if (isLoading)
         return (
-            <div className="text-center py-12">Loading previous version...</div>
+            <Section>
+                <Container>
+                    <div className="text-center py-20">
+                        <Text className="text-zinc-500 animate-pulse">Loading previous version...</Text>
+                    </div>
+                </Container>
+            </Section>
         );
+
     if (!template)
         return (
-            <div className="text-center py-12 text-red-500">
-                Template not found.
-            </div>
+            <Section>
+                <Container>
+                    <div className="text-center py-20">
+                        <Text className="text-red-500">Template not found.</Text>
+                    </div>
+                </Container>
+            </Section>
         );
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
-            <button
-                onClick={() => navigate(`/templates/${identifier}`)}
-                className="text-blue-600 hover:underline mb-6 flex items-center gap-2"
-            >
-                &larr; Back to {template.name}
-            </button>
-
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    Create New Version
-                </h1>
-                <p className="text-gray-500 mt-2">
-                    Editing a copy of the latest version. Saving will create a
-                    new <strong>Draft</strong>.
-                </p>
-            </div>
-
-            {error && (
-                <div className="bg-red-50 text-red-600 p-4 rounded-md mb-6 border border-red-200">
-                    {error}
-                </div>
-            )}
-
-            <form
-                onSubmit={handleSubmit}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 md:p-8 space-y-6"
-            >
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        System Context <span className="text-red-500">*</span>
-                    </label>
-                    <p className="text-xs text-gray-500 mb-2">
-                        Instructions guiding the AI. Use {"{VariableName}"} for
-                        inputs.
-                    </p>
-                    <textarea
-                        required
-                        value={systemContext}
-                        onChange={(e) => setSystemContext(e.target.value)}
-                        rows={4}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white font-mono text-sm"
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        User Message <span className="text-red-500">*</span>
-                    </label>
-                    <p className="text-xs text-gray-500 mb-2">
-                        The actual prompt payload.
-                    </p>
-                    <textarea
-                        required
-                        value={userMessage}
-                        onChange={(e) => setUserMessage(e.target.value)}
-                        rows={8}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white font-mono text-sm"
-                    />
-                </div>
-
-                <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+        <Section>
+            <Container>
+                <div className="mx-auto max-w-4xl">
+                    {/* Back Button */}
                     <button
-                        type="button"
                         onClick={() => navigate(`/templates/${identifier}`)}
-                        className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md mr-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                        className="text-indigo-400 hover:text-indigo-300 transition-colors mb-6 flex items-center gap-2 text-sm font-medium"
                     >
-                        Cancel
+                        &larr; Back to {template.name}
                     </button>
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className={`px-6 py-2 rounded-md font-medium text-white transition-colors ${
-                            isSubmitting
-                                ? "bg-blue-400 cursor-not-allowed"
-                                : "bg-blue-600 hover:bg-blue-700"
-                        }`}
-                    >
-                        {isSubmitting ? "Saving..." : "Save New Version"}
-                    </button>
+
+                    {/* Header */}
+                    <div className="mb-8">
+                        <Heading>Create New Version</Heading>
+                        <Text className="mt-2 text-zinc-400">
+                            Editing a copy of the latest version. Saving will create a new <strong className="text-zinc-200">Draft</strong>.
+                        </Text>
+                    </div>
+
+                    {/* Error State */}
+                    {error && (
+                        <Card className="p-4 mb-6 border-red-500/20 bg-red-500/10">
+                            <Text className="text-red-400">{error}</Text>
+                        </Card>
+                    )}
+
+                    {/* The Form */}
+                    <Card className="p-6 md:p-8">
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            
+                            <div>
+                                <Label>System Context *</Label>
+                                <Text className="text-xs text-zinc-500 mb-3">
+                                    Instructions guiding the AI. Use {"{VariableName}"} for inputs.
+                                </Text>
+                                <Textarea
+                                    required
+                                    value={systemContext}
+                                    onChange={(e) => setSystemContext(e.target.value)}
+                                    rows={4}
+                                    className="font-mono text-sm"
+                                />
+                            </div>
+
+                            <div>
+                                <Label>User Message *</Label>
+                                <Text className="text-xs text-zinc-500 mb-3">
+                                    The actual prompt payload.
+                                </Text>
+                                <Textarea
+                                    required
+                                    value={userMessage}
+                                    onChange={(e) => setUserMessage(e.target.value)}
+                                    rows={8}
+                                    className="font-mono text-sm"
+                                />
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex justify-end gap-4 pt-6 mt-6 border-t border-zinc-800">
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    onClick={() => navigate(`/templates/${identifier}`)}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className={isSubmitting ? "opacity-50 cursor-not-allowed" : ""}
+                                >
+                                    {isSubmitting ? "Saving..." : "Save New Version"}
+                                </Button>
+                            </div>
+                        </form>
+                    </Card>
                 </div>
-            </form>
-        </div>
+            </Container>
+        </Section>
     );
 }

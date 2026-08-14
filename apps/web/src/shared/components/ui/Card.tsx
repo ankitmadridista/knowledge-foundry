@@ -1,11 +1,15 @@
-import type { PropsWithChildren } from "react";
+import type { HTMLAttributes } from "react";
 
+// By extending HTMLAttributes<HTMLDivElement>, this component automatically
+// supports className, onClick, and all other standard div props!
 export function Card({
-  children
-}: PropsWithChildren) {
-  return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-      {children}
-    </div>
-  );
+    className = "",
+    ...props
+}: HTMLAttributes<HTMLDivElement>) {
+    return (
+        <div
+            className={`rounded-2xl border border-zinc-800 bg-zinc-900 shadow-sm overflow-hidden ${className}`}
+            {...props}
+        />
+    );
 }
