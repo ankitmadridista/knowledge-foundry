@@ -1,4 +1,5 @@
 using KnowledgeFoundry.AIPlatform;
+using KnowledgeFoundry.Api.Endpoints.ContextPacks;
 using KnowledgeFoundry.Api.Endpoints.PromptTemplates;
 using KnowledgeFoundry.Application.DependencyInjection;
 using KnowledgeFoundry.Infrastructure;
@@ -47,6 +48,7 @@ app.UseCors("AllowFrontend");
 
 // Map our feature endpoints
 app.MapPromptTemplateEndpoints();
+app.MapContextPackEndpoints();
 
 // Apply database migrations automatically on startup
 using (var scope = app.Services.CreateScope())
