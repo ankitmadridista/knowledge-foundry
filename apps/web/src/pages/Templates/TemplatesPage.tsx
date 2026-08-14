@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import {
     getPromptTemplates,
     type PromptTemplateSummary,
 } from "@/features/prompt-templates/api/promptTemplatesApi";
-import { useNavigate } from "react-router-dom";
+
+// 1. Import your brand new Design System!
+import { Section, Container } from "@/shared/components/layout";
+import { Heading, Text, Button, Card } from "@/shared/components/ui";
 
 export function TemplatesPage() {
     const [templates, setTemplates] = useState<PromptTemplateSummary[]>([]);
@@ -19,7 +24,7 @@ export function TemplatesPage() {
             } catch (err) {
                 console.error("Failed to fetch templates:", err);
                 setError(
-                    "Failed to load prompt templates. Is the backend running?",
+                    "Failed to load prompt templates. Is the backend running?"
                 );
             } finally {
                 setIsLoading(false);
@@ -30,71 +35,88 @@ export function TemplatesPage() {
     }, []);
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                        Prompt Library
-                    </h1>
-                    <p className="text-gray-500 mt-2">
-                        Manage and execute your AI prompt templates.
-                    </p>
+        <Section>
+            <Container>
+                {/* Header Section */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 gap-4">
+                    <div>
+                        <Heading>Prompt Library</Heading>
+                        <Text className="mt-2 text-zinc-400">
+                            Manage and execute your AI prompt templates.
+                        </Text>
+                    </div>
+                    <Button onClick={() => navigate("/templates/new")}>
+                        + New Template
+                    </Button>
                 </div>
-                <button
-                    onClick={() => navigate("/templates/new")}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors"
-                >
-                    + New Template
-                </button>
-            </div>
 
-            {isLoading && (
-                <div className="text-center py-10">Loading templates...</div>
-            )}
+                {/* State: Loading */}
+                {isLoading && (
+                    <div className="py-20 text-center">
+                        <Text className="text-zinc-500 animate-pulse">Loading templates...</Text>
+                    </div>
+                )}
 
-            {error && (
-                <div className="bg-red-50 text-red-600 p-4 rounded-md mb-6 border border-red-200">
-                    {error}
-                </div>
-            )}
+                {/* State: Error */}
+                {error && (
+                    <Card className="p-6 border-red-500/20 bg-red-500/10">
+                        <Text className="text-red-400 text-center">{error}</Text>
+                    </Card>
+                )}
 
-            {!isLoading && !error && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {templates.map((template) => (
-                        <div
-                            key={template.id}
-                            onClick={() =>
-                                navigate(`/templates/${template.id}`)
-                            }
-                            className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg transition-shadow cursor-pointer flex flex-col"
-                        >
-                            <div className="flex justify-between items-start mb-4">
-                                <span className="text-xs font-mono bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded">
-                                    {template.identifier}
-                                </span>
-                            </div>
+                {/* State: Empty */}
+                {!isLoading && !error && templates.length === 0 && (
+                    <Card className="py-20 text-center border-dashed border-zinc-700 bg-transparent">
+                        <Text className="text-zinc-500 mb-6">No prompt templates found.</Text>
+                        <Button variant="secondary" onClick={() => navigate("/templates/new")}>
+                            Create your first template
+                        </Button>
+                    </Card>
+                )}
 
-                            <h3 className="text-lg font-semibold mb-2 dark:text-white">
-                                {template.name}
-                            </h3>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
-                                {template.description}
-                            </p>
-
-                            <div className="flex flex-wrap gap-2 mt-auto">
-                                {template.tags.map((tag) => (
-                                    <span
-                                        key={tag}
-                                        className="text-xs bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded-full"
-                                    >
-                                        {tag}
+                {/* State: Data Grid */}
+                {!isLoading && !error && templates.length > 0 && (
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {templates.map((template) => (
+                            <Card 
+                                key={template.id} 
+                                className="flex flex-col h-full p-6 transition-colors hover:border-indigo-500/30 cursor-pointer"
+                                onClick={() => navigate(`/templates/${template.id}`)}
+                            >
+                                <div className="flex justify-between items-start mb-4">
+                                    <span className="text-xs font-mono bg-zinc-800 text-zinc-400 px-2 py-1 rounded">
+                                        {template.identifier}
                                     </span>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
+                                </div>
+                                
+                                <h3 className="text-lg font-bold text-zinc-100 mb-2">
+                                    {template.name}
+                                </h3>
+
+                                <Text className="text-sm text-zinc-400 line-clamp-2 mb-6 flex-1">
+                                    {template.description || "No description provided."}
+                                </Text>
+
+                                {/* Tags Footer */}
+                                {template.tags && template.tags.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mt-auto pt-4 border-t border-zinc-800">
+                                        {template.tags.slice(0, 3).map((tag) => (
+                                            <span key={tag} className="text-xs text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 px-2 py-1 rounded-md">
+                                                {tag}
+                                            </span>
+                                        ))}
+                                        {template.tags.length > 3 && (
+                                            <span className="text-xs text-zinc-500 px-2 py-1">
+                                                +{template.tags.length - 3}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+                            </Card>
+                        ))}
+                    </div>
+                )}
+            </Container>
+        </Section>
     );
 }

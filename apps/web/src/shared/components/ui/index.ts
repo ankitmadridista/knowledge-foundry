@@ -8,3 +8,6 @@ export * from "./TechnologyCard";
 export * from "./WorkflowStep";
 export * from "./ArchitectureCard";
 export * from "./RoadmapCard";
+export * from "./Input";
+export * from "./Label";
+export * from "./Textarea";

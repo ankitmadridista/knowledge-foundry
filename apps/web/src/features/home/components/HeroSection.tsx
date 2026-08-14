@@ -1,12 +1,17 @@
 import { Badge, Button, Heading, Text } from "@/shared/components/ui";
 import { Container, Section } from "@/shared/components/layout";
+import { useNavigate } from "react-router-dom"; // <-- Add this import
 
 export function HeroSection() {
+    const navigate = useNavigate(); // <-- Initialize navigation hook
+
     return (
         <Section>
             <Container>
                 <div className="mx-auto max-w-4xl text-center">
-                    <Badge>AI Engineering Portfolio Project</Badge>
+                    <Badge variant="brand">
+                        AI Engineering Project
+                    </Badge>
 
                     <Heading className="mt-8">
                         Forge Better Learning with AI
@@ -20,9 +25,23 @@ export function HeroSection() {
                     </Text>
 
                     <div className="mt-10 flex justify-center gap-4">
-                        <Button>Get Started</Button>
+                        {/* Wire up the click handler to go to templates */}
+                        <Button onClick={() => navigate("/templates")}>
+                            Launch Platform
+                        </Button>
 
-                        <Button variant="secondary">GitHub</Button>
+                        {/* Optionally make this point to your repo */}
+                        <Button
+                            variant="secondary"
+                            onClick={() =>
+                                window.open(
+                                    "https://github.com/your-username/knowledge-foundry",
+                                    "_blank",
+                                )
+                            }
+                        >
+                            GitHub
+                        </Button>
                     </div>
                 </div>
             </Container>
