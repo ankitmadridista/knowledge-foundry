@@ -25,6 +25,8 @@ public static class DependencyInjection
 
         services.AddScoped<IContextPackRepository, ContextPackRepository>();
 
+        services.AddScoped<ILessonRepository, LessonRepository>();
+
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
         services.AddScoped<IDatabaseSeeder, DatabaseSeeder>();
