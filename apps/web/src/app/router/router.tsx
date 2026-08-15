@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
-import { HomePage } from "@/pages/Home/HomePage";
-import NotFoundPage from "@/pages/NotFound/NotFoundPage";
+import { HomePage } from "@/features/home/pages/HomePage";
+import NotFoundPage from "@/shared/pages/NotFoundPage";
 import { MainLayout } from "@/app/layouts/MainLayout";
 import { TemplatesPage } from "@/features/prompt-templates/pages/TemplatesPage";
 import { TemplateExecutionPage } from "@/features/prompt-templates/pages/TemplateExecutionPage";
