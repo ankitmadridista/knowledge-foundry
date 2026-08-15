@@ -1,4 +1,5 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
+using KnowledgeFoundry.Domain.ContextPacks;
 using KnowledgeFoundry.Infrastructure.DomainEvents;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,6 +35,7 @@ public sealed class KnowledgeFoundryDbContext
     }
 
     public DbSet<PromptTemplate> PromptTemplates => Set<PromptTemplate>();
+    public DbSet<ContextPack> ContextPacks => Set<ContextPack>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

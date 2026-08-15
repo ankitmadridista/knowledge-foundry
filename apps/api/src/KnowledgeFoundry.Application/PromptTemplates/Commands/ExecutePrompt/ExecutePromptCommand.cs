@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using KnowledgeFoundry.Application.Common.Results;
 using MediatR;
 

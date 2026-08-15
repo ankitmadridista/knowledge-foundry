@@ -23,6 +23,8 @@ public static class DependencyInjection
 
         services.AddScoped<IPromptTemplateRepository, PromptTemplateRepository>();
 
+        services.AddScoped<IContextPackRepository, ContextPackRepository>();
+
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
         return services;

@@ -17,13 +17,13 @@ export const roadmap: RoadmapItem[] = [
         title: "Prompt Templates",
         description:
             "Versioned prompt management with validation and GraphQL APIs.",
-        status: "in-progress",
+        status: "completed",
     },
     {
         title: "Context Packs",
         description:
             "Reusable contextual knowledge supplied to AI workflows.",
-        status: "planned",
+        status: "in-progress",
     },
     {
         title: "Lesson Generation",
