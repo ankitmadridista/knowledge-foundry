@@ -5,18 +5,18 @@ namespace KnowledgeFoundry.Domain.ContextPacks.Events
 {
     public sealed class ContextPackVersionPublishedDomainEvent : DomainEvent
     {
-        public Guid PromptTemplateId { get; }
+        public Guid ContextPackId { get; }
 
         public ContextVersionNumber VersionNumber { get; }
 
         public DateTime PublishedAt { get; }
 
         public ContextPackVersionPublishedDomainEvent(
-            Guid promptTemplateId,
+            Guid contextPackId,
             ContextVersionNumber versionNumber,
             DateTime publishedAt)
         {
-            PromptTemplateId = promptTemplateId;
+            ContextPackId = contextPackId;
             VersionNumber = versionNumber;
             PublishedAt = publishedAt;
         }
