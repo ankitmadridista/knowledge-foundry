@@ -4,7 +4,7 @@ import { Heading, Text } from "@/shared/components/ui";
 interface PageHeaderProps {
     title: string;
     description?: string;
-    action?: ReactNode; // Allows us to pass in any button dynamically!
+    action?: ReactNode;
 }
 
 export function PageHeader({ title, description, action }: PageHeaderProps) {
