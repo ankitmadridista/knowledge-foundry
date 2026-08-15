@@ -23,13 +23,13 @@ export const roadmap: RoadmapItem[] = [
         title: "Context Packs",
         description:
             "Reusable contextual knowledge supplied to AI workflows.",
-        status: "in-progress",
+        status: "completed",
     },
     {
         title: "Lesson Generation",
         description:
             "Generate educational content using orchestrated AI pipelines.",
-        status: "planned",
+        status: "in-progress",
     },
     {
         title: "Evaluation Engine",
