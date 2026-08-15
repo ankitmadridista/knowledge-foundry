@@ -27,6 +27,8 @@ public static class DependencyInjection
 
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
+        services.AddScoped<IDatabaseSeeder, DatabaseSeeder>();
+
         return services;
     }
 }

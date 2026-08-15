@@ -3,7 +3,7 @@ using KnowledgeFoundry.Api.Endpoints.ContextPacks;
 using KnowledgeFoundry.Api.Endpoints.PromptTemplates;
 using KnowledgeFoundry.Application.DependencyInjection;
 using KnowledgeFoundry.Infrastructure;
-using Microsoft.EntityFrameworkCore;
+using KnowledgeFoundry.Infrastructure.Persistence; // Added for IDatabaseSeeder
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,9 +19,9 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(
                 "http://localhost:3000",       // Common Next.js/React local dev port
                 "http://localhost:5173",       // Common Vite local dev port
-                "https://*.vercel.app"         // Vercel deployment wildcard (handled via pattern or explicit URLs)
+                "https://*.vercel.app"         // Vercel deployment wildcard
             )
-              .SetIsOriginAllowed(origin => true) // Handy for development: allows any origin dynamically
+              .SetIsOriginAllowed(origin => true)
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -29,8 +29,6 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Services.AddAIPlatform();
 
 var app = builder.Build();
 
@@ -50,11 +48,20 @@ app.UseCors("AllowFrontend");
 app.MapPromptTemplateEndpoints();
 app.MapContextPackEndpoints();
 
-// Apply database migrations automatically on startup
+// Apply database migrations and seed data automatically on startup!
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<KnowledgeFoundry.Infrastructure.Persistence.KnowledgeFoundryDbContext>();
-    dbContext.Database.Migrate();
+    var services = scope.ServiceProvider;
+    try
+    {
+        var seeder = services.GetRequiredService<IDatabaseSeeder>();
+        await seeder.SeedAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+    }
 }
 
 app.Run();
