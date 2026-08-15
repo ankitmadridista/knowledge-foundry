@@ -21,15 +21,18 @@ public sealed class KnowledgeFoundryDbContext
     public override async Task<int> SaveChangesAsync(
         CancellationToken cancellationToken = default)
     {
-        var result =
-            await base.SaveChangesAsync(cancellationToken);
-
+        // 1. Dispatch events FIRST. 
+        // This allows handlers to modify other entities and have them 
+        // saved in the exact same database transaction!
         if (_domainEventDispatcher is not null)
         {
             await _domainEventDispatcher.DispatchAsync(
                 this,
                 cancellationToken);
         }
+
+        // 2. THEN commit everything to the database
+        var result = await base.SaveChangesAsync(cancellationToken);
 
         return result;
     }

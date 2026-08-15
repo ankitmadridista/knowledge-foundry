@@ -2,6 +2,7 @@
   <ItemGroup>
     <PackageReference Include="MediatR" />
     <ProjectReference Include="..\KnowledgeFoundry.Domain\KnowledgeFoundry.Domain.csproj" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 </Project>
