@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Heading, Text } from "@/shared/components/ui";
 
 interface PageHeaderProps {
-    title: string;
+    title: ReactNode;
     description?: string;
     action?: ReactNode;
 }

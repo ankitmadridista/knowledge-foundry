@@ -6,7 +6,7 @@ import {
 } from "@/features/prompt-templates/api";
 import type { PromptTemplatePayloadDto, ExecuteTemplateResponse } from "@/features/prompt-templates/type";
 import { Section, Container, PageHeader } from "@/shared/components/layout";
-import { Badge, ErrorState, LoadingState } from "@/shared/components/ui";
+import { ErrorState, LoadingState } from "@/shared/components/ui";
 import { PromptExecutionForm, PromptExecutionResult } from "@/features/prompt-templates/components";
 
 export function TemplateExecutionPage() {
@@ -95,25 +95,23 @@ export function TemplateExecutionPage() {
             <Container>
                 {/* Back Button */}
                 <button
-                    onClick={() => navigate("/templates")}
+                    onClick={() => navigate(`/templates`)}
                     className="text-indigo-400 hover:text-indigo-300 transition-colors mb-6 flex items-center gap-2 text-sm font-medium"
                 >
                     &larr; Back to Templates
                 </button>
 
                 <PageHeader
-                    title={
-                        (
-                            <span className="flex items-center gap-4">
-                                {identifier}
-                                <Badge variant="brand">
-                                    v{payload?.versionNumber}
-                                </Badge>
-                            </span>
-                        ) as unknown as string // Bypassing string typing for flexible node rendering
-                    }
-                    description="Provide the necessary variables to execute this prompt."
-                />
+    title={
+        <div className="flex items-center gap-3">
+            <span>{identifier}</span>
+            <span className="text-sm md:text-base font-semibold tracking-wide text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-0.5 rounded-md mt-1">
+                v{payload?.versionNumber}.0
+            </span>
+        </div>
+    }
+    description="Provide the necessary variables to execute this prompt."
+/>
 
                 {error && (
                     <div className="mb-6">

@@ -1,9 +1,11 @@
 using KnowledgeFoundry.Application.Common.Errors;
 using KnowledgeFoundry.Application.Common.Models;
+using KnowledgeFoundry.Application.PromptExecutions.Commands.ExecutePrompt;
 using KnowledgeFoundry.Application.PromptTemplates.Commands.ActivatePromptVersion;
 using KnowledgeFoundry.Application.PromptTemplates.Commands.CreatePromptTemplate;
 using KnowledgeFoundry.Application.PromptTemplates.Commands.CreatePromptVersion;
 using KnowledgeFoundry.Application.PromptTemplates.Commands.PublishPromptVersion;
+using KnowledgeFoundry.Application.PromptTemplates.Queries.GetActivePromptPayload;
 using KnowledgeFoundry.Application.PromptTemplates.Queries.GetPromptTemplate;
 using KnowledgeFoundry.Application.PromptTemplates.Queries.GetPromptTemplates;
 using KnowledgeFoundry.Application.PromptTemplates.Queries.GetPromptVersion;
@@ -175,7 +177,7 @@ public static class PromptTemplateEndpoints
         ISender sender,
         CancellationToken cancellationToken)
     {
-        var query = new KnowledgeFoundry.Application.PromptTemplates.Queries.GetActivePromptPayload.GetActivePromptPayloadQuery(identifier);
+        var query = new GetActivePromptPayloadQuery(identifier);
         var result = await sender.Send(query, cancellationToken);
 
         if (result.IsFailure)
@@ -194,7 +196,7 @@ public static class PromptTemplateEndpoints
         ISender sender,
         CancellationToken cancellationToken)
     {
-        var command = new KnowledgeFoundry.Application.PromptExecutions.Commands.ExecutePrompt.ExecutePromptCommand(
+        var command = new ExecutePromptCommand(
             identifier,
             request.Variables ?? new Dictionary<string, string>());
 

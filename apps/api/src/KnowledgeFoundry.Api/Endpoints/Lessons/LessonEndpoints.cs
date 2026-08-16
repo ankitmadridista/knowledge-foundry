@@ -82,7 +82,7 @@ public static class LessonEndpoints
         CancellationToken cancellationToken)
     {
         // Pass the parameters, falling back to defaults if they aren't in the URL
-        var query = new GetLessonsQuery(pageNumber ?? 1, pageSize ?? 12);
+        var query = new GetLessonsQuery(pageNumber ?? 1, pageSize ?? 6);
 
         var result = await sender.Send(query, cancellationToken);
 
