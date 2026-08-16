@@ -1,61 +1,82 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate, useSearchParams } from "react-router-dom"; // <-- Added useSearchParams
 import { Section, Container, PageHeader } from "@/shared/components/layout";
 import { ErrorState } from "@/shared/components/ui";
-
-import { generateLesson } from "@/features/lessons/api";
-import {
-    getPromptTemplates,
-    type PromptTemplateSummaryDto,
-} from "@/features/prompt-templates/api/promptTemplatesApi";
-import {
-    getContextPacks,
-    type ContextPackSummaryDto,
-} from "@/features/context-packs/api/contextPacksApi";
-
+import { generateLesson, getLessonById } from "@/features/lessons/api"; // <-- Added getLessonById
+import { getPromptTemplates } from "@/features/prompt-templates/api";
+import type { PromptTemplateSummaryDto } from "@/features/prompt-templates/type";
+import { getContextPacks } from "@/features/context-packs/api";
 import {
     GenerateLessonForm,
     type GenerateLessonFormData,
-} from "@/features/lessons/components/GenerateLessonForm";
+} from "@/features/lessons/components";
+import type { ContextPackSummaryDto } from "@/features/context-packs/types";
+import type { LessonDto } from "@/features/lessons/types";
 
 export function GenerateLessonPage() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const remixId = searchParams.get("remixId");
 
     // UI State
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoadingDependencies, setIsLoadingDependencies] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Dropdown Data
+    // Dropdown & Pre-fill Data
     const [templates, setTemplates] = useState<PromptTemplateSummaryDto[]>([]);
     const [contextPacks, setContextPacks] = useState<ContextPackSummaryDto[]>(
         [],
     );
+    const [remixSource, setRemixSource] = useState<LessonDto | null>(null);
 
-    // Fetch Templates and Context Packs on load
+    // Fetch Templates, Context Packs, and (optionally) the Remix Lesson on load
     useEffect(() => {
+        let isMounted = true;
+
         const fetchDependencies = async () => {
             try {
-                // Fetch both in parallel for speed!
+                // Fetch basic dropdowns
                 const [templatesData, packsData] = await Promise.all([
                     getPromptTemplates(),
                     getContextPacks(),
                 ]);
+
+                if (!isMounted) return;
                 setTemplates(templatesData);
                 setContextPacks(packsData);
+
+                // If this is a remix, fetch the source lesson to pre-fill the form
+                if (remixId) {
+                    try {
+                        const lessonData = await getLessonById(remixId);
+                        if (isMounted) setRemixSource(lessonData);
+                    } catch (remixErr) {
+                        console.warn(
+                            "Could not load remix source lesson:",
+                            remixErr,
+                        );
+                        // We don't fail the whole page if remix fetch fails, they just get a blank form
+                    }
+                }
             } catch (err) {
-                console.error("Failed to load dependencies", err);
-                setError(
-                    "Failed to load Prompt Templates or Context Packs. Please try refreshing.",
-                );
+                if (isMounted) {
+                    console.error("Failed to load dependencies", err);
+                    setError(
+                        "Failed to load Prompt Templates or Context Packs. Please try refreshing.",
+                    );
+                }
             } finally {
-                setIsLoadingDependencies(false);
+                if (isMounted) setIsLoadingDependencies(false);
             }
         };
 
         fetchDependencies();
-    }, []);
+
+        return () => {
+            isMounted = false;
+        };
+    }, [remixId]);
 
     const handleSubmit = async (formData: GenerateLessonFormData) => {
         setIsSubmitting(true);
@@ -67,13 +88,10 @@ export function GenerateLessonPage() {
                 topic: formData.topic,
                 audience: formData.audience,
                 promptTemplateId: formData.promptTemplateId,
-                // Only send contextPackId if it's not empty
                 contextPackId: formData.contextPackId || null,
             };
 
             const newLessonId = await generateLesson(request);
-
-            // Success! Navigate directly to the new lesson viewer
             navigate(`/lessons/${newLessonId}`);
         } catch (err) {
             console.error(err);
@@ -97,8 +115,14 @@ export function GenerateLessonPage() {
                     </button>
 
                     <PageHeader
-                        title="Generate a New Lesson"
-                        description="Combine an AI Persona with your Context Packs to generate high-quality educational content."
+                        title={
+                            remixId ? "Remix Lesson" : "Generate a New Lesson"
+                        }
+                        description={
+                            remixId
+                                ? "Tweak the inputs below to generate a new variation of this lesson."
+                                : "Combine an AI Persona with your Context Packs to generate high-quality educational content."
+                        }
                     />
 
                     {error && (
@@ -115,6 +139,7 @@ export function GenerateLessonPage() {
                         <GenerateLessonForm
                             templates={templates}
                             contextPacks={contextPacks}
+                            initialData={remixSource} // <-- Pass the pre-fill data!
                             onSubmit={handleSubmit}
                             onCancel={() => navigate("/lessons")}
                             isSubmitting={isSubmitting}

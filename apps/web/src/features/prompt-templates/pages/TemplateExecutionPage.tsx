@@ -3,14 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
     getActivePayload,
     executeTemplate,
-    type PromptTemplatePayloadDto,
-    type ExecuteTemplateResponse,
-} from "@/features/prompt-templates/api/promptTemplatesApi";
-
+} from "@/features/prompt-templates/api";
+import type { PromptTemplatePayloadDto, ExecuteTemplateResponse } from "@/features/prompt-templates/type";
 import { Section, Container, PageHeader } from "@/shared/components/layout";
 import { Badge, ErrorState, LoadingState } from "@/shared/components/ui";
-import { PromptExecutionForm } from "@/features/prompt-templates/components/PromptExecutionForm";
-import { PromptExecutionResult } from "@/features/prompt-templates/components/PromptExecutionResult";
+import { PromptExecutionForm, PromptExecutionResult } from "@/features/prompt-templates/components";
 
 export function TemplateExecutionPage() {
     const { identifier } = useParams<{ identifier: string }>();

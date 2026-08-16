@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import {
-    getContextPacks,
-    type ContextPackSummaryDto,
-} from "@/features/context-packs/api/contextPacksApi";
-
-import { ContextPackCard } from "@/features/context-packs/components/ContextPackCard";
+import { getContextPacks } from "@/features/context-packs/api";
+import type { ContextPackSummaryDto } from "@/features/context-packs/types";
+import { ContextPackCard } from "@/features/context-packs/components";
 import { Section, Container, PageHeader } from "@/shared/components/layout";
-import { Button, EmptyState, ErrorState, LoadingState } from "@/shared/components/ui";
+import {
+    Button,
+    EmptyState,
+    ErrorState,
+    LoadingState,
+} from "@/shared/components/ui";
 
 export function ContextPacksListPage() {
     const [packs, setPacks] = useState<ContextPackSummaryDto[]>([]);
@@ -23,7 +24,9 @@ export function ContextPacksListPage() {
                 setPacks(data);
             } catch (err) {
                 console.error("Failed to fetch context packs:", err);
-                setError("Failed to load context packs. Is the backend running?");
+                setError(
+                    "Failed to load context packs. Is the backend running?",
+                );
             } finally {
                 setIsLoading(false);
             }
@@ -36,7 +39,7 @@ export function ContextPacksListPage() {
         <Section>
             <Container>
                 {/* 1. Header */}
-                <PageHeader 
+                <PageHeader
                     title="Context Packs"
                     description="Manage dynamic knowledge payloads to inject into your prompt templates."
                     action={
@@ -47,15 +50,20 @@ export function ContextPacksListPage() {
                 />
 
                 {/* 2. Various States */}
-                {isLoading && <LoadingState message="Loading context packs..." />}
-                
+                {isLoading && (
+                    <LoadingState message="Loading context packs..." />
+                )}
+
                 {error && <ErrorState message={error} />}
-                
+
                 {!isLoading && !error && packs.length === 0 && (
-                    <EmptyState 
+                    <EmptyState
                         message="No context packs found."
                         action={
-                            <Button variant="secondary" onClick={() => navigate("/context-packs/new")}>
+                            <Button
+                                variant="secondary"
+                                onClick={() => navigate("/context-packs/new")}
+                            >
                                 Create your first context pack
                             </Button>
                         }
@@ -69,7 +77,9 @@ export function ContextPacksListPage() {
                             <ContextPackCard
                                 key={pack.id}
                                 pack={pack}
-                                onClick={() => navigate(`/context-packs/${pack.id}`)}
+                                onClick={() =>
+                                    navigate(`/context-packs/${pack.id}`)
+                                }
                             />
                         ))}
                     </div>

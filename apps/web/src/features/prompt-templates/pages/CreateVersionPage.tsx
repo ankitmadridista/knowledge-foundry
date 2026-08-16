@@ -4,15 +4,14 @@ import {
     getPromptTemplate,
     getPromptVersion,
     addPromptVersion,
-    type PromptTemplateDetailsDto,
-} from "@/features/prompt-templates/api/promptTemplatesApi";
-
+} from "@/features/prompt-templates/api";
+import type { PromptTemplateDetailsDto } from "@/features/prompt-templates/type";
 import { Section, Container, PageHeader } from "@/shared/components/layout";
 import { LoadingState, ErrorState } from "@/shared/components/ui";
 import {
     PromptVersionForm,
     type PromptVersionFormData,
-} from "@/features/prompt-templates/components/PromptVersionForm";
+} from "@/features/prompt-templates/components";
 
 export function CreateVersionPage() {
     const { identifier } = useParams<{ identifier: string }>();

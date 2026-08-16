@@ -1,5 +1,5 @@
 import { Card, Text, Badge, MarkdownRenderer } from "@/shared/components/ui";
-import type { ExecuteTemplateResponse } from "@/features/prompt-templates/api/promptTemplatesApi";
+import type { ExecuteTemplateResponse } from "@/features/prompt-templates/type";
 
 interface PromptExecutionResultProps {
     result: ExecuteTemplateResponse | null;

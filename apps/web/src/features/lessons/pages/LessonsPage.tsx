@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import { getLessons } from "@/features/lessons/api";
 import type { LessonSummaryDto } from "@/features/lessons/types";
-
 import { Section, Container, PageHeader } from "@/shared/components/layout";
 import {
     Button,
@@ -11,7 +9,7 @@ import {
     ErrorState,
     EmptyState,
 } from "@/shared/components/ui";
-import { LessonCard } from "@/features/lessons/components/LessonCard";
+import { LessonCard } from "@/features/lessons/components";
 
 export function LessonsPage() {
     const [lessons, setLessons] = useState<LessonSummaryDto[]>([]);

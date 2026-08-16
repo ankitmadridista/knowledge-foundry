@@ -4,16 +4,13 @@ import {
     getPromptTemplate,
     publishPromptVersion,
     activatePromptVersion,
-    type PromptTemplateDetailsDto,
-} from "@/features/prompt-templates/api/promptTemplatesApi";
-
+} from "@/features/prompt-templates/api";
+import type { PromptTemplateDetailsDto } from "@/features/prompt-templates/type";
 import { Section, Container } from "@/shared/components/layout";
 import { LoadingState, ErrorState } from "@/shared/components/ui";
 
 // Import our new Feature Components
-import { PromptTemplateHeader } from "@/features/prompt-templates/components/PromptTemplateHeader";
-import { PromptVersionTable } from "@/features/prompt-templates/components/PromptVersionTable";
-
+import { PromptTemplateHeader, PromptVersionTable } from "@/features/prompt-templates/components";
 export function TemplateDetailsPage() {
     const { identifier } = useParams<{ identifier: string }>();
     const navigate = useNavigate();

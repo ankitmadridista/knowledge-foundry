@@ -3,14 +3,13 @@ import { useNavigate } from "react-router-dom";
 import {
     createContextPack,
     createContextPackVersion,
-} from "@/features/context-packs/api/contextPacksApi";
-
+} from "@/features/context-packs/api";
 import { Section, Container, PageHeader } from "@/shared/components/layout";
 import { ErrorState } from "@/shared/components/ui";
 import {
     CreateContextPackForm,
     type CreateContextPackFormData,
-} from "@/features/context-packs/components/CreateContextPackForm";
+} from "@/features/context-packs/components";
 
 export function CreateContextPackPage() {
     const navigate = useNavigate();

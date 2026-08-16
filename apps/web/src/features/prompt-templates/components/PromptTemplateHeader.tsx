@@ -1,5 +1,5 @@
 import { Heading, Text, Button } from "@/shared/components/ui";
-import type { PromptTemplateDetailsDto } from "@/features/prompt-templates/api/promptTemplatesApi";
+import type { PromptTemplateDetailsDto } from "@/features/prompt-templates/api";
 
 interface PromptTemplateHeaderProps {
     template: PromptTemplateDetailsDto;

@@ -1,5 +1,5 @@
 import { Heading, Text } from "@/shared/components/ui";
-import type { ContextPackDto } from "@/features/context-packs/api/contextPacksApi";
+import type { ContextPackDto } from "@/features/context-packs/api";
 
 interface ContextPackHeaderProps {
     pack: ContextPackDto;
