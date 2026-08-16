@@ -17,7 +17,7 @@ export function EmptyState({
     return (
         <Card className="flex flex-col items-center justify-center text-center p-12 sm:p-20 border-dashed border-2 border-zinc-800 bg-zinc-950/50 relative overflow-hidden group">
             {/* Subtle background glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+            <div className="absolute inset-0 bg-linear-to-b from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
             {/* Icon Container */}
             <div className="flex items-center justify-center w-16 h-16 mb-6 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-500 shadow-sm">

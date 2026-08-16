@@ -5,6 +5,7 @@ import type {
     LessonSummaryDto,
     LessonDto,
 } from "@/features/lessons/types";
+import type { PagedResponse } from "@/shared/types/pagination";
 
 export const generateLesson = async (
     request: GenerateLessonRequest,
@@ -20,8 +21,13 @@ export const generateLesson = async (
     return id.replace(/['"]/g, "");
 };
 
-export const getLessons = async (): Promise<LessonSummaryDto[]> => {
-    const response = await httpClient.get<LessonSummaryDto[]>("/lessons");
+export const getLessons = async (
+    pageNumber: number = 1,
+    pageSize: number = 12,
+): Promise<PagedResponse<LessonSummaryDto>> => {
+    const response = await httpClient.get(
+        `/lessons?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+    );
     return response.data;
 };
 
@@ -32,7 +38,7 @@ export const getLessonById = async (id: string): Promise<LessonDto> => {
 
 export const updateLessonContent = async (
     id: string,
-    request: UpdateLessonContentRequest
+    request: UpdateLessonContentRequest,
 ): Promise<void> => {
     await httpClient.put(`/lessons/${id}/content`, request);
 };
