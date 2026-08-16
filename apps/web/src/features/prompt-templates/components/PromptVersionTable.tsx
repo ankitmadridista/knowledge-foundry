@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button, Card, Badge } from "@/shared/components/ui";
-import type { PromptTemplateDetailsDto } from "@/features/prompt-templates/api";
+import type { PromptTemplateDetailsDto } from "@/features/prompt-templates/type";
 
 interface PromptVersionTableProps {
     templateId: string;
