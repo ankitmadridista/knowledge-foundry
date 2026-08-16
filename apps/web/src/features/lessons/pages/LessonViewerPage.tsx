@@ -7,9 +7,10 @@ import {
 } from "@/features/lessons/api";
 import type { LessonDto } from "@/features/lessons/types";
 import { Section, Container } from "@/shared/components/layout";
-import { ErrorState, LoadingState } from "@/shared/components/ui";
+import { ErrorState, LoadingState, Modal } from "@/shared/components/ui";
 import { LessonHeader } from "@/features/lessons/components/LessonHeader";
 import { LessonContent } from "@/features/lessons/components/LessonContent";
+import toast from "react-hot-toast";
 
 export function LessonViewerPage() {
     const { id } = useParams<{ id: string }>();
@@ -18,6 +19,7 @@ export function LessonViewerPage() {
     const [lesson, setLesson] = useState<LessonDto | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
@@ -57,46 +59,35 @@ export function LessonViewerPage() {
                 content: newContent,
                 isManuallyEdited: true, // Flip the flag locally!
             });
+            toast.success("Lesson updated successfully!");
         } catch (err) {
             console.error("Failed to update lesson content:", err);
-            alert("Failed to save your edits. Please try again.");
+            toast.error("Failed to save your edits. Please try again.");
             throw err; // Re-throw so the child component knows the save failed
         }
     };
 
-    const handleDelete = async () => {
-        if (!lesson) return;
+    const handleDeleteClick = () => {
+        setIsDeleteModalOpen(true);
+    };
 
-        // Simple confirmation before permanent deletion
-        if (
-            !window.confirm(
-                "Are you sure you want to delete this lesson? This action cannot be undone.",
-            )
-        ) {
-            return;
-        }
+    const confirmDelete = async () => {
+        if (!lesson) return;
 
         setIsDeleting(true);
         try {
             await deleteLesson(lesson.id);
-            navigate("/lessons"); // Go back to library on success
+            toast.success("Lesson deleted successfully!");
+            navigate("/lessons");
         } catch (err) {
             console.error("Failed to delete lesson:", err);
-            alert("Failed to delete the lesson. Please try again.");
+            toast.error("Failed to delete the lesson. Please try again.");
             setIsDeleting(false);
+            setIsDeleteModalOpen(false); // Close modal on failure so they can try again
         }
     };
 
-    if (isLoading || isDeleting)
-        return (
-            <LoadingState
-                message={
-                    isDeleting
-                        ? "Deleting lesson..."
-                        : "Loading lesson details..."
-                }
-            />
-        );
+    if (isLoading) return <LoadingState message="Loading lesson details..." />;
 
     if (error || !lesson) {
         return (
@@ -119,7 +110,10 @@ export function LessonViewerPage() {
                         &larr; Back to Library
                     </button>
 
-                    <LessonHeader lesson={lesson} onDelete={handleDelete} />
+                    <LessonHeader
+                        lesson={lesson}
+                        onDelete={handleDeleteClick}
+                    />
 
                     <LessonContent
                         lesson={lesson}
@@ -128,6 +122,17 @@ export function LessonViewerPage() {
                     />
                 </div>
             </Container>
+
+            <Modal
+                isOpen={isDeleteModalOpen}
+                onClose={() => !isDeleting && setIsDeleteModalOpen(false)} // Prevent closing while deleting
+                title="Delete Lesson"
+                description={`Are you sure you want to delete "${lesson.title}"? This action cannot be undone and you will lose all generated content.`}
+                primaryActionLabel="Delete Lesson"
+                onPrimaryAction={confirmDelete}
+                isPrimaryActionDestructive={true}
+                isPrimaryActionLoading={isDeleting}
+            />
         </Section>
     );
 }

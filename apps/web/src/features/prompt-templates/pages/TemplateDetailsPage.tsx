@@ -10,7 +10,11 @@ import { Section, Container } from "@/shared/components/layout";
 import { LoadingState, ErrorState } from "@/shared/components/ui";
 
 // Import our new Feature Components
-import { PromptTemplateHeader, PromptVersionTable } from "@/features/prompt-templates/components";
+import {
+    PromptTemplateHeader,
+    PromptVersionTable,
+} from "@/features/prompt-templates/components";
+import toast from "react-hot-toast";
 export function TemplateDetailsPage() {
     const { identifier } = useParams<{ identifier: string }>();
     const navigate = useNavigate();
@@ -69,8 +73,11 @@ export function TemplateDetailsPage() {
             setActionLoading(`publish-${versionNumber}`);
             await publishPromptVersion(template.id, versionNumber);
             await refreshTemplate();
+            toast.success(`Version ${versionNumber} published successfully!`);
         } catch (err) {
-            alert("Failed to publish version. Check console for details.");
+            toast.error(
+                "Failed to publish version. Check console for details.",
+            );
             console.error("Error: ", err);
         } finally {
             setActionLoading(null);
@@ -83,8 +90,9 @@ export function TemplateDetailsPage() {
             setActionLoading(`activate-${versionNumber}`);
             await activatePromptVersion(template.id, versionNumber);
             await refreshTemplate();
+            toast.success(`Version ${versionNumber} is now active!`);
         } catch (err) {
-            alert(
+            toast.error(
                 "Failed to activate version. Make sure it is Published first!",
             );
             console.error("Error: ", err);

@@ -6,8 +6,14 @@ import {
     ArchitectureSection,
     RoadmapSection,
 } from "@/features/home/components";
+import { pingBackend } from "@/shared/api/httpClient";
+import { useEffect } from "react";
 
 export function HomePage() {
+
+    useEffect(() => {
+        pingBackend();
+    }, []);
     return (
         <>
             <HeroSection />

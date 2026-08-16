@@ -45,6 +45,10 @@ app.UseSwaggerUI(c =>
 
 app.UseCors("AllowFrontend");
 
+app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", timestamp = DateTime.UtcNow }))
+   .WithTags("System")
+   .ExcludeFromDescription();
+
 // Map our feature endpoints
 app.MapPromptTemplateEndpoints();
 app.MapContextPackEndpoints();
