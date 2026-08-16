@@ -43,7 +43,7 @@ public sealed class ExecutePromptCommandHandler
         {
             var content = message.Content;
 
-            // --- NEW: CONTEXT PACK INJECTION ---
+            // --- CONTEXT PACK INJECTION ---
             var contextMatches = contextRegex.Matches(content);
             foreach (Match match in contextMatches)
             {

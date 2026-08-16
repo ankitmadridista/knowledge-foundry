@@ -6,6 +6,10 @@ export interface GenerateLessonRequest {
     contextPackId?: string | null; // Optional, as some lessons might not need a context pack
 }
 
+export interface UpdateLessonContentRequest {
+    newContent: string;
+}
+
 export interface LessonSummaryDto {
     id: string;
     title: string;
@@ -14,6 +18,7 @@ export interface LessonSummaryDto {
     status: string; // "Generating", "Completed", "Failed"
     createdAt: string;
     completedAt?: string | null;
+    isManuallyEdited?: boolean;
 }
 
 export interface LessonDto {
@@ -28,4 +33,5 @@ export interface LessonDto {
     contextPackId?: string | null;
     createdAt: string;
     completedAt?: string | null;
+    isManuallyEdited?: boolean;
 }

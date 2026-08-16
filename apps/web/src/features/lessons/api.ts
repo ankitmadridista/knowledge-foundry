@@ -1,6 +1,7 @@
 import { httpClient } from "@/shared/api/httpClient";
 import type {
     GenerateLessonRequest,
+    UpdateLessonContentRequest,
     LessonSummaryDto,
     LessonDto,
 } from "@/features/lessons/types";
@@ -27,4 +28,15 @@ export const getLessons = async (): Promise<LessonSummaryDto[]> => {
 export const getLessonById = async (id: string): Promise<LessonDto> => {
     const response = await httpClient.get<LessonDto>(`/lessons/${id}`);
     return response.data;
+};
+
+export const updateLessonContent = async (
+    id: string,
+    request: UpdateLessonContentRequest
+): Promise<void> => {
+    await httpClient.put(`/lessons/${id}/content`, request);
+};
+
+export const deleteLesson = async (id: string): Promise<void> => {
+    await httpClient.delete(`/lessons/${id}`);
 };

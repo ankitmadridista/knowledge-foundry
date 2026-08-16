@@ -1,19 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { getPromptTemplates } from "@/features/prompt-templates/api";
+import type { PromptTemplateSummaryDto } from "@/features/prompt-templates/type";
+import { Section, Container, PageHeader } from "@/shared/components/layout";
 import {
-    getPromptTemplates,
-    type PromptTemplateSummaryDto,
-} from "@/features/prompt-templates/api/promptTemplatesApi";
-
-import { Section, Container } from "@/shared/components/layout";
-import { Button, LoadingState, ErrorState, EmptyState } from "@/shared/components/ui";
-
-// Import our shared structural components
-import { PageHeader } from "@/shared/components/layout/PageHeader";
-
-// Import our new Feature Component
-import { PromptTemplateCard } from "@/features/prompt-templates/components/PromptTemplateCard";
+    Button,
+    LoadingState,
+    ErrorState,
+    EmptyState,
+} from "@/shared/components/ui";
+import { PromptTemplateCard } from "@/features/prompt-templates/components";
 
 export function TemplatesPage() {
     const [templates, setTemplates] = useState<PromptTemplateSummaryDto[]>([]);

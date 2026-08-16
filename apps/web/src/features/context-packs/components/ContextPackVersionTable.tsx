@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button, Card, Badge } from "@/shared/components/ui";
-import type { ContextPackDto } from "@/features/context-packs/api/contextPacksApi";
+import type { ContextPackDto } from "@/features/context-packs/types";
 
 interface ContextPackVersionTableProps {
     packId: string;

@@ -3,16 +3,14 @@ import { useNavigate } from "react-router-dom";
 import {
     createPromptTemplate,
     addPromptVersion,
-    type CreatePromptTemplateRequest,
-} from "@/features/prompt-templates/api/promptTemplatesApi";
-
+} from "@/features/prompt-templates/api";
 import { Section, Container, PageHeader } from "@/shared/components/layout";
 import { ErrorState } from "@/shared/components/ui";
-
 import {
     CreatePromptTemplateForm,
     type CreatePromptTemplateFormData,
-} from "@/features/prompt-templates/components/CreatePromptTemplateForm";
+} from "@/features/prompt-templates/components";
+import type { CreatePromptTemplateRequest } from "@/features/prompt-templates/type";
 
 export function CreateTemplatePage() {
     const navigate = useNavigate();

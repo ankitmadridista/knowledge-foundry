@@ -10,7 +10,7 @@ public static class LessonErrors
             "Lesson.NotFound",
             "The requested lesson was not found.");
 
-    // --- Command Errors ---
+    // --- Command Errors (Generation) ---
     public static readonly Error TemplateNotFound =
         new(
             "Lesson.TemplateNotFound",
@@ -30,4 +30,10 @@ public static class LessonErrors
         new(
             "Lesson.GenerationFailed",
             "The AI platform failed to generate the lesson content.");
+
+    // --- Command Errors (Mutation) ---
+    public static readonly Error NotCompleted =
+        new(
+            "Lesson.NotCompleted",
+            "Only completed lessons can be edited.");
 }

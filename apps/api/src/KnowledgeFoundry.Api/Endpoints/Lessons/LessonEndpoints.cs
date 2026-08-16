@@ -1,5 +1,7 @@
 using KnowledgeFoundry.Application.Common.Errors;
+using KnowledgeFoundry.Application.Lessons.Commands.DeleteLesson;
 using KnowledgeFoundry.Application.Lessons.Commands.GenerateLesson;
+using KnowledgeFoundry.Application.Lessons.Commands.UpdateLessonContent;
 using KnowledgeFoundry.Application.Lessons.Queries.GetLessonById;
 using KnowledgeFoundry.Application.Lessons.Queries.GetLessons;
 using MediatR;
@@ -15,6 +17,9 @@ public sealed record GenerateLessonRequest(
     Guid PromptTemplateId,
     Guid? ContextPackId);
 
+public sealed record UpdateLessonContentRequest(
+    string NewContent);
+
 // --- Endpoints ---
 
 public static class LessonEndpoints
@@ -24,12 +29,19 @@ public static class LessonEndpoints
         var group = app.MapGroup("/api/lessons")
             .WithTags("Lessons");
 
+        // Generation
         group.MapPost("/generate", GenerateLesson);
 
+        // Queries
         group.MapGet("/", GetLessons);
 
         group.MapGet("/{id:guid}", GetLessonById)
             .WithName("GetLesson");
+
+        // Mutations
+        group.MapPut("/{id:guid}/content", UpdateLessonContent);
+
+        group.MapDelete("/{id:guid}", DeleteLesson);
     }
 
     private static async Task<IResult> GenerateLesson(
@@ -48,7 +60,6 @@ public static class LessonEndpoints
 
         if (result.IsFailure)
         {
-            // If the template or context pack was not found, return a 404
             if (result.Error == LessonErrors.TemplateNotFound ||
                 result.Error == LessonErrors.ContextPackNotFound)
             {
@@ -96,5 +107,47 @@ public static class LessonEndpoints
         }
 
         return Results.Ok(result.Value);
+    }
+
+    private static async Task<IResult> UpdateLessonContent(
+        Guid id,
+        UpdateLessonContentRequest request,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var command = new UpdateLessonContentCommand(id, request.NewContent);
+        var result = await sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            if (result.Error == LessonErrors.NotFound)
+                return Results.NotFound(result.Error);
+
+            if (result.Error == LessonErrors.NotCompleted)
+                return Results.BadRequest(result.Error); // Can't edit generating/failed lessons
+
+            return Results.BadRequest(result.Error);
+        }
+
+        return Results.NoContent(); // 204 No Content is standard for a successful PUT
+    }
+
+    private static async Task<IResult> DeleteLesson(
+        Guid id,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var command = new DeleteLessonCommand(id);
+        var result = await sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            if (result.Error == LessonErrors.NotFound)
+                return Results.NotFound(result.Error);
+
+            return Results.BadRequest(result.Error);
+        }
+
+        return Results.NoContent();
     }
 }

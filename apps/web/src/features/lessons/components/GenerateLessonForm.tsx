@@ -7,23 +7,22 @@ import {
     Textarea,
     Text,
 } from "@/shared/components/ui";
-
-// Re-using your types from the API files
-import type { PromptTemplateSummaryDto } from "@/features/prompt-templates/api/promptTemplatesApi";
-// Assuming you have a similar type for Context Packs
-import type { ContextPackSummaryDto } from "@/features/context-packs/api/contextPacksApi";
+import type { PromptTemplateSummaryDto } from "@/features/prompt-templates/type";
+import type { ContextPackSummaryDto } from "@/features/context-packs/types";
+import type { LessonDto } from "@/features/lessons/types";
 
 export interface GenerateLessonFormData {
     title: string;
     topic: string;
     audience: string;
     promptTemplateId: string;
-    contextPackId: string; // We'll use empty string for "None"
+    contextPackId: string;
 }
 
 interface GenerateLessonFormProps {
     templates: PromptTemplateSummaryDto[];
     contextPacks: ContextPackSummaryDto[];
+    initialData?: LessonDto | null;
     onSubmit: (data: GenerateLessonFormData) => void;
     onCancel: () => void;
     isSubmitting: boolean;
@@ -32,16 +31,17 @@ interface GenerateLessonFormProps {
 export function GenerateLessonForm({
     templates,
     contextPacks,
+    initialData,
     onSubmit,
     onCancel,
     isSubmitting,
 }: GenerateLessonFormProps) {
     const [formData, setFormData] = useState<GenerateLessonFormData>({
-        title: "",
-        topic: "",
-        audience: "8th Grade Students", // A helpful default
-        promptTemplateId: "",
-        contextPackId: "",
+        title: initialData?.title ? `${initialData.title} (Remix)` : "",
+        topic: initialData?.topic || "",
+        audience: initialData?.audience || "8th Grade Students",
+        promptTemplateId: initialData?.promptTemplateId || "",
+        contextPackId: initialData?.contextPackId || "",
     });
 
     const handleChange = (
@@ -58,12 +58,11 @@ export function GenerateLessonForm({
         onSubmit(formData);
     };
 
-    // Common Tailwind classes to match your Input component styling for the select dropdowns
     const selectClasses =
         "flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm ring-offset-zinc-950 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50";
 
     return (
-        <Card className="p-6 md:p-8">
+        <Card className="p-6 md:p-8 border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.05)]">
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* METADATA SECTION */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -102,7 +101,7 @@ export function GenerateLessonForm({
                         name="topic"
                         value={formData.topic}
                         onChange={handleChange}
-                        rows={3}
+                        rows={4}
                         placeholder="Explain how the Curiosity rover searches for ancient water..."
                         disabled={isSubmitting}
                     />
@@ -155,7 +154,7 @@ export function GenerateLessonForm({
                 </div>
 
                 {/* ACTIONS */}
-                <div className="flex justify-end gap-4 pt-4 mt-4 border-t border-zinc-800">
+                <div className="flex justify-end gap-4 pt-6 mt-6 border-t border-zinc-800">
                     <Button
                         type="button"
                         variant="secondary"
@@ -173,7 +172,9 @@ export function GenerateLessonForm({
                     >
                         {isSubmitting
                             ? "Generating Lesson (This takes ~20s)..."
-                            : "Generate Lesson"}
+                            : initialData
+                              ? "Generate Remix"
+                              : "Generate Lesson"}
                     </Button>
                 </div>
             </form>

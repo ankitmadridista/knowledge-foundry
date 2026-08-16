@@ -28,7 +28,8 @@ internal sealed class GetLessonsQueryHandler
             lesson.Audience.Value,
             lesson.Status.ToString(),
             lesson.CreatedAt,
-            lesson.CompletedAt
+            lesson.CompletedAt,
+            lesson.IsManuallyEdited
         )).ToList();
 
         return Result<IReadOnlyList<LessonSummaryDto>>.Success(dtos);

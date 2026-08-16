@@ -14,4 +14,6 @@ public interface ILessonRepository
 
     Task<IReadOnlyList<Domain.Lessons.Lesson>> GetAllAsync(
         CancellationToken cancellationToken = default);
+
+    void Remove(Domain.Lessons.Lesson lesson);
 }

@@ -4,22 +4,24 @@ import {
     getContextPack,
     getContextPackVersion,
     createContextPackVersion,
-    type ContextPackDto,
-} from "@/features/context-packs/api/contextPacksApi";
-
+} from "@/features/context-packs/api";
+import type { ContextPackDto } from "@/features/context-packs/types";
 import { Section, Container, PageHeader } from "@/shared/components/layout";
 import { LoadingState, ErrorState } from "@/shared/components/ui";
-
-// Import our new Form Component
-import { ContextPackVersionForm, type ContextSectionData } from "@/features/context-packs/components/ContextPackVersionForm";
+import {
+    ContextPackVersionForm,
+    type ContextSectionData,
+} from "@/features/context-packs/components";
 
 export function CreateContextPackVersionPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
     const [pack, setPack] = useState<ContextPackDto | null>(null);
-    const [initialSections, setInitialSections] = useState<ContextSectionData[]>([]);
-    
+    const [initialSections, setInitialSections] = useState<
+        ContextSectionData[]
+    >([]);
+
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -40,31 +42,45 @@ export function CreateContextPackVersionPage() {
                         ...packData.versions.map((v) => v.versionNumber),
                     );
 
-                    const versionData = await getContextPackVersion(packData.id, latestVersionNum);
+                    const versionData = await getContextPackVersion(
+                        packData.id,
+                        latestVersionNum,
+                    );
                     if (!isMounted) return;
 
-                    if (versionData.sections && versionData.sections.length > 0) {
-                        const sortedSections = [...versionData.sections].sort((a, b) => a.order - b.order);
+                    if (
+                        versionData.sections &&
+                        versionData.sections.length > 0
+                    ) {
+                        const sortedSections = [...versionData.sections].sort(
+                            (a, b) => a.order - b.order,
+                        );
                         setInitialSections(
-                            sortedSections.map((s) => ({ title: s.title, content: s.content }))
+                            sortedSections.map((s) => ({
+                                title: s.title,
+                                content: s.content,
+                            })),
                         );
                     }
                 }
             } catch (err) {
-                if (isMounted) setError(`Failed to load previous version data. ${err}`);
+                if (isMounted)
+                    setError(`Failed to load previous version data. ${err}`);
             } finally {
                 if (isMounted) setIsLoading(false);
             }
         };
 
         loadPreviousVersion();
-        return () => { isMounted = false; };
+        return () => {
+            isMounted = false;
+        };
     }, [id]);
 
     // 2. Handle Form Submission
     const handleSubmit = async (sections: ContextSectionData[]) => {
         if (!pack) return;
-        
+
         if (sections.length === 0) {
             setError("You must have at least one section.");
             return;
@@ -80,26 +96,32 @@ export function CreateContextPackVersionPage() {
                 order: index,
             }));
 
-            await createContextPackVersion(pack.id, { sections: sectionsPayload });
+            await createContextPackVersion(pack.id, {
+                sections: sectionsPayload,
+            });
             navigate(`/context-packs/${id}`);
         } catch (err) {
             console.error(err);
-            setError("Failed to create new version. Check console for details.");
+            setError(
+                "Failed to create new version. Check console for details.",
+            );
             setIsSubmitting(false);
         }
     };
 
     // --- RENDER BLOCK ---
 
-    if (isLoading) return <LoadingState message="Loading previous version..." />;
-    
-    if (!pack) return (
-        <Section>
-            <Container>
-                <ErrorState message="Context Pack not found." />
-            </Container>
-        </Section>
-    );
+    if (isLoading)
+        return <LoadingState message="Loading previous version..." />;
+
+    if (!pack)
+        return (
+            <Section>
+                <Container>
+                    <ErrorState message="Context Pack not found." />
+                </Container>
+            </Section>
+        );
 
     return (
         <Section>
@@ -113,7 +135,7 @@ export function CreateContextPackVersionPage() {
                         &larr; Back to {pack.name}
                     </button>
 
-                    <PageHeader 
+                    <PageHeader
                         title="Create New Version"
                         description="Editing a copy of the latest version. Saving will create a new Draft."
                     />
@@ -125,7 +147,7 @@ export function CreateContextPackVersionPage() {
                     )}
 
                     {/* Form Component (Only rendered after loading is complete so initialSections is populated) */}
-                    <ContextPackVersionForm 
+                    <ContextPackVersionForm
                         initialSections={initialSections}
                         onSubmit={handleSubmit}
                         onCancel={() => navigate(`/context-packs/${id}`)}

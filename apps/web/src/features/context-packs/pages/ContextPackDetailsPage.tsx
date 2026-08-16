@@ -4,14 +4,14 @@ import {
     getContextPack,
     publishContextPackVersion,
     activateContextPackVersion,
-    type ContextPackDto,
-} from "@/features/context-packs/api/contextPacksApi";
-
+} from "@/features/context-packs/api";
+import type { ContextPackDto } from "@/features/context-packs/types";
 import { Section, Container } from "@/shared/components/layout";
 import { LoadingState, ErrorState } from "@/shared/components/ui";
-
-import { ContextPackHeader } from "@/features/context-packs/components/ContextPackHeader";
-import { ContextPackVersionTable } from "@/features/context-packs/components/ContextPackVersionTable";
+import {
+    ContextPackHeader,
+    ContextPackVersionTable,
+} from "@/features/context-packs/components";
 
 export function ContextPackDetailsPage() {
     const { id } = useParams<{ id: string }>();

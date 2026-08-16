@@ -1,5 +1,5 @@
 import { Card, Text } from "@/shared/components/ui";
-import type { ContextPackSummaryDto } from "@/features/context-packs/api/contextPacksApi";
+import type { ContextPackSummaryDto } from "@/features/context-packs/types";
 
 interface ContextPackCardProps {
     pack: ContextPackSummaryDto;

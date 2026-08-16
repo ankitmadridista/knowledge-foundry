@@ -37,7 +37,12 @@ internal sealed class LessonRepository : ILessonRepository
     {
         return await _dbContext.Lessons
             .AsNoTracking()
-            .OrderByDescending(x => x.CreatedAt) // Good UX default: newest lessons first
+            .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(cancellationToken);
+    }
+
+    public void Remove(Lesson lesson)
+    {
+        _dbContext.Lessons.Remove(lesson);
     }
 }
