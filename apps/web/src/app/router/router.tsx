@@ -11,6 +11,9 @@ import { ContextPacksListPage } from "@/features/context-packs/pages/ContextPack
 import { ContextPackDetailsPage } from "@/features/context-packs/pages/ContextPackDetailsPage";
 import { CreateContextPackPage } from "@/features/context-packs/pages/CreateContextPackPage";
 import { CreateContextPackVersionPage } from "@/features/context-packs/pages/CreateContextPackVersionPage";
+import { GenerateLessonPage } from "@/features/lessons/pages/GenerateLessonPage";
+import { LessonsPage } from "@/features/lessons/pages/LessonsPage";
+import { LessonViewerPage } from "@/features/lessons/pages/LessonViewerPage";
 
 export const router = createBrowserRouter([
     {
@@ -56,6 +59,18 @@ export const router = createBrowserRouter([
             {
                 path: "context-packs/:id/versions/new",
                 element: <CreateContextPackVersionPage />,
+            },
+            {
+                path: "lessons/new",
+                element: <GenerateLessonPage />,
+            },
+            {
+                path: "lessons",
+                element: <LessonsPage />,
+            },
+            {
+                path: "lessons/:id",
+                element: <LessonViewerPage />,
             },
         ],
     },

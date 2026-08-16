@@ -1,6 +1,6 @@
 import { httpClient } from "@/shared/api/httpClient";
 
-export interface PromptTemplateSummary {
+export interface PromptTemplateSummaryDto {
     id: string;
     identifier: string;
     name: string;
@@ -85,10 +85,10 @@ export interface PromptVersionDetailsDto {
 }
 
 export const getPromptTemplates = async (): Promise<
-    PromptTemplateSummary[]
+    PromptTemplateSummaryDto[]
 > => {
     const response =
-        await httpClient.get<PromptTemplateSummary[]>("/prompt-templates");
+        await httpClient.get<PromptTemplateSummaryDto[]>("/prompt-templates");
     return response.data;
 };
 

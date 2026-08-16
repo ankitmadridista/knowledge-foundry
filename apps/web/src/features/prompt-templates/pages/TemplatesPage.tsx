@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import {
     getPromptTemplates,
-    type PromptTemplateSummary,
+    type PromptTemplateSummaryDto,
 } from "@/features/prompt-templates/api/promptTemplatesApi";
 
 import { Section, Container } from "@/shared/components/layout";
@@ -16,7 +16,7 @@ import { PageHeader } from "@/shared/components/layout/PageHeader";
 import { PromptTemplateCard } from "@/features/prompt-templates/components/PromptTemplateCard";
 
 export function TemplatesPage() {
-    const [templates, setTemplates] = useState<PromptTemplateSummary[]>([]);
+    const [templates, setTemplates] = useState<PromptTemplateSummaryDto[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
