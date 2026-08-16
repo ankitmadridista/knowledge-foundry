@@ -1,4 +1,5 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
+using KnowledgeFoundry.Application.Common.Models;
 using KnowledgeFoundry.Application.Common.Results;
 using KnowledgeFoundry.Application.ContextPacks.Models;
 using MediatR;
@@ -6,7 +7,7 @@ using MediatR;
 namespace KnowledgeFoundry.Application.ContextPacks.Queries.GetContextPacks;
 
 public sealed class GetContextPacksQueryHandler
-    : IRequestHandler<GetContextPacksQuery, Result<IReadOnlyList<ContextPackSummaryDto>>>
+    : IRequestHandler<GetContextPacksQuery, Result<PagedResponse<ContextPackSummaryDto>>>
 {
     private readonly IContextPackRepository _repository;
 
@@ -15,11 +16,14 @@ public sealed class GetContextPacksQueryHandler
         _repository = repository;
     }
 
-    public async Task<Result<IReadOnlyList<ContextPackSummaryDto>>> Handle(
+    public async Task<Result<PagedResponse<ContextPackSummaryDto>>> Handle(
         GetContextPacksQuery request,
         CancellationToken cancellationToken)
     {
-        var packs = await _repository.GetAllAsync(cancellationToken);
+        var (packs, totalCount) = await _repository.GetPagedAsync(
+            request.PageNumber,
+            request.PageSize,
+            cancellationToken);
 
         var dtos = packs.Select(p => new ContextPackSummaryDto(
             p.Id,
@@ -29,6 +33,12 @@ public sealed class GetContextPacksQueryHandler
             p.Tags.Select(tag => tag.Value)
         )).ToList();
 
-        return Result<IReadOnlyList<ContextPackSummaryDto>>.Success(dtos);
+        var response = new PagedResponse<ContextPackSummaryDto>(
+            dtos,
+            totalCount,
+            request.PageNumber,
+            request.PageSize);
+
+        return Result<PagedResponse<ContextPackSummaryDto>>.Success(response);
     }
 }

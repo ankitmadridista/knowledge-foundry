@@ -66,6 +66,27 @@ internal sealed class ContextPackRepository : IContextPackRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<(IReadOnlyList<ContextPack> Items, int TotalCount)> GetPagedAsync(
+        int pageNumber,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _dbContext.ContextPacks.AsNoTracking();
+
+        // 1. Get the total number of records (Extremely fast in SQL)
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        // 2. Fetch only the specific page of data
+        var items = await query
+            .Include(x => x.Tags)
+            .Include(x => x.Versions)
+            .Skip((pageNumber - 1) * pageSize) // e.g. Page 2 of 10 items skips the first 10
+            .Take(pageSize)                    // and takes the next 10
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
+
     public async Task<ContextPackVersion?> GetVersionAsync(
         Guid packId,
         int versionNumber,
