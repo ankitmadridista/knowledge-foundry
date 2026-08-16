@@ -1,3 +1,4 @@
+using KnowledgeFoundry.Application.Common.Models;
 using KnowledgeFoundry.Application.Common.Results;
 using MediatR;
 
@@ -11,5 +12,6 @@ public record PromptTemplateSummaryDto(
     int Purpose,
     IEnumerable<string> Tags);
 
-public sealed record GetPromptTemplatesQuery()
-    : IRequest<Result<IReadOnlyList<PromptTemplateSummaryDto>>>;
+public sealed record GetPromptTemplatesQuery(int PageNumber = 1, int PageSize = 12)
+    : IRequest<Result<PagedResponse
+        <PromptTemplateSummaryDto>>>;

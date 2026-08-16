@@ -209,10 +209,12 @@ public static class PromptTemplateEndpoints
     }
 
     private static async Task<IResult> GetPromptTemplates(
+        int? pageNumber,
+        int? pageSize,
         ISender sender,
         CancellationToken cancellationToken)
     {
-        var query = new GetPromptTemplatesQuery();
+        var query = new GetPromptTemplatesQuery(pageNumber ?? 1, pageSize ?? 12);
         var result = await sender.Send(query, cancellationToken);
 
         if (result.IsFailure)

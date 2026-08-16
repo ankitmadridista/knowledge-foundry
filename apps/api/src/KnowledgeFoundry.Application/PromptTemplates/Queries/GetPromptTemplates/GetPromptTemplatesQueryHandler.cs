@@ -1,12 +1,12 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
+using KnowledgeFoundry.Application.Common.Models;
 using KnowledgeFoundry.Application.Common.Results;
-using KnowledgeFoundry.Application.PromptTemplates.Queries.GetPromptTemplate;
 using MediatR;
 
 namespace KnowledgeFoundry.Application.PromptTemplates.Queries.GetPromptTemplates;
 
 public sealed class GetPromptTemplatesQueryHandler
-    : IRequestHandler<GetPromptTemplatesQuery, Result<IReadOnlyList<PromptTemplateSummaryDto>>>
+    : IRequestHandler<GetPromptTemplatesQuery, Result<PagedResponse<PromptTemplateSummaryDto>>>
 {
     private readonly IPromptTemplateRepository _repository;
 
@@ -15,11 +15,14 @@ public sealed class GetPromptTemplatesQueryHandler
         _repository = repository;
     }
 
-    public async Task<Result<IReadOnlyList<PromptTemplateSummaryDto>>> Handle(
+    public async Task<Result<PagedResponse<PromptTemplateSummaryDto>>> Handle(
         GetPromptTemplatesQuery request,
         CancellationToken cancellationToken)
     {
-        var templates = await _repository.GetAllAsync(cancellationToken);
+        var (templates, totalCount) = await _repository.GetPagedAsync(
+            request.PageNumber,
+            request.PageSize,
+            cancellationToken);
 
         var dtos = templates.Select(t => new PromptTemplateSummaryDto(
             t.Id,
@@ -30,6 +33,12 @@ public sealed class GetPromptTemplatesQueryHandler
             t.Tags.Select(tag => tag.Value)
         )).ToList();
 
-        return Result<IReadOnlyList<PromptTemplateSummaryDto>>.Success(dtos);
+        var response = new PagedResponse<PromptTemplateSummaryDto>(
+            dtos,
+            totalCount,
+            request.PageNumber,
+            request.PageSize);
+
+        return Result<PagedResponse<PromptTemplateSummaryDto>>.Success(response);
     }
 }
