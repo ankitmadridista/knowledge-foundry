@@ -35,15 +35,15 @@ export function CreateContextPackPage() {
                 tags: tagsArray,
             });
 
-            // STEP 2: Add Version 1 with the initial Markdown section
+            // STEP 2: Map the dynamic sections array for Version 1
+            const mappedSections = formData.sections.map((sec, index) => ({
+                title: sec.title,
+                content: sec.content,
+                order: index, // Maintain the order they appear in the UI
+            }));
+
             await createContextPackVersion(packId, {
-                sections: [
-                    {
-                        title: formData.sectionTitle,
-                        content: formData.sectionContent,
-                        order: 0,
-                    },
-                ],
+                sections: mappedSections,
             });
 
             // Success! Go back to the dashboard.
