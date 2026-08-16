@@ -41,6 +41,26 @@ internal sealed class LessonRepository : ILessonRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<(IReadOnlyList<Lesson> Items, int TotalCount)> GetPagedAsync(
+        int pageNumber,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _dbContext.Lessons.AsNoTracking();
+
+        // 1. Get the total number of records (Extremely fast in SQL)
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        // 2. Fetch only the specific page of data
+        var items = await query
+            .OrderByDescending(x => x.CreatedAt)
+            .Skip((pageNumber - 1) * pageSize) // e.g. Page 2 of 10 items skips the first 10
+            .Take(pageSize)                    // and takes the next 10
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
+
     public void Remove(Lesson lesson)
     {
         _dbContext.Lessons.Remove(lesson);

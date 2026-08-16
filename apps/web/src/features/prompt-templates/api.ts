@@ -1,13 +1,24 @@
 import { httpClient } from "@/shared/api/httpClient";
-import type { AddPromptVersionRequest, CreatePromptTemplateRequest, ExecuteTemplateRequest, ExecuteTemplateResponse, PromptTemplateDetailsDto, PromptTemplatePayloadDto, PromptTemplateSummaryDto, PromptVersionDetailsDto } from "@/features/prompt-templates/type";
+import type {
+    AddPromptVersionRequest,
+    CreatePromptTemplateRequest,
+    ExecuteTemplateRequest,
+    ExecuteTemplateResponse,
+    PromptTemplateDetailsDto,
+    PromptTemplatePayloadDto,
+    PromptTemplateSummaryDto,
+    PromptVersionDetailsDto,
+} from "@/features/prompt-templates/type";
+import type { PagedResponse } from "@/shared/types/pagination";
 
+export const getPromptTemplates = async (
+    pageNumber: number = 1,
+    pageSize: number = 12,
+): Promise<PagedResponse<PromptTemplateSummaryDto>> => {
+    const response = await httpClient.get(
+        `/prompt-templates?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+    );
 
-
-export const getPromptTemplates = async (): Promise<
-    PromptTemplateSummaryDto[]
-> => {
-    const response =
-        await httpClient.get<PromptTemplateSummaryDto[]>("/prompt-templates");
     return response.data;
 };
 

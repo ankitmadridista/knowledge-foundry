@@ -5,15 +5,20 @@ namespace KnowledgeFoundry.Application.Abstractions.Persistence;
 public interface ILessonRepository
 {
     Task AddAsync(
-        Domain.Lessons.Lesson lesson,
+        Lesson lesson,
         CancellationToken cancellationToken);
 
-    Task<Domain.Lessons.Lesson?> GetByIdAsync(
+    Task<Lesson?> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken);
 
-    Task<IReadOnlyList<Domain.Lessons.Lesson>> GetAllAsync(
+    Task<IReadOnlyList<Lesson>> GetAllAsync(
         CancellationToken cancellationToken = default);
 
-    void Remove(Domain.Lessons.Lesson lesson);
+    Task<(IReadOnlyList<Lesson> Items, int TotalCount)> GetPagedAsync(
+        int pageNumber,
+        int pageSize,
+        CancellationToken cancellationToken = default);
+
+    void Remove(Lesson lesson);
 }

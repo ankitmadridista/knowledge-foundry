@@ -43,8 +43,8 @@ export function GenerateLessonPage() {
                 ]);
 
                 if (!isMounted) return;
-                setTemplates(templatesData);
-                setContextPacks(packsData);
+                setTemplates(templatesData.items);
+                setContextPacks(packsData.items);
 
                 // If this is a remix, fetch the source lesson to pre-fill the form
                 if (remixId) {
@@ -104,7 +104,7 @@ export function GenerateLessonPage() {
     };
 
     return (
-        <Section>
+        <Section>            
             <Container>
                 <div className="mx-auto max-w-4xl">
                     <button

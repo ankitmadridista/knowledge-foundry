@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { getContextPacks } from "@/features/context-packs/api";
 import type { ContextPackSummaryDto } from "@/features/context-packs/types";
 import { ContextPackCard } from "@/features/context-packs/components";
@@ -9,19 +9,31 @@ import {
     EmptyState,
     ErrorState,
     LoadingState,
+    Pagination,
 } from "@/shared/components/ui";
+import type { PagedResponse } from "@/shared/types/pagination";
 
 export function ContextPacksListPage() {
-    const [packs, setPacks] = useState<ContextPackSummaryDto[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const currentPage = parseInt(searchParams.get("page") || "1", 10);
+    const currentPageSize = parseInt(searchParams.get("limit") || "12", 10);
+    const [pagedData, setPagedData] =
+        useState<PagedResponse<ContextPackSummaryDto> | null>(null);
 
     useEffect(() => {
         const fetchPacks = async () => {
+            setIsLoading(true); 
             try {
-                const data = await getContextPacks();
-                setPacks(data);
+                const data = await getContextPacks(currentPage, currentPageSize);
+                setPagedData(data);
+
+                // If the URL asks for a page that doesn't exist, safely reset to page 1
+                if (data.items.length === 0 && currentPage > 1) {
+                    setSearchParams({ page: "1", limit: currentPageSize.toString() });
+                }
             } catch (err) {
                 console.error("Failed to fetch context packs:", err);
                 setError(
@@ -33,7 +45,20 @@ export function ContextPacksListPage() {
         };
 
         fetchPacks();
-    }, []);
+    }, [currentPage, currentPageSize, setSearchParams]);
+
+    const handlePageChange = (newPage: number) => {
+        setSearchParams({ page: newPage.toString() });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    const handlePageSizeChange = (newSize: number) => {
+        setSearchParams({
+            page: "1",
+            limit: newSize.toString(),
+        });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
 
     return (
         <Section>
@@ -56,7 +81,7 @@ export function ContextPacksListPage() {
 
                 {error && <ErrorState message={error} />}
 
-                {!isLoading && !error && packs.length === 0 && (
+                {!isLoading && !error && pagedData?.totalCount === 0 && (
                     <EmptyState
                         message="No context packs found."
                         action={
@@ -71,19 +96,35 @@ export function ContextPacksListPage() {
                 )}
 
                 {/* 3. The Data Grid */}
-                {!isLoading && !error && packs.length > 0 && (
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {packs.map((pack) => (
-                            <ContextPackCard
-                                key={pack.id}
-                                pack={pack}
-                                onClick={() =>
-                                    navigate(`/context-packs/${pack.id}`)
-                                }
+                {!isLoading &&
+                    !error &&
+                    pagedData &&
+                    pagedData.items.length > 0 && (
+                        <>
+                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                                {pagedData?.items.map((pack) => (
+                                    <ContextPackCard
+                                        key={pack.id}
+                                        pack={pack}
+                                        onClick={() =>
+                                            navigate(
+                                                `/context-packs/${pack.id}`,
+                                            )
+                                        }
+                                    />
+                                ))}
+                            </div>
+                            <Pagination
+                                currentPage={pagedData.pageNumber}
+                                totalPages={pagedData.totalPages}
+                                pageSize={pagedData.pageSize}
+                                hasNextPage={pagedData.hasNextPage}
+                                hasPreviousPage={pagedData.hasPreviousPage}
+                                onPageChange={handlePageChange}
+                                onPageSizeChange={handlePageSizeChange}
                             />
-                        ))}
-                    </div>
-                )}
+                        </>
+                    )}
             </Container>
         </Section>
     );

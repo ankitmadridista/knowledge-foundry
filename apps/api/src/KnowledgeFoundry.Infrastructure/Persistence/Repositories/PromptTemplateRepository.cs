@@ -69,6 +69,23 @@ internal sealed class PromptTemplateRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<(IReadOnlyList<PromptTemplate> Itmes, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    {
+        var query = _dbContext.PromptTemplates.AsNoTracking();
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .Include(x => x.Tags)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+
+        throw new NotImplementedException();
+    }
+
     public async Task<PromptTemplateVersion?> GetVersionAsync(
         Guid templateId,
         int versionNumber,
@@ -85,4 +102,5 @@ internal sealed class PromptTemplateRepository
          //2. Return the single version, or null if not found
         return template?.Versions.FirstOrDefault();
     }
+
 }

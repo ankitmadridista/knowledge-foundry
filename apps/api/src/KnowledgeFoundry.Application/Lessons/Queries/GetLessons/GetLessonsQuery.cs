@@ -5,4 +5,4 @@ using MediatR;
 namespace KnowledgeFoundry.Application.Lessons.Queries.GetLessons;
 
 // Returns a List of Summaries!
-public sealed record GetLessonsQuery : IRequest<Result<IReadOnlyList<LessonSummaryDto>>>;
+public sealed record GetLessonsQuery(int PageNumber = 1, int PageSize = 12) : IRequest<Result<PagedResponse<LessonSummaryDto>>>;

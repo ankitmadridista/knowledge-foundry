@@ -1,9 +1,21 @@
 import { httpClient } from "@/shared/api/httpClient";
-import type { ContextPackDto, ContextPackSummaryDto, ContextPackVersionDetailsDto, CreateContextPackRequest, CreateContextPackVersionRequest } from "@/features/context-packs/types";
+import type {
+    ContextPackDto,
+    ContextPackSummaryDto,
+    ContextPackVersionDetailsDto,
+    CreateContextPackRequest,
+    CreateContextPackVersionRequest,
+} from "@/features/context-packs/types";
+import type { PagedResponse } from "@/shared/types/pagination";
 
-export const getContextPacks = async (): Promise<ContextPackSummaryDto[]> => {
-    const response =
-        await httpClient.get<ContextPackSummaryDto[]>("/context-packs");
+export const getContextPacks = async (
+    pageNumber: number = 1,
+    pageSize: number = 12,
+): Promise<PagedResponse<ContextPackSummaryDto>> => {
+    const response = await httpClient.get(
+        `/context-packs?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+    );
+    
     return response.data;
 };
 

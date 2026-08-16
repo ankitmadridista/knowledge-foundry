@@ -85,10 +85,12 @@ public static class ContextPackEndpoints
     }
 
     private static async Task<IResult> GetContextPacks(
+        int? pageNumber,
+        int? pageSize,
         ISender sender,
         CancellationToken cancellationToken)
     {
-        var query = new GetContextPacksQuery();
+        var query = new GetContextPacksQuery(pageNumber ?? 1, pageSize ?? 12);
         var result = await sender.Send(query, cancellationToken);
 
         if (result.IsFailure)
