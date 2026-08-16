@@ -1,8 +1,8 @@
 import { Card, Text } from "@/shared/components/ui";
-import type { PromptTemplateSummary } from "@/features/prompt-templates/api/promptTemplatesApi";
+import type { PromptTemplateSummaryDto } from "@/features/prompt-templates/api/promptTemplatesApi";
 
 interface PromptTemplateCardProps {
-    template: PromptTemplateSummary;
+    template: PromptTemplateSummaryDto;
     onClick: () => void;
 }
 

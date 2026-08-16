@@ -4,3 +4,4 @@ export * from "./TechnologySection";
 export * from "./WorkflowSection";
 export * from "./ArchitectureSection";
 export * from "./RoadmapSection";
+export * from "./FeatureCard";

@@ -1,11 +1,45 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Container } from "@/shared/components/layout";
+import { NAV_LINKS } from "@/shared/data/nav-links";
 
+// --- Main Component ---
 export function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
     const closeMenu = () => setIsMobileMenuOpen(false);
+
+    // Helper function to render links consistently
+    const renderNavLinks = (isMobile: boolean = false) => {
+        const baseClasses = isMobile 
+            ? "block text-base font-medium text-zinc-300 transition-colors" 
+            : "text-sm font-medium text-zinc-400 transition-colors";
+
+        return NAV_LINKS.map((link) => {
+            const className = `${baseClasses} ${link.hoverClass}`;
+
+            return link.isExternal ? (
+                <a
+                    key={link.label}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={className}
+                    onClick={isMobile ? closeMenu : undefined}
+                >
+                    {link.label}
+                </a>
+            ) : (
+                <Link
+                    key={link.label}
+                    to={link.href}
+                    onClick={closeMenu}
+                    className={className}
+                >
+                    {link.label}
+                </Link>
+            );
+        });
+    };
 
     return (
         <header className="border-b border-zinc-800 sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-md">
@@ -22,28 +56,7 @@ export function Navbar() {
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center gap-6">
-                        <Link
-                            to="/templates"
-                            className="text-sm font-medium text-zinc-400 hover:text-indigo-400 transition-colors"
-                        >
-                            Prompt Library
-                        </Link>
-
-                        <Link
-                            to="/context-packs"
-                            className="text-sm font-medium text-zinc-400 hover:text-emerald-400 transition-colors"
-                        >
-                            Context Packs
-                        </Link>
-
-                        <a
-                            href="https://github.com/ankitmadridista/knowledge-foundry"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm font-medium text-zinc-400 hover:text-white transition-colors"
-                        >
-                            GitHub
-                        </a>
+                        {renderNavLinks(false)}
                     </nav>
 
                     {/* Mobile Menu Toggle Button */}
@@ -52,39 +65,13 @@ export function Navbar() {
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                         aria-label="Toggle Menu"
                     >
-                        {isMobileMenuOpen ? (
-                            // Close (X) Icon
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={2}
-                                stroke="currentColor"
-                                className="w-6 h-6"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M6 18L18 6M6 6l12 12"
-                                />
-                            </svg>
-                        ) : (
-                            // Hamburger Icon
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={2}
-                                stroke="currentColor"
-                                className="w-6 h-6"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                                />
-                            </svg>
-                        )}
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                            {isMobileMenuOpen ? (
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            ) : (
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                            )}
+                        </svg>
                     </button>
                 </div>
             </Container>
@@ -94,30 +81,7 @@ export function Navbar() {
                 <div className="md:hidden border-t border-zinc-800 bg-zinc-900/95 shadow-xl">
                     <Container>
                         <nav className="flex flex-col py-4 space-y-4">
-                            <Link
-                                to="/templates"
-                                onClick={closeMenu}
-                                className="block text-base font-medium text-zinc-300 hover:text-indigo-400 transition-colors"
-                            >
-                                Prompt Library
-                            </Link>
-
-                            <Link
-                                to="/context-packs"
-                                onClick={closeMenu}
-                                className="block text-base font-medium text-zinc-300 hover:text-emerald-400 transition-colors"
-                            >
-                                Context Packs
-                            </Link>
-
-                            <a
-                                href="https://github.com/ankitmadridista/knowledge-foundry"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block text-base font-medium text-zinc-300 hover:text-white transition-colors"
-                            >
-                                GitHub
-                            </a>
+                            {renderNavLinks(true)}
                         </nav>
                     </Container>
                 </div>
