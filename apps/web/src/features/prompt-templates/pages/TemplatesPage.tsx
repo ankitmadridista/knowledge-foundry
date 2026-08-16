@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { getPromptTemplates } from "@/features/prompt-templates/api";
 import type { PromptTemplateSummaryDto } from "@/features/prompt-templates/type";
 import { Section, Container, PageHeader } from "@/shared/components/layout";
@@ -8,20 +8,37 @@ import {
     LoadingState,
     ErrorState,
     EmptyState,
+    Pagination,
 } from "@/shared/components/ui";
 import { PromptTemplateCard } from "@/features/prompt-templates/components";
+import type { PagedResponse } from "@/shared/types/pagination";
 
 export function TemplatesPage() {
-    const [templates, setTemplates] = useState<PromptTemplateSummaryDto[]>([]);
+    const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const currentPage = parseInt(searchParams.get("page") || "1", 10);
+    const currentPageSize = parseInt(searchParams.get("limit") || "12", 10);
+    const [pagedData, setPagedData] =
+        useState<PagedResponse<PromptTemplateSummaryDto> | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchTemplates = async () => {
+            setIsLoading(true);
             try {
-                const data = await getPromptTemplates();
-                setTemplates(data);
+                const data = await getPromptTemplates(
+                    currentPage,
+                    currentPageSize,
+                );
+                setPagedData(data);
+
+                if (data.items.length === 0 && currentPage > 1) {
+                    setSearchParams({
+                        page: "1",
+                        limit: currentPageSize.toString(),
+                    });
+                }
             } catch (err) {
                 console.error("Failed to fetch templates:", err);
                 setError(
@@ -33,7 +50,21 @@ export function TemplatesPage() {
         };
 
         fetchTemplates();
-    }, []);
+    }, [currentPage, currentPageSize, setSearchParams]);
+
+    const handlePageChange = (newPage: number) => {
+        setSearchParams({ page: newPage.toString() });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    const handlePageSizeChange = (newSize: number) => {
+        // When changing page size, ALWAYS reset to Page 1 to avoid showing empty pages
+        setSearchParams({
+            page: "1",
+            limit: newSize.toString(),
+        });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
 
     return (
         <Section>
@@ -54,7 +85,7 @@ export function TemplatesPage() {
 
                 {error && <ErrorState message={error} />}
 
-                {!isLoading && !error && templates.length === 0 && (
+                {!isLoading && !error && pagedData?.totalCount === 0 && (
                     <EmptyState
                         message="No prompt templates found."
                         action={
@@ -69,19 +100,35 @@ export function TemplatesPage() {
                 )}
 
                 {/* 3. The Data Grid */}
-                {!isLoading && !error && templates.length > 0 && (
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {templates.map((template) => (
-                            <PromptTemplateCard
-                                key={template.id}
-                                template={template}
-                                onClick={() =>
-                                    navigate(`/templates/${template.id}`)
-                                }
+                {!isLoading &&
+                    !error &&
+                    pagedData &&
+                    pagedData.items.length > 0 && (
+                        <>
+                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                                {pagedData.items.map((template) => (
+                                    <PromptTemplateCard
+                                        key={template.id}
+                                        template={template}
+                                        onClick={() =>
+                                            navigate(
+                                                `/templates/${template.id}`,
+                                            )
+                                        }
+                                    />
+                                ))}
+                            </div>
+                            <Pagination
+                                currentPage={pagedData.pageNumber}
+                                totalPages={pagedData.totalPages}
+                                pageSize={pagedData.pageSize}
+                                hasNextPage={pagedData.hasNextPage}
+                                hasPreviousPage={pagedData.hasPreviousPage}
+                                onPageChange={handlePageChange}
+                                onPageSizeChange={handlePageSizeChange}
                             />
-                        ))}
-                    </div>
-                )}
+                        </>
+                    )}
             </Container>
         </Section>
     );
