@@ -47,6 +47,10 @@ internal sealed class LessonConfiguration : IEntityTypeConfiguration<Lesson>
             .HasConversion<int>()
             .IsRequired();
 
+        builder.Property(x => x.IsManuallyEdited)
+            .IsRequired()
+            .HasDefaultValue(false);
+
         builder.Property(x => x.ErrorMessage)
             .HasMaxLength(2000)
             .IsRequired(false);

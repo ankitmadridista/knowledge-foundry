@@ -1,4 +1,5 @@
 using KnowledgeFoundry.Domain.Lessons.Enums;
+using KnowledgeFoundry.Domain.Lessons.Events;
 using KnowledgeFoundry.Domain.Lessons.ValueObjects;
 
 namespace KnowledgeFoundry.Domain.Lessons;
@@ -14,11 +15,11 @@ public sealed class Lesson : Entity
     public LessonTopic Topic { get; private set; } = null!;
     public LessonAudience Audience { get; private set; } = null!;
 
-    // Notice this is nullable now! It will be null while 'Generating'
     public LessonContent? Content { get; private set; }
 
     public LessonStatus Status { get; private set; }
-    public string? ErrorMessage { get; private set; } // If generation fails
+    public string? ErrorMessage { get; private set; }
+    public bool IsManuallyEdited { get; private set; }
 
     // Traceability
     public Guid PromptTemplateId { get; private set; }
@@ -41,11 +42,11 @@ public sealed class Lesson : Entity
         PromptTemplateId = promptTemplateId;
         ContextPackId = contextPackId;
 
-        Status = LessonStatus.Generating; // Starts as generating!
+        Status = LessonStatus.Generating;
+        IsManuallyEdited = false; // Defaults to false!
         CreatedAt = DateTime.UtcNow;
     }
 
-    // Phase 1: Creating the record before calling the AI
     public static Lesson CreatePending(
         string title,
         string topic,
@@ -61,7 +62,6 @@ public sealed class Lesson : Entity
             contextPackId);
     }
 
-    // Phase 2: Called when the AI successfully returns a payload
     public void MarkAsCompleted(string generatedContent)
     {
         if (Status != LessonStatus.Generating)
@@ -71,10 +71,9 @@ public sealed class Lesson : Entity
         Status = LessonStatus.Completed;
         CompletedAt = DateTime.UtcNow;
 
-        // Future: RaiseDomainEvent(new LessonCompletedDomainEvent(Id));
+        RaiseDomainEvent(new LessonCompletedDomainEvent(Id, CompletedAt.Value));
     }
 
-    // Phase 2: Called if the AI Platform throws an exception
     public void MarkAsFailed(string errorReason)
     {
         if (Status != LessonStatus.Generating)
@@ -84,6 +83,17 @@ public sealed class Lesson : Entity
         Status = LessonStatus.Failed;
         CompletedAt = DateTime.UtcNow;
 
-        // Future: RaiseDomainEvent(new LessonFailedDomainEvent(Id, errorReason));
+        RaiseDomainEvent(new LessonFailedDomainEvent(Id, errorReason, CompletedAt.Value));
+    }
+
+    public void UpdateContentManually(string newContent)
+    {
+        if (Status != LessonStatus.Completed)
+            throw new InvalidOperationException("Only completed lessons can be manually edited.");
+
+        Content = new LessonContent(newContent);
+        IsManuallyEdited = true;
+
+        RaiseDomainEvent(new LessonManuallyEditedDomainEvent(Id, DateTime.UtcNow));
     }
 }
