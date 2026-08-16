@@ -38,7 +38,8 @@ internal sealed class GetLessonByIdQueryHandler
             lesson.PromptTemplateId,
             lesson.ContextPackId,
             lesson.CreatedAt,
-            lesson.CompletedAt);
+            lesson.CompletedAt,
+            lesson.IsManuallyEdited);
 
         return Result<LessonDto>.Success(dto);
     }
