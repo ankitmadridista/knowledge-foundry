@@ -46,12 +46,15 @@ export function Navbar() {
             <Container>
                 <div className="flex items-center justify-between h-16">
                     {/* Logo / Title */}
-                    <Link
-                        to="/"
-                        onClick={closeMenu}
-                        className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-zinc-100 hover:text-white transition-colors"
-                    >
-                        Knowledge Foundry
+                    <Link to="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
+                        <img 
+                            src="/favicon.svg" 
+                            alt="Knowledge Foundry Logo" 
+                            className="w-8 h-8" 
+                        />
+                        <span className="text-xl font-bold bg-clip-text text-transparent bg-linear-to-r from-indigo-400 to-purple-400">
+                            Knowledge Foundry
+                        </span>
                     </Link>
 
                     {/* Desktop Navigation */}

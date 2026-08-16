@@ -12,6 +12,7 @@ import {
     ContextPackHeader,
     ContextPackVersionTable,
 } from "@/features/context-packs/components";
+import toast from "react-hot-toast";
 
 export function ContextPackDetailsPage() {
     const { id } = useParams<{ id: string }>();
@@ -69,8 +70,9 @@ export function ContextPackDetailsPage() {
             setActionLoading(`publish-${versionNumber}`);
             await publishContextPackVersion(pack.id, versionNumber);
             await refreshPack();
+            toast.success(`Version ${versionNumber} published successfully!`);
         } catch (err) {
-            alert("Failed to publish version. Check console for details.");
+            toast.error("Failed to publish version. Check console for details.");
             console.error("Error: ", err);
         } finally {
             setActionLoading(null);
@@ -83,8 +85,9 @@ export function ContextPackDetailsPage() {
             setActionLoading(`activate-${versionNumber}`);
             await activateContextPackVersion(pack.id, versionNumber);
             await refreshPack();
+            toast.success(`Version ${versionNumber} is now active!`);
         } catch (err) {
-            alert(
+            toast.error(
                 "Failed to activate version. Make sure it is Published first!",
             );
             console.error("Error: ", err);
