@@ -6,7 +6,7 @@ using MediatR;
 namespace KnowledgeFoundry.Application.Lessons.Queries.GetLessons;
 
 internal sealed class GetLessonsQueryHandler
-    : IRequestHandler<GetLessonsQuery, Result<IReadOnlyList<LessonSummaryDto>>>
+    : IRequestHandler<GetLessonsQuery, Result<PagedResponse<LessonSummaryDto>>>
 {
     private readonly ILessonRepository _repository;
 
@@ -15,12 +15,17 @@ internal sealed class GetLessonsQueryHandler
         _repository = repository;
     }
 
-    public async Task<Result<IReadOnlyList<LessonSummaryDto>>> Handle(
+    public async Task<Result<PagedResponse<LessonSummaryDto>>> Handle(
         GetLessonsQuery request,
         CancellationToken cancellationToken)
     {
-        var lessons = await _repository.GetAllAsync(cancellationToken);
+        // 1. Fetch paged data and total count from the DB
+        var (lessons, totalCount) = await _repository.GetPagedAsync(
+            request.PageNumber,
+            request.PageSize,
+            cancellationToken);
 
+        // 2. Map Entities to DTOs
         var dtos = lessons.Select(lesson => new LessonSummaryDto(
             lesson.Id,
             lesson.Title.Value,
@@ -32,6 +37,13 @@ internal sealed class GetLessonsQueryHandler
             lesson.IsManuallyEdited
         )).ToList();
 
-        return Result<IReadOnlyList<LessonSummaryDto>>.Success(dtos);
+        // 3. Wrap in our new PagedResponse
+        var response = new PagedResponse<LessonSummaryDto>(
+            dtos,
+            totalCount,
+            request.PageNumber,
+            request.PageSize);
+
+        return Result<PagedResponse<LessonSummaryDto>>.Success(response);
     }
 }
