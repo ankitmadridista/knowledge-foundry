@@ -16,28 +16,43 @@ import type { PagedResponse } from "@/shared/types/pagination";
 export function TemplatesPage() {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
-    const currentPage = parseInt(searchParams.get("page") || "1", 10);
-    const currentPageSize = parseInt(searchParams.get("limit") || "12", 10);
+
+    // --- STATE AS SOURCE OF TRUTH (Initialized from URL) ---
+    const [currentPage, setCurrentPage] = useState(() =>
+        parseInt(searchParams.get("page") || "1", 10),
+    );
+    const [pageSize, setPageSize] = useState(() =>
+        parseInt(searchParams.get("limit") || "6", 10),
+    );
+
     const [pagedData, setPagedData] =
         useState<PagedResponse<PromptTemplateSummaryDto> | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // 1. Sync internal state back to the URL seamlessly
+    useEffect(() => {
+        setSearchParams(
+            (prev) => {
+                prev.set("page", currentPage.toString());
+                prev.set("limit", pageSize.toString());
+                return prev;
+            },
+            { replace: true },
+        );
+    }, [currentPage, pageSize, setSearchParams]);
+
+    // 2. Fetch data based on internal state
     useEffect(() => {
         const fetchTemplates = async () => {
             setIsLoading(true);
             try {
-                const data = await getPromptTemplates(
-                    currentPage,
-                    currentPageSize,
-                );
+                const data = await getPromptTemplates(currentPage, pageSize);
                 setPagedData(data);
 
+                // If page doesn't exist, reset state to page 1
                 if (data.items.length === 0 && currentPage > 1) {
-                    setSearchParams({
-                        page: "1",
-                        limit: currentPageSize.toString(),
-                    });
+                    setCurrentPage(1);
                 }
             } catch (err) {
                 console.error("Failed to fetch templates:", err);
@@ -50,19 +65,17 @@ export function TemplatesPage() {
         };
 
         fetchTemplates();
-    }, [currentPage, currentPageSize, setSearchParams]);
+    }, [currentPage, pageSize]);
 
+    // 3. Handlers update state
     const handlePageChange = (newPage: number) => {
-        setSearchParams({ page: newPage.toString() });
+        setCurrentPage(newPage);
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     const handlePageSizeChange = (newSize: number) => {
-        // When changing page size, ALWAYS reset to Page 1 to avoid showing empty pages
-        setSearchParams({
-            page: "1",
-            limit: newSize.toString(),
-        });
+        setCurrentPage(1);
+        setPageSize(newSize);
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
@@ -122,6 +135,7 @@ export function TemplatesPage() {
                                 currentPage={pagedData.pageNumber}
                                 totalPages={pagedData.totalPages}
                                 pageSize={pagedData.pageSize}
+                                totalCount={pagedData.totalCount}
                                 hasNextPage={pagedData.hasNextPage}
                                 hasPreviousPage={pagedData.hasPreviousPage}
                                 onPageChange={handlePageChange}

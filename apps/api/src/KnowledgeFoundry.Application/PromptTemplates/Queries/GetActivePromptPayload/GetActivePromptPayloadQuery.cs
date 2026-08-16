@@ -9,7 +9,8 @@ public record PromptPayloadDto(
     string Identifier,
     IEnumerable<MessagePayloadDto> Messages,
     IEnumerable<string> Variables,
-    string Capability);
+    string Capability,
+    int versionNumber);
 
 public sealed record GetActivePromptPayloadQuery(string Identifier)
     : IRequest<Result<PromptPayloadDto>>;

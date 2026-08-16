@@ -17,22 +17,43 @@ export function ContextPacksListPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
+
     const [searchParams, setSearchParams] = useSearchParams();
-    const currentPage = parseInt(searchParams.get("page") || "1", 10);
-    const currentPageSize = parseInt(searchParams.get("limit") || "12", 10);
+
+    // --- STATE AS SOURCE OF TRUTH (Initialized from URL) ---
+    const [currentPage, setCurrentPage] = useState(() =>
+        parseInt(searchParams.get("page") || "1", 10),
+    );
+    const [pageSize, setPageSize] = useState(() =>
+        parseInt(searchParams.get("limit") || "6", 10),
+    );
+
     const [pagedData, setPagedData] =
         useState<PagedResponse<ContextPackSummaryDto> | null>(null);
 
+    // 1. Sync internal state back to the URL seamlessly
+    useEffect(() => {
+        setSearchParams(
+            (prev) => {
+                prev.set("page", currentPage.toString());
+                prev.set("limit", pageSize.toString());
+                return prev;
+            },
+            { replace: true }, // Prevents filling up browser history
+        );
+    }, [currentPage, pageSize, setSearchParams]);
+
+    // 2. Fetch data based on internal state
     useEffect(() => {
         const fetchPacks = async () => {
-            setIsLoading(true); 
+            setIsLoading(true);
             try {
-                const data = await getContextPacks(currentPage, currentPageSize);
+                const data = await getContextPacks(currentPage, pageSize);
                 setPagedData(data);
 
-                // If the URL asks for a page that doesn't exist, safely reset to page 1
+                // If page doesn't exist, reset state to page 1
                 if (data.items.length === 0 && currentPage > 1) {
-                    setSearchParams({ page: "1", limit: currentPageSize.toString() });
+                    setCurrentPage(1);
                 }
             } catch (err) {
                 console.error("Failed to fetch context packs:", err);
@@ -45,18 +66,17 @@ export function ContextPacksListPage() {
         };
 
         fetchPacks();
-    }, [currentPage, currentPageSize, setSearchParams]);
+    }, [currentPage, pageSize]); // Depend on state, not URL directly
 
+    // 3. Handlers update state (which triggers both useEffects)
     const handlePageChange = (newPage: number) => {
-        setSearchParams({ page: newPage.toString() });
+        setCurrentPage(newPage);
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     const handlePageSizeChange = (newSize: number) => {
-        setSearchParams({
-            page: "1",
-            limit: newSize.toString(),
-        });
+        setCurrentPage(1);
+        setPageSize(newSize);
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
@@ -118,6 +138,7 @@ export function ContextPacksListPage() {
                                 currentPage={pagedData.pageNumber}
                                 totalPages={pagedData.totalPages}
                                 pageSize={pagedData.pageSize}
+                                totalCount={pagedData.totalCount}
                                 hasNextPage={pagedData.hasNextPage}
                                 hasPreviousPage={pagedData.hasPreviousPage}
                                 onPageChange={handlePageChange}

@@ -23,7 +23,7 @@ export const generateLesson = async (
 
 export const getLessons = async (
     pageNumber: number = 1,
-    pageSize: number = 12,
+    pageSize: number = 6,
 ): Promise<PagedResponse<LessonSummaryDto>> => {
     const response = await httpClient.get(
         `/lessons?pageNumber=${pageNumber}&pageSize=${pageSize}`,
