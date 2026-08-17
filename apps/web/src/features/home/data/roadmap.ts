@@ -29,7 +29,7 @@ export const roadmap: RoadmapItem[] = [
         title: "Lesson Generation",
         description:
             "Generate educational content using orchestrated AI pipelines.",
-        status: "in-progress",
+        status: "completed",
     },
     {
         title: "Evaluation Engine",
