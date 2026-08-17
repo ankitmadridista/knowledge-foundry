@@ -102,7 +102,11 @@ public sealed class GenerateLessonCommandHandler
         // 5. Execute the AI Call & Update the Lesson Entity
         try
         {
-            var generatedMarkdown = await _executionService.ExecuteAsync(injectedMessages, cancellationToken);
+            var generatedMarkdown = await _executionService.ExecuteAsync(
+                injectedMessages,
+                template.Provider,
+                template.Model.Value,
+                cancellationToken);
             lesson.MarkAsCompleted(generatedMarkdown);
         }
         catch (Exception ex)

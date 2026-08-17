@@ -65,15 +65,16 @@ public class DatabaseSeeder : IDatabaseSeeder
 
     private async Task SeedPromptTemplatesAsync()
     {
-        // ... [Existing History Tutor Code] ...
 
         var bioTemplate = PromptTemplate.Create(
-            name: "Biology Lab Assistant",
-            identifier: "BIO-ASSISTANT",
-            description: "A friendly AI lab assistant that explains cellular biology concepts to students.",
-            purpose: 0,
-            tags: ["biology", "tutor", "science" ]
-        );
+             name: "Biology Lab Assistant",
+             identifier: "BIO-ASSISTANT",
+             description: "A friendly AI lab assistant that explains cellular biology concepts to students.",
+             purpose: PromptPurpose.LessonGeneration,
+             provider: AiProvider.Groq,
+             model: "llama-3.3-70b-versatile",
+             tags: ["biology", "tutor", "science"]
+         );
 
         var bioVersion = bioTemplate.CreateVersion(
             [

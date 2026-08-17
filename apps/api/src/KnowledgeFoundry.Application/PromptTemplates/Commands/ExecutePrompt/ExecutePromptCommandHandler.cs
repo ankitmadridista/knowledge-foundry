@@ -78,7 +78,11 @@ public sealed class ExecutePromptCommandHandler
         // 4. Send to LLM (Groq/OpenAI)
         try
         {
-            var result = await _executionService.ExecuteAsync(injectedMessages, cancellationToken);
+            var result = await _executionService.ExecuteAsync(
+                injectedMessages,
+                payloadResult.Value.Provider,
+                payloadResult.Value.Model,
+                cancellationToken);
             return Result<string>.Success(result);
         }
         catch (Exception ex)

@@ -9,8 +9,7 @@ public static class DependencyInjection
     public static IServiceCollection AddAIPlatform(
         this IServiceCollection services)
     {
-        // Register the real AI service!
-        services.AddScoped<IPromptExecutionService, GroqPromptExecutionService>();
+        services.AddScoped<IPromptExecutionService, MultiModelExecutionService>();
         return services;
     }
 }

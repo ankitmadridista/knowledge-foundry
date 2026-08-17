@@ -1,14 +1,10 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using KnowledgeFoundry.Application.Abstractions.Persistence;
 using KnowledgeFoundry.Application.Common.Errors;
 using KnowledgeFoundry.Application.PromptTemplates.Queries.GetPromptTemplate;
-using KnowledgeFoundry.Domain.PromptTemplates;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using NSubstitute;
 using Shouldly;
-using Xunit;
+using System.Reflection;
 
 namespace KnowledgeFoundry.UnitTests.PromptTemplates.Queries.GetPromptTemplate;
 
@@ -34,6 +30,8 @@ public class GetPromptTemplateQueryHandlerTests
             "Test Prompt",
             "Test Description",
             PromptPurpose.LessonGeneration,
+            AiProvider.Groq,
+            "llama-3.3-70b-versatile",
             new[] { "test" });
 
         _repositoryMock

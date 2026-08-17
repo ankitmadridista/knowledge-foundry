@@ -47,6 +47,6 @@ export const roadmap: RoadmapItem[] = [
         title: "Multi-Model Support",
         description:
             "Support Gemini, OpenAI, OpenRouter, Ollama and future providers.",
-        status: "planned",
+        status: "in-progress",
     },
 ];

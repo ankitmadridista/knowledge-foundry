@@ -34,6 +34,8 @@ public sealed class GetPromptTemplateQueryHandler
             template.Name.Value,
             template.Description.Value,
             template.Purpose,
+            template.Provider,
+            template.Model,
             template.Tags.Select(t => t.Value).ToList().AsReadOnly(),
             Versions: template.Versions.Select(v => new PromptVersionDto(
                 v.VersionNumber.Value,

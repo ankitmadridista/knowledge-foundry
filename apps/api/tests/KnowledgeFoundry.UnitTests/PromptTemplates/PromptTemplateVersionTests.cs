@@ -14,6 +14,8 @@ public class PromptTemplateVersionTests
             "Lesson Generator",
             "Generates educational lessons",
             PromptPurpose.LessonGeneration,
+            AiProvider.Groq,
+            "Groq",
             ["education"]);
     }
 

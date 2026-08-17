@@ -11,6 +11,7 @@ using KnowledgeFoundry.Application.PromptTemplates.Queries.GetPromptTemplates;
 using KnowledgeFoundry.Application.PromptTemplates.Queries.GetPromptVersion;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace KnowledgeFoundry.Api.Endpoints.PromptTemplates;
 
@@ -21,6 +22,8 @@ public sealed record CreatePromptTemplateRequest(
     string Name,
     string Description,
     PromptPurpose Purpose,
+    AiProvider Provider,
+    string Model,
     string[] Tags);
 
 public sealed record PromptMessageRequest(
@@ -74,6 +77,8 @@ public static class PromptTemplateEndpoints
             request.Name,
             request.Description,
             request.Purpose,
+            request.Provider,
+            request.Model,
             request.Tags);
 
         var result = await sender.Send(command, cancellationToken);

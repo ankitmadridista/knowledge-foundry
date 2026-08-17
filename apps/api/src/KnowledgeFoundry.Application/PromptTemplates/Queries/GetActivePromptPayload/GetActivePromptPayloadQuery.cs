@@ -1,4 +1,5 @@
 using KnowledgeFoundry.Application.Common.Results;
+using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using MediatR;
 
 namespace KnowledgeFoundry.Application.PromptTemplates.Queries.GetActivePromptPayload;
@@ -10,7 +11,9 @@ public record PromptPayloadDto(
     IEnumerable<MessagePayloadDto> Messages,
     IEnumerable<string> Variables,
     string Capability,
-    int versionNumber);
+    int versionNumber,
+    AiProvider Provider,
+    string Model);
 
 public sealed record GetActivePromptPayloadQuery(string Identifier)
     : IRequest<Result<PromptPayloadDto>>;
