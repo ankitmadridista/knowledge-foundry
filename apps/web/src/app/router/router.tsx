@@ -14,11 +14,13 @@ import { CreateContextPackVersionPage } from "@/features/context-packs/pages/Cre
 import { GenerateLessonPage } from "@/features/lessons/pages/GenerateLessonPage";
 import { LessonsPage } from "@/features/lessons/pages/LessonsPage";
 import { LessonViewerPage } from "@/features/lessons/pages/LessonViewerPage";
+import { GlobalRouteError } from "@/shared/components/layout/GlobalRouteError";
 
 export const router = createBrowserRouter([
     {
         path: "/",
         element: <MainLayout />,
+        errorElement: <GlobalRouteError />,
         children: [
             {
                 index: true,
@@ -77,5 +79,6 @@ export const router = createBrowserRouter([
     {
         path: "*",
         element: <NotFoundPage />,
+        errorElement: <GlobalRouteError />,
     },
 ]);

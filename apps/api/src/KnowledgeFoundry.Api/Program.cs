@@ -4,7 +4,8 @@ using KnowledgeFoundry.Api.Endpoints.Lessons;
 using KnowledgeFoundry.Api.Endpoints.PromptTemplates;
 using KnowledgeFoundry.Application.DependencyInjection;
 using KnowledgeFoundry.Infrastructure;
-using KnowledgeFoundry.Infrastructure.Persistence; // Added for IDatabaseSeeder
+using KnowledgeFoundry.Infrastructure.Persistence;
+using KnowledgeFoundry.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,9 @@ builder.Services
     .AddApplication()
     .AddAIPlatform()
     .AddInfrastructure(builder.Configuration);
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddCors(options =>
 {
@@ -32,6 +36,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>

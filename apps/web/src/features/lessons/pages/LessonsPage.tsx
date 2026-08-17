@@ -76,7 +76,7 @@ export function LessonsPage() {
         setPageSize(newSize);
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
-
+    
     return (
         <Section>
             <Container>
