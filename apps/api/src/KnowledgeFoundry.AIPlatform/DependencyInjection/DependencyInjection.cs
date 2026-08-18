@@ -10,6 +10,7 @@ public static class DependencyInjection
         this IServiceCollection services)
     {
         services.AddScoped<IPromptExecutionService, MultiModelExecutionService>();
+        services.AddHttpClient<IAiModelDiscoveryService, AiModelDiscoveryService>();
         return services;
     }
 }

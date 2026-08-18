@@ -10,6 +10,7 @@ import {
 import type { PromptTemplateSummaryDto } from "@/features/prompt-templates/type";
 import type { ContextPackSummaryDto } from "@/features/context-packs/types";
 import type { LessonDto } from "@/features/lessons/types";
+import type { AiModelDto } from "@/features/prompt-templates/type"; // <-- NEW
 
 export interface GenerateLessonFormData {
     title: string;
@@ -17,11 +18,14 @@ export interface GenerateLessonFormData {
     audience: string;
     promptTemplateId: string;
     contextPackId: string;
+    provider?: number; // <-- NEW
+    model?: string; // <-- NEW
 }
 
 interface GenerateLessonFormProps {
     templates: PromptTemplateSummaryDto[];
     contextPacks: ContextPackSummaryDto[];
+    availableModels: AiModelDto[]; // <-- NEW
     initialData?: LessonDto | null;
     onSubmit: (data: GenerateLessonFormData) => void;
     onCancel: () => void;
@@ -31,6 +35,7 @@ interface GenerateLessonFormProps {
 export function GenerateLessonForm({
     templates,
     contextPacks,
+    availableModels,
     initialData,
     onSubmit,
     onCancel,
@@ -42,6 +47,8 @@ export function GenerateLessonForm({
         audience: initialData?.audience || "8th Grade Students",
         promptTemplateId: initialData?.promptTemplateId || "",
         contextPackId: initialData?.contextPackId || "",
+        provider: undefined,
+        model: undefined,
     });
 
     const handleChange = (
@@ -50,13 +57,50 @@ export function GenerateLessonForm({
         >,
     ) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+
+        // --- NEW: Handle Provider switching logic ---
+        if (name === "provider") {
+            if (value === "") {
+                // If they select "Use Template Default", clear both
+                setFormData((prev) => ({
+                    ...prev,
+                    provider: undefined,
+                    model: undefined,
+                }));
+            } else {
+                const newProviderInt = parseInt(value, 10);
+                const newProviderModels = availableModels.filter(
+                    (m) => m.providerId === newProviderInt,
+                );
+                setFormData((prev) => ({
+                    ...prev,
+                    provider: newProviderInt,
+                    model:
+                        newProviderModels.length > 0
+                            ? newProviderModels[0].modelId
+                            : "",
+                }));
+            }
+        } else {
+            setFormData((prev) => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSubmit(formData);
     };
+
+    // Calculate options for the dropdowns based on available models
+    const providers = Array.from(
+        new Map(
+            availableModels.map((m) => [m.providerId, m.providerName]),
+        ).entries(),
+    ).map(([id, name]) => ({ id, name }));
+
+    const modelsForCurrentProvider = availableModels.filter(
+        (m) => m.providerId === formData.provider,
+    );
 
     const selectClasses =
         "flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm ring-offset-zinc-950 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50";
@@ -147,6 +191,51 @@ export function GenerateLessonForm({
                             {contextPacks.map((c) => (
                                 <option key={c.id} value={c.id}>
                                     {c.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
+                {/* --- NEW: MODEL OVERRIDE BOX --- */}
+                <div className="mt-4 p-4 rounded-lg border border-zinc-800 bg-zinc-950/40 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-xs font-medium text-zinc-400 mb-1">
+                            AI Provider Override (Optional)
+                        </label>
+                        <select
+                            name="provider"
+                            value={
+                                formData.provider !== undefined
+                                    ? formData.provider
+                                    : ""
+                            }
+                            onChange={handleChange}
+                            className={selectClasses}
+                        >
+                            <option value="">(Use Template Default)</option>
+                            {providers.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                    {p.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-zinc-400 mb-1">
+                            Model Override
+                        </label>
+                        <select
+                            name="model"
+                            value={formData.model || ""}
+                            onChange={handleChange}
+                            disabled={formData.provider === undefined}
+                            className={selectClasses}
+                        >
+                            <option value="">(Use Template Default)</option>
+                            {modelsForCurrentProvider.map((m) => (
+                                <option key={m.modelId} value={m.modelId}>
+                                    {m.modelId}
                                 </option>
                             ))}
                         </select>

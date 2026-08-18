@@ -38,25 +38,17 @@ public sealed class GenerateLessonCommandHandler
         GenerateLessonCommand request,
         CancellationToken cancellationToken)
     {
-        // 1. Validate the Prompt Template exists and has an Active version
         var template = await _templateRepository.GetByIdAsync(request.PromptTemplateId, cancellationToken);
-
-        if (template is null)
-            return Result<Guid>.Failure(LessonErrors.TemplateNotFound);
+        if (template is null) return Result<Guid>.Failure(LessonErrors.TemplateNotFound);
 
         var activeVersion = template.Versions.SingleOrDefault(v => v.Status == PromptStatus.Active);
+        if (activeVersion is null) return Result<Guid>.Failure(LessonErrors.NoActiveTemplate);
 
-        if (activeVersion is null)
-            return Result<Guid>.Failure(LessonErrors.NoActiveTemplate);
-
-        // 2. Fetch the Context Pack content if one was provided
         string contextContent = string.Empty;
         if (request.ContextPackId.HasValue)
         {
             var pack = await _contextPackRepository.GetByIdAsync(request.ContextPackId.Value, cancellationToken);
-
-            if (pack is null)
-                return Result<Guid>.Failure(LessonErrors.ContextPackNotFound);
+            if (pack is null) return Result<Guid>.Failure(LessonErrors.ContextPackNotFound);
 
             var activePackVersion = pack.Versions.SingleOrDefault(v => v.Status == ContextPackStatus.Active);
             if (activePackVersion is not null)
@@ -72,49 +64,49 @@ public sealed class GenerateLessonCommandHandler
             }
         }
 
-        // 3. Create the Lesson entity in its initial 'Generating' state and save to DB
+        // --- NEW: Resolve the Provider and Model BEFORE creating the lesson ---
+        var provider = request.OverrideProvider ?? template.Provider;
+        var model = !string.IsNullOrWhiteSpace(request.OverrideModel) ? request.OverrideModel : template.Model.Value;
+
+        // 3. Create the Lesson entity and save the explicit provider and model!
         var lesson = Lesson.CreatePending(
             request.Title,
             request.Topic,
             request.Audience,
             request.PromptTemplateId,
-            request.ContextPackId);
+            request.ContextPackId,
+            provider,
+            model);
 
         await _lessonRepository.AddAsync(lesson, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        // 4. Prepare the AI payload (Replace variables in the prompt messages)
         var injectedMessages = new List<MessagePayloadDto>();
         foreach (var message in activeVersion.Messages.OrderBy(m => m.Order))
         {
             var content = message.Content;
-
-            // Replace standard Lesson variables
             content = content.Replace("{Topic}", request.Topic, StringComparison.OrdinalIgnoreCase);
             content = content.Replace("{Audience}", request.Audience, StringComparison.OrdinalIgnoreCase);
-
-            // If the prompt template uses a generic {Context} tag for the lesson generator
             content = content.Replace("{Context}", contextContent, StringComparison.OrdinalIgnoreCase);
-
             injectedMessages.Add(new MessagePayloadDto(message.Role.ToString(), content));
         }
 
-        // 5. Execute the AI Call & Update the Lesson Entity
         try
         {
-            var generatedMarkdown = await _executionService.ExecuteAsync(
+            // 5. Use the variables we already resolved above
+            var executionResult = await _executionService.ExecuteAsync(
                 injectedMessages,
-                template.Provider,
-                template.Model.Value,
+                provider,
+                model,
                 cancellationToken);
-            lesson.MarkAsCompleted(generatedMarkdown);
+
+            lesson.MarkAsCompleted(executionResult.Response);
         }
         catch (Exception ex)
         {
             lesson.MarkAsFailed(ex.Message);
         }
 
-        // 6. Save the final Completed/Failed state to the database
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result<Guid>.Success(lesson.Id);

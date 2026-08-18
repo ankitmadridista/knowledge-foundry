@@ -7,43 +7,70 @@ import {
     Textarea,
     Text,
 } from "@/shared/components/ui";
+import type { AiModelDto } from "@/features/prompt-templates/type"; // <-- Import DTO
 
 export interface CreatePromptTemplateFormData {
     name: string;
     identifier: string;
     description: string;
     tags: string;
+    provider: number;
+    model: string;
     systemContext: string;
     userMessage: string;
 }
 
 interface CreatePromptTemplateFormProps {
+    availableModels: AiModelDto[]; // <-- NEW PROP
     onSubmit: (data: CreatePromptTemplateFormData) => void;
     onCancel: () => void;
     isSubmitting: boolean;
 }
 
 export function CreatePromptTemplateForm({
+    availableModels,
     onSubmit,
     onCancel,
     isSubmitting,
 }: CreatePromptTemplateFormProps) {
+    // Extract unique providers for the first dropdown
+    const providers = Array.from(
+        new Map(
+            availableModels.map((m) => [m.providerId, m.providerName]),
+        ).entries(),
+    ).map(([id, name]) => ({ id, name }));
+
+    const defaultProvider = providers.length > 0 ? providers[0].id : 0;
+    const defaultModels = availableModels.filter(
+        (m) => m.providerId === defaultProvider,
+    );
+    const defaultModelId =
+        defaultModels.length > 0 ? defaultModels[0].modelId : "";
+
     const [formData, setFormData] = useState<CreatePromptTemplateFormData>({
         name: "",
         identifier: "",
         description: "",
         tags: "",
+        provider: defaultProvider,
+        model: defaultModelId,
         systemContext: "You are a helpful AI assistant.",
         userMessage: "",
     });
 
+    // Derive the list of models to show based on the CURRENTLY selected provider
+    const modelsForCurrentProvider = availableModels.filter(
+        (m) => m.providerId === formData.provider,
+    );
+
     const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+        e: React.ChangeEvent<
+            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >,
     ) => {
         const { name, value } = e.target;
 
         if (name === "name") {
-            // Auto-generate a clean identifier
             const autoIdentifier = value
                 .toUpperCase()
                 .replace(/[^A-Z0-9]/g, "-")
@@ -54,6 +81,21 @@ export function CreatePromptTemplateForm({
                 ...prev,
                 name: value,
                 identifier: autoIdentifier,
+            }));
+        } else if (name === "provider") {
+            // When provider changes, automatically select the first model of that new provider
+            const newProviderInt = parseInt(value, 10);
+            const newProviderModels = availableModels.filter(
+                (m) => m.providerId === newProviderInt,
+            );
+
+            setFormData((prev) => ({
+                ...prev,
+                provider: newProviderInt,
+                model:
+                    newProviderModels.length > 0
+                        ? newProviderModels[0].modelId
+                        : "",
             }));
         } else {
             setFormData((prev) => ({ ...prev, [name]: value }));
@@ -68,7 +110,6 @@ export function CreatePromptTemplateForm({
     return (
         <Card className="p-6 md:p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
-                {/* METADATA SECTION */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <Label>Name *</Label>
@@ -103,6 +144,41 @@ export function CreatePromptTemplateForm({
                     />
                 </div>
 
+                {/* --- DYNAMIC DROPDOWNS --- */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <Label>AI Provider *</Label>
+                        <select
+                            name="provider"
+                            value={formData.provider}
+                            onChange={handleChange}
+                            className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                        >
+                            {providers.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                    {p.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <Label>Target Model *</Label>
+                        <select
+                            name="model"
+                            value={formData.model}
+                            onChange={handleChange}
+                            className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                        >
+                            {modelsForCurrentProvider.map((m) => (
+                                <option key={m.modelId} value={m.modelId}>
+                                    {m.modelId}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
                 <div>
                     <Label>Tags (comma separated)</Label>
                     <Input
@@ -115,7 +191,6 @@ export function CreatePromptTemplateForm({
 
                 <hr className="border-zinc-800 my-8" />
 
-                {/* PROMPT CONTENT SECTION */}
                 <div>
                     <Label>System Context *</Label>
                     <Text className="text-xs text-zinc-500 mb-3">
@@ -144,7 +219,6 @@ export function CreatePromptTemplateForm({
                     />
                 </div>
 
-                {/* ACTIONS */}
                 <div className="flex justify-end gap-4 pt-4 mt-4 border-t border-zinc-800">
                     <Button
                         type="button"
@@ -153,13 +227,7 @@ export function CreatePromptTemplateForm({
                     >
                         Cancel
                     </Button>
-                    <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className={
-                            isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-                        }
-                    >
+                    <Button type="submit" disabled={isSubmitting}>
                         {isSubmitting ? "Saving..." : "Save Template"}
                     </Button>
                 </div>

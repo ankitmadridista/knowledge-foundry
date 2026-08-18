@@ -1,6 +1,7 @@
 using KnowledgeFoundry.Domain.Lessons.Enums;
 using KnowledgeFoundry.Domain.Lessons.Events;
 using KnowledgeFoundry.Domain.Lessons.ValueObjects;
+using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 
 namespace KnowledgeFoundry.Domain.Lessons;
 
@@ -25,6 +26,10 @@ public sealed class Lesson : Entity
     public Guid PromptTemplateId { get; private set; }
     public Guid? ContextPackId { get; private set; }
 
+    // --- NEW: Telemetry / Override Traceability ---
+    public AiProvider Provider { get; private set; }
+    public string Model { get; private set; } = null!;
+
     public DateTime CreatedAt { get; private set; }
     public DateTime? CompletedAt { get; private set; }
 
@@ -33,7 +38,9 @@ public sealed class Lesson : Entity
         LessonTopic topic,
         LessonAudience audience,
         Guid promptTemplateId,
-        Guid? contextPackId)
+        Guid? contextPackId,
+        AiProvider provider,
+        string model)
     {
         Title = title ?? throw new ArgumentNullException(nameof(title));
         Topic = topic ?? throw new ArgumentNullException(nameof(topic));
@@ -42,8 +49,11 @@ public sealed class Lesson : Entity
         PromptTemplateId = promptTemplateId;
         ContextPackId = contextPackId;
 
+        Provider = provider;
+        Model = model ?? throw new ArgumentNullException(nameof(model));
+
         Status = LessonStatus.Generating;
-        IsManuallyEdited = false; // Defaults to false!
+        IsManuallyEdited = false;
         CreatedAt = DateTime.UtcNow;
     }
 
@@ -52,14 +62,18 @@ public sealed class Lesson : Entity
         string topic,
         string audience,
         Guid promptTemplateId,
-        Guid? contextPackId = null)
+        Guid? contextPackId,
+        AiProvider provider,
+        string model)
     {
         return new Lesson(
             new LessonTitle(title),
             new LessonTopic(topic),
             new LessonAudience(audience),
             promptTemplateId,
-            contextPackId);
+            contextPackId,
+            provider,
+            model);
     }
 
     public void MarkAsCompleted(string generatedContent)

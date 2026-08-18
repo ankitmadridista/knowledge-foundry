@@ -3,7 +3,9 @@ export interface GenerateLessonRequest {
     topic: string;
     audience: string;
     promptTemplateId: string;
-    contextPackId?: string | null; // Optional, as some lessons might not need a context pack
+    contextPackId?: string | null;
+    provider?: number;
+    model?: string;
 }
 
 export interface UpdateLessonContentRequest {

@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 namespace KnowledgeFoundry.Application.PromptExecutions.Commands.ExecutePrompt;
 
 public sealed class ExecutePromptCommandHandler
-    : IRequestHandler<ExecutePromptCommand, Result<string>>
+    : IRequestHandler<ExecutePromptCommand, Result<ExecutionTelemetry>>
 {
     private readonly IMediator _mediator;
     private readonly IPromptExecutionService _executionService;
@@ -21,7 +21,7 @@ public sealed class ExecutePromptCommandHandler
         _executionService = executionService;
     }
 
-    public async Task<Result<string>> Handle(
+    public async Task<Result<ExecutionTelemetry>> Handle(
         ExecutePromptCommand request,
         CancellationToken cancellationToken)
     {
@@ -30,12 +30,10 @@ public sealed class ExecutePromptCommandHandler
             new GetActivePromptPayloadQuery(request.Identifier),
             cancellationToken);
 
-        if (payloadResult.IsFailure) return Result<string>.Failure(payloadResult.Error);
+        if (payloadResult.IsFailure) return Result<ExecutionTelemetry>.Failure(payloadResult.Error);
 
         var messages = payloadResult.Value.Messages.ToList();
         var injectedMessages = new List<MessagePayloadDto>();
-
-        // Regex to find tags like {Context:BRAND-VOICE}
         var contextRegex = new Regex(@"\{Context:([a-zA-Z0-9_-]+)\}", RegexOptions.IgnoreCase);
 
         // 2. Process each message
@@ -48,23 +46,17 @@ public sealed class ExecutePromptCommandHandler
             foreach (Match match in contextMatches)
             {
                 var contextIdentifier = match.Groups[1].Value;
-
-                // Fetch the active context pack using a new MediatR query
                 var contextResult = await _mediator.Send(
                     new GetActiveContextPackPayloadQuery(contextIdentifier),
                     cancellationToken);
 
                 if (contextResult.IsFailure)
                 {
-                    // If the context pack fails to load, we fail the whole execution
-                    // to prevent the AI from hallucinating without its knowledge base.
-                    return Result<string>.Failure(contextResult.Error);
+                    return Result<ExecutionTelemetry>.Failure(contextResult.Error);
                 }
 
-                // Replace the tag {Context:XXX} with the actual markdown content
                 content = content.Replace(match.Value, contextResult.Value);
             }
-            // -----------------------------------
 
             // 3. Inject standard user variables
             foreach (var variable in request.Variables)
@@ -75,19 +67,26 @@ public sealed class ExecutePromptCommandHandler
             injectedMessages.Add(new MessagePayloadDto(message.Role, content));
         }
 
-        // 4. Send to LLM (Groq/OpenAI)
+        // 4. Send to LLM (using the overrides if provided)
         try
         {
-            var result = await _executionService.ExecuteAsync(
-                injectedMessages,
-                payloadResult.Value.Provider,
-                payloadResult.Value.Model,
+            var provider = request.OverrideProvider ?? payloadResult.Value.Provider;
+            var model = !string.IsNullOrWhiteSpace(request.OverrideModel)
+                ? request.OverrideModel
+                : payloadResult.Value.Model;
+
+            // response is now an ExecutionTelemetry object!
+            var response = await _executionService.ExecuteAsync(
+                messages,
+                provider,
+                model,
                 cancellationToken);
-            return Result<string>.Success(result);
+
+            return Result<ExecutionTelemetry>.Success(response);
         }
         catch (Exception ex)
         {
-            return Result<string>.Failure(new Error("Execution.Failed", ex.Message));
+            return Result<ExecutionTelemetry>.Failure(new Error("Execution.Failed", ex.Message));
         }
     }
 }

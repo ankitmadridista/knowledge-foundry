@@ -17,7 +17,7 @@ internal sealed class MultiModelExecutionService : IPromptExecutionService
         _configuration = configuration;
     }
 
-    public async Task<string> ExecuteAsync(
+    public async Task<ExecutionTelemetry> ExecuteAsync(
         IEnumerable<MessagePayloadDto> messages,
         AiProvider provider,
         string model,
@@ -52,11 +52,17 @@ internal sealed class MultiModelExecutionService : IPromptExecutionService
             });
         }
 
-        // 4. Fire the request to the dynamically chosen provider
+        var sw = System.Diagnostics.Stopwatch.StartNew();
         var completion = await chatClient.CompleteChatAsync(openAiMessages, cancellationToken: cancellationToken);
+        sw.Stop();
 
-        // 5. Extract and return the generated text
-        return completion.Value.Content[0].Text;
+        // 5. Extract text and telemetry
+        var responseText = completion.Value.Content[0].Text;
+
+        // Grab token usage (if the provider supplies it, otherwise 0)
+        var tokensUsed = completion.Value.Usage?.TotalTokenCount ?? 0;
+
+        return new ExecutionTelemetry(responseText, tokensUsed, sw.ElapsedMilliseconds);
     }
 
     private (string? ApiKey, string Endpoint) GetProviderConfig(AiProvider provider)

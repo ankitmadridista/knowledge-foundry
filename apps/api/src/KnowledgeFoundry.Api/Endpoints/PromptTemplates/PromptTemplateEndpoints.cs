@@ -36,7 +36,9 @@ public sealed record CreatePromptVersionRequest(
     PromptCapability Capability);
 
 public sealed record ExecutePromptRequest(
-    Dictionary<string, string> Variables);
+    Dictionary<string, string> Variables,
+    AiProvider? Provider = null,
+    string? Model = null);
 
 // --- Endpoints ---
 
@@ -203,7 +205,9 @@ public static class PromptTemplateEndpoints
     {
         var command = new ExecutePromptCommand(
             identifier,
-            request.Variables ?? new Dictionary<string, string>());
+            request.Variables ?? new Dictionary<string, string>(),
+            request.Provider,
+            request.Model);
 
         var result = await sender.Send(command, cancellationToken);
 

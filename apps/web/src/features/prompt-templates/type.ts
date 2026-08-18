@@ -22,6 +22,8 @@ export interface PromptTemplatePayloadDto {
 
 export interface ExecuteTemplateRequest {
     variables: Record<string, string>;
+    provider?: number;
+    model?: string;
 }
 
 export interface ExecuteTemplateResponse {
@@ -37,6 +39,8 @@ export interface CreatePromptTemplateRequest {
     name: string;
     description: string;
     purpose: number;
+    provider: number;
+    model: string;
     tags: string[];
 }
 
@@ -64,6 +68,8 @@ export interface PromptTemplateDetailsDto {
     name: string;
     description: string;
     purpose: number;
+    provider: number;
+    model: string;
     tags: string[];
     versions: PromptVersionDto[];
 }
@@ -80,4 +86,10 @@ export interface PromptVersionDetailsDto {
     capability: number;
     createdAt: string;
     messages: PromptMessageDetailsDto[];
+}
+
+export interface AiModelDto {
+    providerId: number;
+    providerName: string;
+    modelId: string;
 }

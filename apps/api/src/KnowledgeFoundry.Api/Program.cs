@@ -1,11 +1,12 @@
 using KnowledgeFoundry.AIPlatform;
+using KnowledgeFoundry.Api.Endpoints.AiPlatform;
 using KnowledgeFoundry.Api.Endpoints.ContextPacks;
 using KnowledgeFoundry.Api.Endpoints.Lessons;
 using KnowledgeFoundry.Api.Endpoints.PromptTemplates;
+using KnowledgeFoundry.Api.Middleware;
 using KnowledgeFoundry.Application.DependencyInjection;
 using KnowledgeFoundry.Infrastructure;
 using KnowledgeFoundry.Infrastructure.Persistence;
-using KnowledgeFoundry.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,6 +60,7 @@ app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", timestamp =
 app.MapPromptTemplateEndpoints();
 app.MapContextPackEndpoints();
 app.MapLessonEndpoints();
+app.MapAiModelEndpoints();
 
 // Apply database migrations and seed data automatically on startup!
 using (var scope = app.Services.CreateScope())
