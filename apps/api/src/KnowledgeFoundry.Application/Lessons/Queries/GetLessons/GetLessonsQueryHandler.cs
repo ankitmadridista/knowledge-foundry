@@ -34,7 +34,8 @@ internal sealed class GetLessonsQueryHandler
             lesson.Status.ToString(),
             lesson.CreatedAt,
             lesson.CompletedAt,
-            lesson.IsManuallyEdited
+            lesson.IsManuallyEdited,
+            null
         )).ToList();
 
         // 3. Wrap in our new PagedResponse

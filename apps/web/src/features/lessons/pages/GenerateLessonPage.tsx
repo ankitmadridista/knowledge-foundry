@@ -175,7 +175,7 @@ export function GenerateLessonPage() {
                         <GenerateLessonForm
                             templates={templates}
                             contextPacks={contextPacks}
-                            availableModels={availableModels} // <-- Pass Models to Form
+                            availableModels={availableModels}
                             initialData={remixSource}
                             onSubmit={handleSubmit}
                             onCancel={() => navigate("/lessons")}

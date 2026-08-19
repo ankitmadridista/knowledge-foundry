@@ -216,7 +216,14 @@ public static class PromptTemplateEndpoints
             return Results.BadRequest(result.Error);
         }
 
-        return Results.Ok(new { Response = result.Value });
+        return Results.Ok(new
+        {
+            result.Value?.Response,
+            Provider = request.Provider?.ToString() ?? "Default",
+            Model = request.Model ?? "Default",
+            result.Value?.TokensUsed,
+            result.Value?.ExecutionTimeMs
+        });
     }
 
     private static async Task<IResult> GetPromptTemplates(

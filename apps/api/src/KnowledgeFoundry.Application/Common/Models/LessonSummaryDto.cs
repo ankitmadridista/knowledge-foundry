@@ -1,3 +1,5 @@
+using KnowledgeFoundry.Domain.PromptTemplates.Enums;
+
 public sealed record LessonSummaryDto(
     Guid Id,
     string Title,
@@ -6,7 +8,9 @@ public sealed record LessonSummaryDto(
     string Status,
     DateTime CreatedAt,
     DateTime? CompletedAt,
-    bool IsManuallyEdited); 
+    bool IsManuallyEdited,
+    string? Model
+);
 
 public sealed record LessonDto(
     Guid Id,
@@ -20,4 +24,9 @@ public sealed record LessonDto(
     Guid? ContextPackId,
     DateTime CreatedAt,
     DateTime? CompletedAt,
-    bool IsManuallyEdited);
+    bool IsManuallyEdited,
+    AiProvider? Provider,
+    string? Model,
+    int? TokensUsed,
+    long? ExecutionTimeMs
+);

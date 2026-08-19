@@ -10,7 +10,7 @@ import {
 import type { PromptTemplateSummaryDto } from "@/features/prompt-templates/type";
 import type { ContextPackSummaryDto } from "@/features/context-packs/types";
 import type { LessonDto } from "@/features/lessons/types";
-import type { AiModelDto } from "@/features/prompt-templates/type"; // <-- NEW
+import type { AiModelDto } from "@/features/prompt-templates/type";
 
 export interface GenerateLessonFormData {
     title: string;
@@ -18,14 +18,14 @@ export interface GenerateLessonFormData {
     audience: string;
     promptTemplateId: string;
     contextPackId: string;
-    provider?: number; // <-- NEW
-    model?: string; // <-- NEW
+    provider?: number;
+    model?: string;
 }
 
 interface GenerateLessonFormProps {
     templates: PromptTemplateSummaryDto[];
     contextPacks: ContextPackSummaryDto[];
-    availableModels: AiModelDto[]; // <-- NEW
+    availableModels: AiModelDto[];
     initialData?: LessonDto | null;
     onSubmit: (data: GenerateLessonFormData) => void;
     onCancel: () => void;
@@ -41,14 +41,15 @@ export function GenerateLessonForm({
     onCancel,
     isSubmitting,
 }: GenerateLessonFormProps) {
+    // --- UPDATED: Initial state pulls provider and model from the remix data! ---
     const [formData, setFormData] = useState<GenerateLessonFormData>({
         title: initialData?.title ? `${initialData.title} (Remix)` : "",
         topic: initialData?.topic || "",
         audience: initialData?.audience || "8th Grade Students",
         promptTemplateId: initialData?.promptTemplateId || "",
         contextPackId: initialData?.contextPackId || "",
-        provider: undefined,
-        model: undefined,
+        provider: initialData?.provider ?? undefined, // <-- NEW
+        model: initialData?.model ?? undefined, // <-- NEW
     });
 
     const handleChange = (
@@ -58,10 +59,8 @@ export function GenerateLessonForm({
     ) => {
         const { name, value } = e.target;
 
-        // --- NEW: Handle Provider switching logic ---
         if (name === "provider") {
             if (value === "") {
-                // If they select "Use Template Default", clear both
                 setFormData((prev) => ({
                     ...prev,
                     provider: undefined,
@@ -91,7 +90,6 @@ export function GenerateLessonForm({
         onSubmit(formData);
     };
 
-    // Calculate options for the dropdowns based on available models
     const providers = Array.from(
         new Map(
             availableModels.map((m) => [m.providerId, m.providerName]),
@@ -108,7 +106,6 @@ export function GenerateLessonForm({
     return (
         <Card className="p-6 md:p-8 border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.05)]">
             <form onSubmit={handleSubmit} className="space-y-6">
-                {/* METADATA SECTION */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <Label>Lesson Title *</Label>
@@ -153,7 +150,6 @@ export function GenerateLessonForm({
 
                 <hr className="border-zinc-800 my-8" />
 
-                {/* AI CONFIGURATION SECTION */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <Label>AI Persona (Prompt Template) *</Label>
@@ -180,7 +176,7 @@ export function GenerateLessonForm({
                         <Label>Knowledge Base (Context Pack)</Label>
                         <select
                             name="contextPackId"
-                            value={formData.contextPackId}
+                            value={formData.contextPackId || ""}
                             onChange={handleChange}
                             className={selectClasses}
                             disabled={isSubmitting || contextPacks.length === 0}
@@ -197,7 +193,6 @@ export function GenerateLessonForm({
                     </div>
                 </div>
 
-                {/* --- NEW: MODEL OVERRIDE BOX --- */}
                 <div className="mt-4 p-4 rounded-lg border border-zinc-800 bg-zinc-950/40 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-xs font-medium text-zinc-400 mb-1">
@@ -242,7 +237,6 @@ export function GenerateLessonForm({
                     </div>
                 </div>
 
-                {/* ACTIONS */}
                 <div className="flex justify-end gap-4 pt-6 mt-6 border-t border-zinc-800">
                     <Button
                         type="button"

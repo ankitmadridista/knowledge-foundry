@@ -16,6 +16,8 @@ export interface PromptTemplatePayloadDto {
     templateId: string;
     versionId: string;
     text: string;
+    provider: number;
+    model: string;
     variables: VariableDto[];
     versionNumber: number;
 }

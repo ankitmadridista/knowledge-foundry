@@ -29,6 +29,7 @@ export function TemplateExecutionPage() {
         Record<string, string>
     >({});
     const [availableModels, setAvailableModels] = useState<AiModelDto[]>([]);
+
     const [selectedProvider, setSelectedProvider] = useState<number>(0);
     const [selectedModel, setSelectedModel] = useState<string>("");
 
@@ -79,8 +80,13 @@ export function TemplateExecutionPage() {
                 });
                 setVariableValues(initialVars);
 
-                // Set default model override
-                if (modelsData.length > 0) {
+                // --- NEW: Use Template Defaults! ---
+                if (payloadData.provider !== undefined && payloadData.model) {
+                    setSelectedProvider(payloadData.provider);
+                    setSelectedModel(payloadData.model);
+                }
+                // Fallback to the first available model if the template somehow lacks them
+                else if (modelsData.length > 0) {
                     setSelectedProvider(modelsData[0].providerId);
                     setSelectedModel(modelsData[0].modelId);
                 }
@@ -202,7 +208,7 @@ export function TemplateExecutionPage() {
 
                     <div>
                         <label className="block text-xs font-medium text-zinc-400 mb-1">
-                            Model Override
+                            Model
                         </label>
                         <select
                             value={selectedModel}

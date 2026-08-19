@@ -21,6 +21,7 @@ export interface LessonSummaryDto {
     createdAt: string;
     completedAt?: string | null;
     isManuallyEdited?: boolean;
+    model?: string | null;
 }
 
 export interface LessonDto {
@@ -36,4 +37,8 @@ export interface LessonDto {
     createdAt: string;
     completedAt?: string | null;
     isManuallyEdited?: boolean;
+    provider?: number | null;
+    model?: string | null;
+    tokensUsed?: number | null;
+    executionTimeMs?: number | null;
 }

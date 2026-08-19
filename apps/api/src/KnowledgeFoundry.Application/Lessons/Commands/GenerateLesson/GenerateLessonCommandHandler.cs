@@ -2,12 +2,14 @@ using KnowledgeFoundry.Application.Abstractions.Persistence;
 using KnowledgeFoundry.Application.Abstractions.Services;
 using KnowledgeFoundry.Application.Common.Errors;
 using KnowledgeFoundry.Application.Common.Results;
-using KnowledgeFoundry.Domain.PromptTemplates.Enums;
+using KnowledgeFoundry.Application.PromptTemplates.Queries.GetActivePromptPayload;
+using KnowledgeFoundry.Domain.AiPlatform;
+using KnowledgeFoundry.Domain.AiPlatform.Enums;
 using KnowledgeFoundry.Domain.ContextPacks.Enums;
+using KnowledgeFoundry.Domain.Lessons;
+using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using MediatR;
 using System.Text;
-using KnowledgeFoundry.Application.PromptTemplates.Queries.GetActivePromptPayload;
-using KnowledgeFoundry.Domain.Lessons;
 
 namespace KnowledgeFoundry.Application.Lessons.Commands.GenerateLesson;
 
@@ -17,6 +19,7 @@ public sealed class GenerateLessonCommandHandler
     private readonly ILessonRepository _lessonRepository;
     private readonly IPromptTemplateRepository _templateRepository;
     private readonly IContextPackRepository _contextPackRepository;
+    private readonly IAiExecutionLogRepository _executionLogRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPromptExecutionService _executionService;
 
@@ -24,12 +27,14 @@ public sealed class GenerateLessonCommandHandler
         ILessonRepository lessonRepository,
         IPromptTemplateRepository templateRepository,
         IContextPackRepository contextPackRepository,
+        IAiExecutionLogRepository executionLogRepository,
         IUnitOfWork unitOfWork,
         IPromptExecutionService executionService)
     {
         _lessonRepository = lessonRepository;
         _templateRepository = templateRepository;
         _contextPackRepository = contextPackRepository;
+        _executionLogRepository = executionLogRepository;
         _unitOfWork = unitOfWork;
         _executionService = executionService;
     }
@@ -64,19 +69,17 @@ public sealed class GenerateLessonCommandHandler
             }
         }
 
-        // --- NEW: Resolve the Provider and Model BEFORE creating the lesson ---
+        // Resolve the Provider and Model 
         var provider = request.OverrideProvider ?? template.Provider;
         var model = !string.IsNullOrWhiteSpace(request.OverrideModel) ? request.OverrideModel : template.Model.Value;
 
-        // 3. Create the Lesson entity and save the explicit provider and model!
+        // 3. Create the Lesson entity (Notice we no longer pass provider/model here!)
         var lesson = Lesson.CreatePending(
             request.Title,
             request.Topic,
             request.Audience,
             request.PromptTemplateId,
-            request.ContextPackId,
-            provider,
-            model);
+            request.ContextPackId);
 
         await _lessonRepository.AddAsync(lesson, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -93,14 +96,24 @@ public sealed class GenerateLessonCommandHandler
 
         try
         {
-            // 5. Use the variables we already resolved above
+            // 5. Execute AI
             var executionResult = await _executionService.ExecuteAsync(
                 injectedMessages,
                 provider,
                 model,
                 cancellationToken);
 
-            lesson.MarkAsCompleted(executionResult.Response);
+            var executionLog = AiExecutionLog.LogExecution(
+                provider,
+                model,
+                executionResult.TokensUsed,
+                executionResult.ExecutionTimeMs,
+                ExecutionInitiator.LessonGeneration,
+                request.PromptTemplateId);
+
+            await _executionLogRepository.AddAsync(executionLog, cancellationToken);
+
+            lesson.MarkAsCompleted(executionResult.Response, executionLog.Id);
         }
         catch (Exception ex)
         {
