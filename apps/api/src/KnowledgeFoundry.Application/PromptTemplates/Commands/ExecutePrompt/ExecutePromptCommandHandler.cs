@@ -77,7 +77,7 @@ public sealed class ExecutePromptCommandHandler
 
             // response is now an ExecutionTelemetry object!
             var response = await _executionService.ExecuteAsync(
-                messages,
+                injectedMessages,
                 provider,
                 model,
                 cancellationToken);

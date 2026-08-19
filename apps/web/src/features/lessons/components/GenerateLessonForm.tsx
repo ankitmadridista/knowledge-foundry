@@ -92,11 +92,11 @@ export function GenerateLessonForm({
 
     const providers = Array.from(
         new Map(
-            availableModels.map((m) => [m.providerId, m.providerName]),
+            (availableModels || []).map((m) => [m.providerId, m.providerName]),
         ).entries(),
     ).map(([id, name]) => ({ id, name }));
 
-    const modelsForCurrentProvider = availableModels.filter(
+    const modelsForCurrentProvider = (availableModels || []).filter(
         (m) => m.providerId === formData.provider,
     );
 
@@ -159,12 +159,16 @@ export function GenerateLessonForm({
                             value={formData.promptTemplateId}
                             onChange={handleChange}
                             className={selectClasses}
-                            disabled={isSubmitting || templates.length === 0}
+                            disabled={
+                                isSubmitting ||
+                                !templates ||
+                                templates.length === 0
+                            }
                         >
                             <option value="" disabled>
                                 Select a Template...
                             </option>
-                            {templates.map((t) => (
+                            {(templates || []).map((t) => (
                                 <option key={t.id} value={t.id}>
                                     {t.name}
                                 </option>
@@ -179,12 +183,17 @@ export function GenerateLessonForm({
                             value={formData.contextPackId || ""}
                             onChange={handleChange}
                             className={selectClasses}
-                            disabled={isSubmitting || contextPacks.length === 0}
+                            disabled={
+                                isSubmitting ||
+                                !contextPacks ||
+                                contextPacks.length === 0
+                            }
                         >
                             <option value="">
                                 None (Rely on AI's general knowledge)
                             </option>
-                            {contextPacks.map((c) => (
+                            {/* --- FIX: Safe mapping here --- */}
+                            {(contextPacks || []).map((c) => (
                                 <option key={c.id} value={c.id}>
                                     {c.name}
                                 </option>
