@@ -27,6 +27,8 @@ public sealed class CreatePromptTemplateCommandHandler
             request.Name,
             request.Description,
             request.Purpose,
+            request.Provider,
+            request.Model,
             request.Tags);
 
         await _repository.AddAsync(

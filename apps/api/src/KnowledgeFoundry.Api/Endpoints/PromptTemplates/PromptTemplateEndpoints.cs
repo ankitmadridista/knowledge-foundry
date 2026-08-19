@@ -11,6 +11,7 @@ using KnowledgeFoundry.Application.PromptTemplates.Queries.GetPromptTemplates;
 using KnowledgeFoundry.Application.PromptTemplates.Queries.GetPromptVersion;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace KnowledgeFoundry.Api.Endpoints.PromptTemplates;
 
@@ -21,6 +22,8 @@ public sealed record CreatePromptTemplateRequest(
     string Name,
     string Description,
     PromptPurpose Purpose,
+    AiProvider Provider,
+    string Model,
     string[] Tags);
 
 public sealed record PromptMessageRequest(
@@ -33,7 +36,9 @@ public sealed record CreatePromptVersionRequest(
     PromptCapability Capability);
 
 public sealed record ExecutePromptRequest(
-    Dictionary<string, string> Variables);
+    Dictionary<string, string> Variables,
+    AiProvider? Provider = null,
+    string? Model = null);
 
 // --- Endpoints ---
 
@@ -74,6 +79,8 @@ public static class PromptTemplateEndpoints
             request.Name,
             request.Description,
             request.Purpose,
+            request.Provider,
+            request.Model,
             request.Tags);
 
         var result = await sender.Send(command, cancellationToken);
@@ -198,7 +205,9 @@ public static class PromptTemplateEndpoints
     {
         var command = new ExecutePromptCommand(
             identifier,
-            request.Variables ?? new Dictionary<string, string>());
+            request.Variables ?? new Dictionary<string, string>(),
+            request.Provider,
+            request.Model);
 
         var result = await sender.Send(command, cancellationToken);
 
@@ -207,7 +216,14 @@ public static class PromptTemplateEndpoints
             return Results.BadRequest(result.Error);
         }
 
-        return Results.Ok(new { Response = result.Value });
+        return Results.Ok(new
+        {
+            result.Value?.Response,
+            Provider = request.Provider?.ToString() ?? "Default",
+            Model = request.Model ?? "Default",
+            result.Value?.TokensUsed,
+            result.Value?.ExecutionTimeMs
+        });
     }
 
     private static async Task<IResult> GetPromptTemplates(

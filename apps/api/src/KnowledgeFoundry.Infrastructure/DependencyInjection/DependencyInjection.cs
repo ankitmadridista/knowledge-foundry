@@ -31,6 +31,8 @@ public static class DependencyInjection
 
         services.AddScoped<IDatabaseSeeder, DatabaseSeeder>();
 
+        services.AddScoped<IAiExecutionLogRepository, AiExecutionLogRepository>();
+
         return services;
     }
 }

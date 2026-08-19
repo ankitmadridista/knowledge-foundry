@@ -22,6 +22,35 @@ namespace KnowledgeFoundry.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("KnowledgeFoundry.Domain.AiPlatform.AiExecutionLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ExecutedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("ExecutionTimeMs")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Initiator")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("PromptTemplateId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Provider")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TokensUsed")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AiExecutionLogs", (string)null);
+                });
+
             modelBuilder.Entity("KnowledgeFoundry.Domain.ContextPacks.ContextPack", b =>
                 {
                     b.Property<Guid>("Id")
@@ -37,6 +66,9 @@ namespace KnowledgeFoundry.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AiExecutionLogId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("CompletedAt")
@@ -74,12 +106,40 @@ namespace KnowledgeFoundry.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("Provider")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Purpose")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.ToTable("PromptTemplates", (string)null);
+                });
+
+            modelBuilder.Entity("KnowledgeFoundry.Domain.AiPlatform.AiExecutionLog", b =>
+                {
+                    b.OwnsOne("KnowledgeFoundry.Domain.PromptTemplates.ValueObjects.TargetModel", "Model", b1 =>
+                        {
+                            b1.Property<Guid>("AiExecutionLogId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("TargetModel");
+
+                            b1.HasKey("AiExecutionLogId");
+
+                            b1.ToTable("AiExecutionLogs");
+
+                            b1.WithOwner()
+                                .HasForeignKey("AiExecutionLogId");
+                        });
+
+                    b.Navigation("Model")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("KnowledgeFoundry.Domain.ContextPacks.ContextPack", b =>
@@ -566,10 +626,32 @@ namespace KnowledgeFoundry.Infrastructure.Migrations
                                 .HasForeignKey("PromptTemplateId");
                         });
 
+                    b.OwnsOne("KnowledgeFoundry.Domain.PromptTemplates.ValueObjects.TargetModel", "Model", b1 =>
+                        {
+                            b1.Property<Guid>("PromptTemplateId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("TargetModel");
+
+                            b1.HasKey("PromptTemplateId");
+
+                            b1.ToTable("PromptTemplates");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PromptTemplateId");
+                        });
+
                     b.Navigation("Description")
                         .IsRequired();
 
                     b.Navigation("Identifier")
+                        .IsRequired();
+
+                    b.Navigation("Model")
                         .IsRequired();
 
                     b.Navigation("Name")

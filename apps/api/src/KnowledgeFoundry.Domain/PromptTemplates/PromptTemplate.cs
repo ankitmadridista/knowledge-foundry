@@ -17,6 +17,8 @@ public sealed class PromptTemplate : Entity
     public PromptName Name { get; private set; } = null!;
     public PromptDescription Description { get; private set; } = null!;
     public PromptPurpose Purpose { get; private set; }
+    public AiProvider Provider { get; private set; }
+    public TargetModel Model { get; private set; } = null!;
 
     public IReadOnlyCollection<PromptTemplateVersion> Versions =>
         _versions.AsReadOnly();
@@ -29,17 +31,20 @@ public sealed class PromptTemplate : Entity
         PromptName name,
         PromptDescription description,
         PromptPurpose purpose,
+        AiProvider provider,
+        TargetModel model,
         IEnumerable<PromptTag>? tags = null)
     {
-        Identifier = identifier ?? throw new ArgumentNullException("Identifier cannot be empty.", nameof(identifier));
-        Name = name ?? throw new ArgumentNullException("Name cannot be empty.", nameof(name));
-        Description = description ?? throw new ArgumentNullException("Description cannot be empty.", nameof(description));
+        Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier), "Identifier cannot be empty.");
+        Name = name ?? throw new ArgumentNullException(nameof(name), "Name cannot be empty.");
+        Description = description ?? throw new ArgumentNullException(nameof(description), "Description cannot be empty.");
         Purpose = purpose;
+        Provider = provider;
+        Model = model ?? throw new ArgumentNullException(nameof(model), "Target model cannot be empty.");
 
         if (tags is not null)
         {
-            _tags.AddRange(
-                tags.Select(tag => new PromptTag(tag)));
+            _tags.AddRange(tags.Select(tag => new PromptTag(tag)));
         }
     }
 
@@ -48,6 +53,8 @@ public sealed class PromptTemplate : Entity
         string name,
         string description,
         PromptPurpose purpose,
+        AiProvider provider = AiProvider.Groq,
+        string model = "llama-3.3-70b-versatile",
         IEnumerable<string>? tags = null)
     {
         return new PromptTemplate(
@@ -55,6 +62,8 @@ public sealed class PromptTemplate : Entity
             new PromptName(name),
             new PromptDescription(description),
             purpose,
+            provider,
+            new TargetModel(model),
             tags?.Select(t => new PromptTag(t)));
     }
 
@@ -75,6 +84,7 @@ public sealed class PromptTemplate : Entity
 
         return version;
     }
+
     private PromptTemplateVersion GetVersion(PromptVersionNumber versionNumber)
     {
         var version = _versions.SingleOrDefault(v => v.VersionNumber.Value == versionNumber.Value);
@@ -85,7 +95,6 @@ public sealed class PromptTemplate : Entity
 
         return version;
     }
-
 
     public void PublishVersion(PromptVersionNumber versionNumber)
     {
@@ -116,17 +125,16 @@ public sealed class PromptTemplate : Entity
                 "Only published versions can be activated.");
 
         var activeVersion = _versions
-        .SingleOrDefault(v => v.Status == PromptStatus.Active);
+            .SingleOrDefault(v => v.Status == PromptStatus.Active);
 
         if (activeVersion != null &&
-        activeVersion.VersionNumber.Value != versionNumber.Value)
+            activeVersion.VersionNumber.Value != versionNumber.Value)
         {
             activeVersion.Deprecate();
         }
 
         version.Activate();
     }
-
 
     public void RollbackTo(PromptVersionNumber versionNumber)
     {

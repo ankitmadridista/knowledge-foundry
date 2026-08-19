@@ -30,6 +30,8 @@ public sealed class GetPromptTemplatesQueryHandler
             t.Name.Value,
             t.Description.Value,
             (int)t.Purpose,
+            (int)t.Provider,
+            t.Model.Value,
             t.Tags.Select(tag => tag.Value)
         )).ToList();
 

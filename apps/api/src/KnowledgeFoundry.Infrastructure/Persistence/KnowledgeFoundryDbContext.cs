@@ -1,4 +1,5 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
+using KnowledgeFoundry.Domain.AiPlatform;
 using KnowledgeFoundry.Domain.ContextPacks;
 using KnowledgeFoundry.Domain.Lessons;
 using KnowledgeFoundry.Infrastructure.DomainEvents;
@@ -41,6 +42,7 @@ public sealed class KnowledgeFoundryDbContext
     public DbSet<PromptTemplate> PromptTemplates => Set<PromptTemplate>();
     public DbSet<ContextPack> ContextPacks => Set<ContextPack>();
     public DbSet<Lesson> Lessons => Set<Lesson>();
+    public DbSet<AiExecutionLog> AiExecutionLogs => Set<AiExecutionLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

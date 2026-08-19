@@ -25,6 +25,8 @@ public sealed class Lesson : Entity
     public Guid PromptTemplateId { get; private set; }
     public Guid? ContextPackId { get; private set; }
 
+    public Guid? AiExecutionLogId { get; private set; }
+
     public DateTime CreatedAt { get; private set; }
     public DateTime? CompletedAt { get; private set; }
 
@@ -43,7 +45,7 @@ public sealed class Lesson : Entity
         ContextPackId = contextPackId;
 
         Status = LessonStatus.Generating;
-        IsManuallyEdited = false; // Defaults to false!
+        IsManuallyEdited = false;
         CreatedAt = DateTime.UtcNow;
     }
 
@@ -52,7 +54,7 @@ public sealed class Lesson : Entity
         string topic,
         string audience,
         Guid promptTemplateId,
-        Guid? contextPackId = null)
+        Guid? contextPackId)
     {
         return new Lesson(
             new LessonTitle(title),
@@ -62,12 +64,13 @@ public sealed class Lesson : Entity
             contextPackId);
     }
 
-    public void MarkAsCompleted(string generatedContent)
+    public void MarkAsCompleted(string generatedContent, Guid aiExecutionLogId)
     {
         if (Status != LessonStatus.Generating)
             throw new InvalidOperationException("Only generating lessons can be marked as completed.");
 
         Content = new LessonContent(generatedContent);
+        AiExecutionLogId = aiExecutionLogId;
         Status = LessonStatus.Completed;
         CompletedAt = DateTime.UtcNow;
 

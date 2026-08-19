@@ -28,6 +28,8 @@ public class CreatePromptTemplateCommandHandlerTests
             "Test Prompt",
             "A description for the test prompt.",
             PromptPurpose.Evaluation,
+            AiProvider.Groq,
+            "Groq",
             new[] { "test", "demo" });
 
         PromptTemplate? capturedTemplate = null;

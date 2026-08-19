@@ -1,10 +1,17 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom"; // <-- Added useSearchParams
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { isAxiosError } from "axios";
 import { Section, Container, PageHeader } from "@/shared/components/layout";
 import { ErrorState } from "@/shared/components/ui";
-import { generateLesson, getLessonById } from "@/features/lessons/api"; // <-- Added getLessonById
-import { getPromptTemplates } from "@/features/prompt-templates/api";
-import type { PromptTemplateSummaryDto } from "@/features/prompt-templates/type";
+import { generateLesson, getLessonById } from "@/features/lessons/api";
+import {
+    getPromptTemplates,
+    getAvailableModels,
+} from "@/features/prompt-templates/api"; // <-- Added getAvailableModels
+import type {
+    PromptTemplateSummaryDto,
+    AiModelDto,
+} from "@/features/prompt-templates/type"; // <-- Added AiModelDto
 import { getContextPacks } from "@/features/context-packs/api";
 import {
     GenerateLessonForm,
@@ -28,25 +35,48 @@ export function GenerateLessonPage() {
     const [contextPacks, setContextPacks] = useState<ContextPackSummaryDto[]>(
         [],
     );
+    const [availableModels, setAvailableModels] = useState<AiModelDto[]>([]); // <-- NEW State
     const [remixSource, setRemixSource] = useState<LessonDto | null>(null);
 
-    // Fetch Templates, Context Packs, and (optionally) the Remix Lesson on load
+    // Helper to extract clean error messages from our .NET backend
+    const extractErrorMessage = (
+        err: unknown,
+        fallbackMessage: string,
+    ): string => {
+        if (isAxiosError(err) && err.response?.data) {
+            const data = err.response.data;
+            return (
+                data.message ||
+                data.detail ||
+                data.title ||
+                JSON.stringify(data)
+            );
+        }
+        if (err instanceof Error) {
+            return err.message;
+        }
+        return fallbackMessage;
+    };
+
+    // Fetch Templates, Context Packs, Models, and (optionally) the Remix Lesson on load
     useEffect(() => {
         let isMounted = true;
 
         const fetchDependencies = async () => {
             try {
-                // Fetch basic dropdowns
-                const [templatesData, packsData] = await Promise.all([
-                    getPromptTemplates(),
-                    getContextPacks(),
-                ]);
+                // Fetch basic dropdowns + live AI Models concurrently
+                const [templatesData, packsData, modelsData] =
+                    await Promise.all([
+                        getPromptTemplates(),
+                        getContextPacks(),
+                        getAvailableModels(), // <-- NEW API Call
+                    ]);
 
                 if (!isMounted) return;
                 setTemplates(templatesData.items);
                 setContextPacks(packsData.items);
+                setAvailableModels(modelsData); // <-- Store Models
 
-                // If this is a remix, fetch the source lesson to pre-fill the form
                 if (remixId) {
                     try {
                         const lessonData = await getLessonById(remixId);
@@ -56,15 +86,16 @@ export function GenerateLessonPage() {
                             "Could not load remix source lesson:",
                             remixErr,
                         );
-                        // We don't fail the whole page if remix fetch fails, they just get a blank form
                     }
                 }
             } catch (err) {
                 if (isMounted) {
                     console.error("Failed to load dependencies", err);
-                    setError(
-                        "Failed to load Prompt Templates or Context Packs. Please try refreshing.",
+                    const msg = extractErrorMessage(
+                        err,
+                        "Failed to load Prompt Templates, Context Packs, or AI Models. Please try refreshing.",
                     );
+                    setError(msg);
                 }
             } finally {
                 if (isMounted) setIsLoadingDependencies(false);
@@ -83,28 +114,33 @@ export function GenerateLessonPage() {
         setError(null);
 
         try {
+            // Map the form data, including the new provider and model overrides
             const request = {
                 title: formData.title,
                 topic: formData.topic,
                 audience: formData.audience,
                 promptTemplateId: formData.promptTemplateId,
                 contextPackId: formData.contextPackId || null,
+                provider: formData.provider, // <-- NEW Map Override
+                model: formData.model, // <-- NEW Map Override
             };
 
             const newLessonId = await generateLesson(request);
             navigate(`/lessons/${newLessonId}`);
         } catch (err) {
             console.error(err);
-            setError(
+            const msg = extractErrorMessage(
+                err,
                 "Failed to generate the lesson. The AI provider might have timed out. Please try again.",
             );
+            setError(msg);
         } finally {
             setIsSubmitting(false);
         }
     };
 
     return (
-        <Section>            
+        <Section>
             <Container>
                 <div className="mx-auto max-w-4xl">
                     <button
@@ -139,7 +175,8 @@ export function GenerateLessonPage() {
                         <GenerateLessonForm
                             templates={templates}
                             contextPacks={contextPacks}
-                            initialData={remixSource} // <-- Pass the pre-fill data!
+                            availableModels={availableModels}
+                            initialData={remixSource}
                             onSubmit={handleSubmit}
                             onCancel={() => navigate("/lessons")}
                             isSubmitting={isSubmitting}

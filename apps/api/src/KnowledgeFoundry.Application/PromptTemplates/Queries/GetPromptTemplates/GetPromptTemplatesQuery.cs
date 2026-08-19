@@ -10,6 +10,8 @@ public record PromptTemplateSummaryDto(
     string Name,
     string Description,
     int Purpose,
+    int Provider,
+    string Model,
     IEnumerable<string> Tags);
 
 public sealed record GetPromptTemplatesQuery(int PageNumber = 1, int PageSize = 12)

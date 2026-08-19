@@ -5,6 +5,7 @@ import {
     MarkdownRenderer,
     Button,
     Textarea,
+    Badge, // <-- NEW: Imported Badge
 } from "@/shared/components/ui";
 import type { LessonDto } from "@/features/lessons/types";
 import toast from "react-hot-toast";
@@ -144,9 +145,9 @@ export function LessonContent({
                         </div>
                     ) : (
                         /* VIEWING MODE */
-                        <div className="flex flex-col">
+                        <div className="flex flex-col h-full">
                             {/* --- ALWAYS VISIBLE ACTION BAR --- */}
-                            <div className="flex justify-end gap-2 mb-6 border-b border-zinc-800/50 pb-4">
+                            <div className="flex justify-end gap-2 mb-6 border-b border-zinc-800/50 pb-4 shrink-0">
                                 {/* COPY ICON BUTTON */}
                                 <button
                                     onClick={handleCopy}
@@ -192,9 +193,39 @@ export function LessonContent({
                                 </button>
                             </div>
 
-                            <div className="prose prose-invert max-w-none">
+                            <div className="prose prose-invert max-w-none flex-1">
                                 <MarkdownRenderer content={lesson.content} />
                             </div>
+
+                            {/* --- NEW: TELEMETRY FOOTER --- */}
+                            {lesson.model && (
+                                <div className="mt-8 pt-4 border-t border-zinc-800/50 flex flex-wrap gap-3 shrink-0 opacity-80">
+                                    <Badge variant="neutral">
+                                        Model:{" "}
+                                        <span className="text-zinc-100 ml-1">
+                                            {lesson.model}
+                                        </span>
+                                    </Badge>
+
+                                    {lesson.tokensUsed !== null && (
+                                        <Badge variant="neutral">
+                                            Tokens:{" "}
+                                            <span className="text-zinc-100 ml-1">
+                                                {lesson.tokensUsed}
+                                            </span>
+                                        </Badge>
+                                    )}
+
+                                    {lesson.executionTimeMs !== null && (
+                                        <Badge variant="neutral">
+                                            Time:{" "}
+                                            <span className="text-zinc-100 ml-1">
+                                                {lesson.executionTimeMs}ms
+                                            </span>
+                                        </Badge>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     )}
                 </>

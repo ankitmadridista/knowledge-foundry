@@ -31,6 +31,8 @@ public class CreatePromptVersionCommandHandlerTests
             "Test Prompt",
             "Description",
             PromptPurpose.LessonGeneration,
+            AiProvider.Groq,
+            "Groq",
             new[] { "test" });
 
         _repositoryMock

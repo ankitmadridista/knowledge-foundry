@@ -1,4 +1,5 @@
 using KnowledgeFoundry.Application.Common.Results;
+using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using MediatR;
 
 namespace KnowledgeFoundry.Application.Lessons.Commands.GenerateLesson;
@@ -8,4 +9,7 @@ public sealed record GenerateLessonCommand(
     string Topic,
     string Audience,
     Guid PromptTemplateId,
-    Guid? ContextPackId) : IRequest<Result<Guid>>;
+    Guid? ContextPackId,
+    AiProvider? OverrideProvider = null,
+    string? OverrideModel = null
+    ) : IRequest<Result<Guid>>;

@@ -4,6 +4,7 @@ using KnowledgeFoundry.Application.Lessons.Commands.GenerateLesson;
 using KnowledgeFoundry.Application.Lessons.Commands.UpdateLessonContent;
 using KnowledgeFoundry.Application.Lessons.Queries.GetLessonById;
 using KnowledgeFoundry.Application.Lessons.Queries.GetLessons;
+using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using MediatR;
 
 namespace KnowledgeFoundry.Api.Endpoints.Lessons;
@@ -15,7 +16,9 @@ public sealed record GenerateLessonRequest(
     string Topic,
     string Audience,
     Guid PromptTemplateId,
-    Guid? ContextPackId);
+    Guid? ContextPackId,
+    int? Provider = null,
+    string? Model = null);
 
 public sealed record UpdateLessonContentRequest(
     string NewContent);
@@ -54,7 +57,9 @@ public static class LessonEndpoints
             request.Topic,
             request.Audience,
             request.PromptTemplateId,
-            request.ContextPackId);
+            request.ContextPackId,
+            request.Provider.HasValue ? (AiProvider)request.Provider.Value : null,
+            request.Model);
 
         var result = await sender.Send(command, cancellationToken);
 

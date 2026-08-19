@@ -15,6 +15,8 @@ public sealed record PromptTemplateDto(
     string Name,
     string Description,
     PromptPurpose Purpose,
+    AiProvider Provider,
+    string Model,
     IReadOnlyCollection<string> Tags,
     List<PromptVersionDto> Versions
 );

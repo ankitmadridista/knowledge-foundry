@@ -1,6 +1,7 @@
 import { httpClient } from "@/shared/api/httpClient";
 import type {
     AddPromptVersionRequest,
+    AiModelDto,
     CreatePromptTemplateRequest,
     ExecuteTemplateRequest,
     ExecuteTemplateResponse,
@@ -99,5 +100,10 @@ export const getPromptVersion = async (
     const response = await httpClient.get<PromptVersionDetailsDto>(
         `/prompt-templates/${id}/versions/${versionNumber}`,
     );
+    return response.data;
+};
+
+export const getAvailableModels = async (): Promise<AiModelDto[]> => {
+    const response = await httpClient.get<AiModelDto[]>("/ai-models");
     return response.data;
 };

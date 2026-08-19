@@ -9,5 +9,7 @@ public sealed record CreatePromptTemplateCommand(
     string Name,
     string Description,
     PromptPurpose Purpose,
+    AiProvider Provider,
+    string Model,
     IReadOnlyCollection<string> Tags
 ) : IRequest<Result<Guid>>;

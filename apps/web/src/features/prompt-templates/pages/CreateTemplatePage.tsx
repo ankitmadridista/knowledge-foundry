@@ -1,21 +1,52 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     createPromptTemplate,
     addPromptVersion,
+    getAvailableModels, // <-- NEW
 } from "@/features/prompt-templates/api";
 import { Section, Container, PageHeader } from "@/shared/components/layout";
-import { ErrorState } from "@/shared/components/ui";
+import { ErrorState } from "@/shared/components/ui"; // <-- Ensure LoadingState is imported
 import {
     CreatePromptTemplateForm,
     type CreatePromptTemplateFormData,
 } from "@/features/prompt-templates/components";
-import type { CreatePromptTemplateRequest } from "@/features/prompt-templates/type";
+import type {
+    CreatePromptTemplateRequest,
+    AiModelDto,
+} from "@/features/prompt-templates/type";
+import { isAxiosError } from "axios";
 
 export function CreateTemplatePage() {
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLoadingModels, setIsLoadingModels] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [aiModels, setAiModels] = useState<AiModelDto[]>([]);
+
+    // --- NEW: Fetch live models on load ---
+    useEffect(() => {
+        let isMounted = true;
+        const fetchModels = async () => {
+            try {
+                const models = await getAvailableModels();
+                if (isMounted) setAiModels(models);
+            } catch (err) {
+                console.error("Failed to fetch AI models:", err);
+                if (isMounted)
+                    setError(
+                        "Failed to load AI models. Please check your connection.",
+                    );
+            } finally {
+                if (isMounted) setIsLoadingModels(false);
+            }
+        };
+
+        fetchModels();
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     const handleSubmit = async (formData: CreatePromptTemplateFormData) => {
         setIsSubmitting(true);
@@ -27,18 +58,18 @@ export function CreateTemplatePage() {
                 .map((tag) => tag.trim())
                 .filter((tag) => tag.length > 0);
 
-            // STEP 1: Create the Template Shell
             const request: CreatePromptTemplateRequest = {
                 identifier: formData.identifier,
                 name: formData.name,
                 description: formData.description,
                 purpose: 0,
+                provider: formData.provider,
+                model: formData.model,
                 tags: tagsArray,
             };
 
             const templateId = await createPromptTemplate(request);
 
-            // STEP 2: Add Version 1 with the Messages
             await addPromptVersion(templateId, {
                 messages: [
                     { role: 0, content: formData.systemContext, order: 0 },
@@ -47,16 +78,18 @@ export function CreateTemplatePage() {
                 capability: 0,
             });
 
-            // Success! Go back to the dashboard.
             navigate("/templates");
         } catch (err) {
             console.error(err);
 
-            // Safety check for 409 Conflict if identifier is taken
-            const httpError = err as { response?: { status?: number } };
-            if (httpError.response?.status === 409) {
+            if (isAxiosError(err) && err.response?.status === 409) {
                 setError(
                     "That identifier is already in use. Please choose a unique identifier.",
+                );
+            } else if (isAxiosError(err) && err.response?.data) {
+                const data = err.response.data as { message?: string; detail?: string };
+                setError(
+                    data.message || data.detail || "Failed to create and activate template.",
                 );
             } else {
                 setError(
@@ -71,9 +104,7 @@ export function CreateTemplatePage() {
     return (
         <Section>
             <Container>
-                {/* Constrain the width for readability */}
                 <div className="mx-auto max-w-4xl">
-                    {/* Back Button */}
                     <button
                         onClick={() => navigate("/templates")}
                         className="text-indigo-400 hover:text-indigo-300 transition-colors mb-6 flex items-center gap-2 text-sm font-medium"
@@ -86,19 +117,25 @@ export function CreateTemplatePage() {
                         description="Define the metadata and initial version of your prompt."
                     />
 
-                    {/* Show generic Error State if an error occurs */}
                     {error && (
                         <div className="mb-6">
                             <ErrorState message={error} />
                         </div>
                     )}
 
-                    {/* The Form Component */}
-                    <CreatePromptTemplateForm
-                        onSubmit={handleSubmit}
-                        onCancel={() => navigate("/templates")}
-                        isSubmitting={isSubmitting}
-                    />
+                    {/* --- NEW: Show loading spinner while fetching models --- */}
+                    {isLoadingModels ? (
+                        <div className="text-center py-12 text-zinc-400 animate-pulse">
+                            Discovering available AI models...
+                        </div>
+                    ) : (
+                        <CreatePromptTemplateForm
+                            availableModels={aiModels} // <-- Pass the live models!
+                            onSubmit={handleSubmit}
+                            onCancel={() => navigate("/templates")}
+                            isSubmitting={isSubmitting}
+                        />
+                    )}
                 </div>
             </Container>
         </Section>

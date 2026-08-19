@@ -1,3 +1,4 @@
+using KnowledgeFoundry.Domain.PromptTemplates;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -20,7 +21,7 @@ internal sealed class PromptTemplateConfiguration
                 .IsRequired();
 
             identifier.HasIndex(x => x.Value)
-            .IsUnique();
+                .IsUnique();
         });
 
         builder.OwnsOne(x => x.Name, name =>
@@ -41,6 +42,18 @@ internal sealed class PromptTemplateConfiguration
         builder.Property(x => x.Purpose)
             .HasConversion<int>()
             .IsRequired();
+
+        builder.Property(x => x.Provider)
+            .HasConversion<int>()
+            .IsRequired();
+
+        builder.OwnsOne(x => x.Model, model =>
+        {
+            model.Property(x => x.Value)
+                .HasColumnName("TargetModel")
+                .HasMaxLength(100)
+                .IsRequired();
+        });
 
         builder.OwnsMany(x => x.Versions, version =>
         {
@@ -66,13 +79,9 @@ internal sealed class PromptTemplateConfiguration
                 .HasConversion<int>();
 
             version.Property(x => x.CreatedAt);
-
             version.Property(x => x.PublishedAt);
-
             version.Property(x => x.ActivatedAt);
-
             version.Property(x => x.ArchivedAt);
-
             version.Property(x => x.DeprecatedAt);
 
             version.OwnsMany(x => x.Messages, message =>
@@ -83,15 +92,11 @@ internal sealed class PromptTemplateConfiguration
                     .HasForeignKey("PromptTemplateVersionId");
 
                 message.Property<Guid>("Id");
-
                 message.HasKey("Id");
 
                 message.Property(x => x.Role);
-
                 message.Property(x => x.Content);
-
                 message.Property(x => x.Order);
-
             });
 
             version.OwnsMany(x => x.Variables, variable =>
@@ -109,7 +114,6 @@ internal sealed class PromptTemplateConfiguration
                     .HasMaxLength(100)
                     .IsRequired();
             });
-
         });
 
         builder.OwnsMany(x => x.Tags, tag =>
@@ -120,7 +124,6 @@ internal sealed class PromptTemplateConfiguration
                 .HasForeignKey("PromptTemplateId");
 
             tag.Property<Guid>("Id");
-
             tag.HasKey("Id");
 
             tag.Property(x => x.Value)

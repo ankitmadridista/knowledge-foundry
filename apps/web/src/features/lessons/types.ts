@@ -3,7 +3,9 @@ export interface GenerateLessonRequest {
     topic: string;
     audience: string;
     promptTemplateId: string;
-    contextPackId?: string | null; // Optional, as some lessons might not need a context pack
+    contextPackId?: string | null;
+    provider?: number;
+    model?: string;
 }
 
 export interface UpdateLessonContentRequest {
@@ -19,6 +21,7 @@ export interface LessonSummaryDto {
     createdAt: string;
     completedAt?: string | null;
     isManuallyEdited?: boolean;
+    model?: string | null;
 }
 
 export interface LessonDto {
@@ -34,4 +37,8 @@ export interface LessonDto {
     createdAt: string;
     completedAt?: string | null;
     isManuallyEdited?: boolean;
+    provider?: number | null;
+    model?: string | null;
+    tokensUsed?: number | null;
+    executionTimeMs?: number | null;
 }

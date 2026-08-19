@@ -54,7 +54,9 @@ public sealed class GetActivePromptPayloadQueryHandler
             messages,
             variables,
             activeVersion.Capability.ToString(),
-            activeVersion.VersionNumber.Value);
+            activeVersion.VersionNumber.Value,
+            template.Provider,
+            template.Model.Value);
 
         return Result<PromptPayloadDto>.Success(dto);
     }
