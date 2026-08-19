@@ -8,7 +8,6 @@ export const technologies: Technology[] = [
     { name: "React 19", category: "Frontend" },
     { name: "TypeScript", category: "Language" },
     { name: "Tailwind CSS", category: "Styling" },
-    { name: "GraphQL", category: "API" },
     { name: "PostgreSQL", category: "Database" },
     { name: "Gemini", category: "AI" },
     { name: "Docker", category: "Infrastructure" }
