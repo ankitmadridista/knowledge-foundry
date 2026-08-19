@@ -10,6 +10,7 @@ using KnowledgeFoundry.Domain.Lessons;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using MediatR;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace KnowledgeFoundry.Application.Lessons.Commands.GenerateLesson;
 
@@ -90,7 +91,7 @@ public sealed class GenerateLessonCommandHandler
             var content = message.Content;
             content = content.Replace("{Topic}", request.Topic, StringComparison.OrdinalIgnoreCase);
             content = content.Replace("{Audience}", request.Audience, StringComparison.OrdinalIgnoreCase);
-            content = content.Replace("{Context}", contextContent, StringComparison.OrdinalIgnoreCase);
+            content = Regex.Replace(content, @"\{Context(:[a-zA-Z0-9_-]+)?\}", contextContent, RegexOptions.IgnoreCase);
             injectedMessages.Add(new MessagePayloadDto(message.Role.ToString(), content));
         }
 
