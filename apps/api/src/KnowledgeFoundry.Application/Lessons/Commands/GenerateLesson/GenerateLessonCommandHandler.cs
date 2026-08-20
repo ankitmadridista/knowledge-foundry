@@ -21,6 +21,7 @@ public sealed class GenerateLessonCommandHandler
     private readonly IPromptTemplateRepository _templateRepository;
     private readonly IContextPackRepository _contextPackRepository;
     private readonly IAiExecutionLogRepository _executionLogRepository;
+    private readonly ICorpSettingsRepository _settingsRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPromptExecutionService _executionService;
 
@@ -29,6 +30,7 @@ public sealed class GenerateLessonCommandHandler
         IPromptTemplateRepository templateRepository,
         IContextPackRepository contextPackRepository,
         IAiExecutionLogRepository executionLogRepository,
+        ICorpSettingsRepository settingsRepository,
         IUnitOfWork unitOfWork,
         IPromptExecutionService executionService)
     {
@@ -36,6 +38,7 @@ public sealed class GenerateLessonCommandHandler
         _templateRepository = templateRepository;
         _contextPackRepository = contextPackRepository;
         _executionLogRepository = executionLogRepository;
+        _settingsRepository = settingsRepository;
         _unitOfWork = unitOfWork;
         _executionService = executionService;
     }
@@ -44,6 +47,16 @@ public sealed class GenerateLessonCommandHandler
         GenerateLessonCommand request,
         CancellationToken cancellationToken)
     {
+        var currentCount = await _lessonRepository.CountAsync(cancellationToken);
+        var settings = await _settingsRepository.GetSettingsAsync(cancellationToken);
+
+        if (currentCount >= settings.MaxLessons)
+        {
+            return Result<Guid>.Failure(new Error(
+                "Quota.Exceeded",
+                $"You have reached the maximum allowed Lessons ({settings.MaxLessons}). Upgrade your plan to create more."));
+        }
+
         var template = await _templateRepository.GetByIdAsync(request.PromptTemplateId, cancellationToken);
         if (template is null) return Result<Guid>.Failure(LessonErrors.TemplateNotFound);
 

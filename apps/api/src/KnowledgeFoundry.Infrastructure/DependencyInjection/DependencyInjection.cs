@@ -33,6 +33,8 @@ public static class DependencyInjection
 
         services.AddScoped<IAiExecutionLogRepository, AiExecutionLogRepository>();
 
+        services.AddScoped<ICorpSettingsRepository, CorpSettingsRepository>();
+
         return services;
     }
 }

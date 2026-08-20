@@ -124,4 +124,9 @@ internal sealed class PromptTemplateRepository
         return template?.Versions.FirstOrDefault();
     }
 
+    public async Task<int> CountAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.PromptTemplates.CountAsync(cancellationToken);
+    }
+
 }

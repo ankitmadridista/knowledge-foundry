@@ -114,4 +114,9 @@ internal sealed class ContextPackRepository : IContextPackRepository
         // 2. Return the single version, or null if not found
         return pack?.Versions.FirstOrDefault();
     }
+
+    public async Task<int> CountAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.ContextPacks.CountAsync(cancellationToken);
+    }
 }

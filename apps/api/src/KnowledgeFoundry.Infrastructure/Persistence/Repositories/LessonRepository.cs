@@ -81,4 +81,9 @@ internal sealed class LessonRepository : ILessonRepository
     {
         _dbContext.Lessons.Remove(lesson);
     }
+
+    public async Task<int> CountAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Lessons.CountAsync(cancellationToken);
+    }
 }
