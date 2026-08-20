@@ -11,12 +11,10 @@ using KnowledgeFoundry.Application.PromptTemplates.Queries.GetPromptTemplates;
 using KnowledgeFoundry.Application.PromptTemplates.Queries.GetPromptVersion;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace KnowledgeFoundry.Api.Endpoints.PromptTemplates;
 
 // --- API Contracts ---
-
 public sealed record CreatePromptTemplateRequest(
     string Identifier,
     string Name,
@@ -41,7 +39,6 @@ public sealed record ExecutePromptRequest(
     string? Model = null);
 
 // --- Endpoints ---
-
 public static class PromptTemplateEndpoints
 {
     public static void MapPromptTemplateEndpoints(this IEndpointRouteBuilder app)
@@ -229,10 +226,17 @@ public static class PromptTemplateEndpoints
     private static async Task<IResult> GetPromptTemplates(
         int? pageNumber,
         int? pageSize,
+        string? search,
+        int? provider,
         ISender sender,
         CancellationToken cancellationToken)
     {
-        var query = new GetPromptTemplatesQuery(pageNumber ?? 1, pageSize ?? 12);
+        var query = new GetPromptTemplatesQuery(
+            pageNumber ?? 1,
+            pageSize ?? 12,
+            search,
+            provider);
+
         var result = await sender.Send(query, cancellationToken);
 
         if (result.IsFailure)

@@ -69,9 +69,32 @@ internal sealed class PromptTemplateRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<(IReadOnlyList<PromptTemplate> Itmes, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<(IReadOnlyList<PromptTemplate> Items, int TotalCount)> GetPagedAsync(
+        int pageNumber,
+        int pageSize,
+        string? searchTerm = null,
+        int? provider = null,
+        CancellationToken cancellationToken = default)
+
     {
         var query = _dbContext.PromptTemplates.AsNoTracking();
+
+        if (provider.HasValue)
+        {
+            query = query.Where(x => (int)x.Provider == provider.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var search = searchTerm.ToLower();
+
+            query = query.Where(x =>
+                x.Name.Value.ToLower().Contains(search) ||
+                x.Identifier.Value.ToLower().Contains(search) ||
+                x.Description.Value.ToLower().Contains(search) ||
+                x.Tags.Any(t => t.Value.ToLower().Contains(search))
+            );
+        }
 
         var totalCount = await query.CountAsync(cancellationToken);
 
@@ -82,8 +105,6 @@ internal sealed class PromptTemplateRepository
             .ToListAsync(cancellationToken);
 
         return (items, totalCount);
-
-        throw new NotImplementedException();
     }
 
     public async Task<PromptTemplateVersion?> GetVersionAsync(

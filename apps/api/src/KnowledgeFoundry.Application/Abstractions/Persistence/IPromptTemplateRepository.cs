@@ -18,9 +18,11 @@ public interface IPromptTemplateRepository
 
     Task<IReadOnlyList<PromptTemplate>> GetAllAsync(CancellationToken cancellationToken = default);
 
-    Task<(IReadOnlyList<PromptTemplate> Itmes, int TotalCount)> GetPagedAsync(
+    Task<(IReadOnlyList<PromptTemplate> Items, int TotalCount)> GetPagedAsync(
         int pageNumber,
         int pageSize,
+        string? searchTerm = null,
+        int? provider = null,
         CancellationToken cancellationToken = default);
 
 

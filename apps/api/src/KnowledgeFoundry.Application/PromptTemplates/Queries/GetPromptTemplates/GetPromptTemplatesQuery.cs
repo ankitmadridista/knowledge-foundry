@@ -14,6 +14,9 @@ public record PromptTemplateSummaryDto(
     string Model,
     IEnumerable<string> Tags);
 
-public sealed record GetPromptTemplatesQuery(int PageNumber = 1, int PageSize = 12)
-    : IRequest<Result<PagedResponse
-        <PromptTemplateSummaryDto>>>;
+public sealed record GetPromptTemplatesQuery(
+    int PageNumber = 1,
+    int PageSize = 12,
+    string? SearchTerm = null,
+    int? Provider = null)
+    : IRequest<Result<PagedResponse<PromptTemplateSummaryDto>>>;
