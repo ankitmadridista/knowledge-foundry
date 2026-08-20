@@ -5,4 +5,8 @@ using MediatR;
 
 namespace KnowledgeFoundry.Application.ContextPacks.Queries.GetContextPacks;
 
-public sealed record GetContextPacksQuery(int PageNumber = 1, int PageSize = 12) : IRequest<Result<PagedResponse<ContextPackSummaryDto>>>;
+public sealed record GetContextPacksQuery(
+    int PageNumber = 1,
+    int PageSize = 12,
+    string? SearchTerm = null)
+    : IRequest<Result<PagedResponse<ContextPackSummaryDto>>>;

@@ -23,6 +23,7 @@ public sealed class GetContextPacksQueryHandler
         var (packs, totalCount) = await _repository.GetPagedAsync(
             request.PageNumber,
             request.PageSize,
+            request.SearchTerm,
             cancellationToken);
 
         var dtos = packs.Select(p => new ContextPackSummaryDto(
