@@ -22,6 +22,8 @@ public sealed class GetPromptTemplatesQueryHandler
         var (templates, totalCount) = await _repository.GetPagedAsync(
             request.PageNumber,
             request.PageSize,
+            request.SearchTerm,
+            request.Provider,
             cancellationToken);
 
         var dtos = templates.Select(t => new PromptTemplateSummaryDto(

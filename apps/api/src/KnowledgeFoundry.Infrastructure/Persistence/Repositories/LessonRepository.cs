@@ -44,18 +44,34 @@ internal sealed class LessonRepository : ILessonRepository
     public async Task<(IReadOnlyList<Lesson> Items, int TotalCount)> GetPagedAsync(
         int pageNumber,
         int pageSize,
+        string? searchTerm = null,
+        int? status = null,
         CancellationToken cancellationToken = default)
     {
         var query = _dbContext.Lessons.AsNoTracking();
 
-        // 1. Get the total number of records (Extremely fast in SQL)
+        if (status.HasValue)
+        {
+            query = query.Where(x => (int)x.Status == status.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var search = searchTerm.ToLower();
+
+            query = query.Where(x =>
+                x.Title.Value.ToLower().Contains(search) ||
+                x.Topic.Value.ToLower().Contains(search) ||
+                x.Audience.Value.ToLower().Contains(search)
+            );
+        }
+
         var totalCount = await query.CountAsync(cancellationToken);
 
-        // 2. Fetch only the specific page of data
         var items = await query
             .OrderByDescending(x => x.CreatedAt)
-            .Skip((pageNumber - 1) * pageSize) // e.g. Page 2 of 10 items skips the first 10
-            .Take(pageSize)                    // and takes the next 10
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync(cancellationToken);
 
         return (items, totalCount);

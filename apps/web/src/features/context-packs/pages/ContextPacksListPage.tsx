@@ -10,50 +10,68 @@ import {
     ErrorState,
     LoadingState,
     Pagination,
+    SearchFilterBar,
 } from "@/shared/components/ui";
 import type { PagedResponse } from "@/shared/types/pagination";
 
 export function ContextPacksListPage() {
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
-
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // --- STATE AS SOURCE OF TRUTH (Initialized from URL) ---
-    const [currentPage, setCurrentPage] = useState(() =>
-        parseInt(searchParams.get("page") || "1", 10),
-    );
-    const [pageSize, setPageSize] = useState(() =>
-        parseInt(searchParams.get("limit") || "6", 10),
-    );
+    // --- 1. URL IS THE SOURCE OF TRUTH ---
+    const currentPage = parseInt(searchParams.get("page") || "1", 10);
+    const pageSize = parseInt(searchParams.get("limit") || "6", 10);
+    const searchParam = searchParams.get("search") || "";
 
+    // Local state for the search input to prevent lag while typing
+    const [searchInput, setSearchInput] = useState(searchParam);
     const [pagedData, setPagedData] =
         useState<PagedResponse<ContextPackSummaryDto> | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    // 1. Sync internal state back to the URL seamlessly
+    // --- 2. DEBOUNCED SEARCH ---
     useEffect(() => {
-        setSearchParams(
-            (prev) => {
-                prev.set("page", currentPage.toString());
-                prev.set("limit", pageSize.toString());
-                return prev;
-            },
-            { replace: true }, // Prevents filling up browser history
-        );
-    }, [currentPage, pageSize, setSearchParams]);
+        const timer = setTimeout(() => {
+            setSearchParams(
+                (prev) => {
+                    if (searchInput) prev.set("search", searchInput);
+                    else prev.delete("search");
 
-    // 2. Fetch data based on internal state
+                    // If search changes, always reset to page 1
+                    if (searchInput !== searchParam) {
+                        prev.set("page", "1");
+                    }
+                    return prev;
+                },
+                { replace: true }, // Prevents filling up browser history
+            );
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchInput, setSearchParams, searchParam]);
+
+    // --- 3. FETCH DATA ---
     useEffect(() => {
         const fetchPacks = async () => {
             setIsLoading(true);
             try {
-                const data = await getContextPacks(currentPage, pageSize);
+                const data = await getContextPacks(
+                    currentPage,
+                    pageSize,
+                    searchParam,
+                );
                 setPagedData(data);
 
-                // If page doesn't exist, reset state to page 1
+                // If page doesn't exist, reset state to page 1 via URL
                 if (data.items.length === 0 && currentPage > 1) {
-                    setCurrentPage(1);
+                    setSearchParams(
+                        (prev) => {
+                            prev.set("page", "1");
+                            return prev;
+                        },
+                        { replace: true },
+                    );
                 }
             } catch (err) {
                 console.error("Failed to fetch context packs:", err);
@@ -66,19 +84,41 @@ export function ContextPacksListPage() {
         };
 
         fetchPacks();
-    }, [currentPage, pageSize]); // Depend on state, not URL directly
+    }, [currentPage, pageSize, searchParam, setSearchParams]);
 
-    // 3. Handlers update state (which triggers both useEffects)
+    // --- 4. HANDLERS ---
     const handlePageChange = (newPage: number) => {
-        setCurrentPage(newPage);
+        setSearchParams((prev) => {
+            prev.set("page", newPage.toString());
+            return prev;
+        });
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     const handlePageSizeChange = (newSize: number) => {
-        setCurrentPage(1);
-        setPageSize(newSize);
+        setSearchParams((prev) => {
+            prev.set("page", "1");
+            prev.set("limit", newSize.toString());
+            return prev;
+        });
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
+
+    const clearFilters = () => {
+        setSearchInput("");
+        setSearchParams((prev) => {
+            prev.delete("search");
+            prev.set("page", "1");
+            return prev;
+        });
+    };
+
+    const isFiltering = !!searchParam;
+
+    // --- SMART RENDER LOGIC ---
+    // Only show the search bar if there is data in the DB, OR if the user is actively filtering.
+    const showSearch =
+        pagedData !== null && (pagedData.totalCount > 0 || isFiltering);
 
     return (
         <Section>
@@ -94,35 +134,62 @@ export function ContextPacksListPage() {
                     }
                 />
 
-                {/* 2. Various States */}
+                {/* 2. Modern Full-Width Search Bar */}
+                {showSearch && (
+                    <SearchFilterBar
+                        searchValue={searchInput}
+                        onSearchChange={setSearchInput}
+                        searchPlaceholder="Search by name, description, or tags..."
+                    />
+                )}
+
+                {/* 3. Various States */}
                 {isLoading && (
                     <LoadingState message="Loading context packs..." />
                 )}
 
                 {error && <ErrorState message={error} />}
 
-                {!isLoading && !error && pagedData?.totalCount === 0 && (
-                    <EmptyState
-                        message="No context packs found."
-                        action={
-                            <Button
-                                variant="secondary"
-                                onClick={() => navigate("/context-packs/new")}
-                            >
-                                Create your first context pack
-                            </Button>
-                        }
-                    />
-                )}
+                {/* 4. Empty States */}
+                {!isLoading &&
+                    !error &&
+                    pagedData?.totalCount === 0 &&
+                    (isFiltering ? (
+                        <EmptyState
+                            message="No context packs match your search criteria."
+                            action={
+                                <Button
+                                    variant="secondary"
+                                    onClick={clearFilters}
+                                >
+                                    Clear Search
+                                </Button>
+                            }
+                        />
+                    ) : (
+                        <EmptyState
+                            message="No context packs found."
+                            action={
+                                <Button
+                                    variant="secondary"
+                                    onClick={() =>
+                                        navigate("/context-packs/new")
+                                    }
+                                >
+                                    Create your first context pack
+                                </Button>
+                            }
+                        />
+                    ))}
 
-                {/* 3. The Data Grid */}
+                {/* 5. The Data Grid */}
                 {!isLoading &&
                     !error &&
                     pagedData &&
                     pagedData.items.length > 0 && (
                         <>
                             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                {pagedData?.items.map((pack) => (
+                                {pagedData.items.map((pack) => (
                                     <ContextPackCard
                                         key={pack.id}
                                         pack={pack}
@@ -134,6 +201,7 @@ export function ContextPacksListPage() {
                                     />
                                 ))}
                             </div>
+
                             <Pagination
                                 currentPage={pagedData.pageNumber}
                                 totalPages={pagedData.totalPages}

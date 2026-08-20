@@ -17,6 +17,7 @@ public interface IContextPackRepository
     Task<(IReadOnlyList<ContextPack> Items, int TotalCount)> GetPagedAsync(
         int pageNumber,
         int pageSize,
+        string? searchTerm = null,
         CancellationToken cancellationToken = default);
 
     Task SaveChangesAsync(CancellationToken cancellationToken);

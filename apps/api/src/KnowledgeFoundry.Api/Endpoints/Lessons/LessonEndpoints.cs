@@ -83,11 +83,17 @@ public static class LessonEndpoints
     private static async Task<IResult> GetLessons(
         int? pageNumber,
         int? pageSize,
+        string? search,
+        int? status,
         ISender sender,
         CancellationToken cancellationToken)
     {
         // Pass the parameters, falling back to defaults if they aren't in the URL
-        var query = new GetLessonsQuery(pageNumber ?? 1, pageSize ?? 6);
+        var query = new GetLessonsQuery(
+            pageNumber ?? 1,
+            pageSize ?? 6,
+            search,
+            status);
 
         var result = await sender.Send(query, cancellationToken);
 

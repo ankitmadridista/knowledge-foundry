@@ -88,9 +88,10 @@ public static class ContextPackEndpoints
         int? pageNumber,
         int? pageSize,
         ISender sender,
+        string? search,
         CancellationToken cancellationToken)
     {
-        var query = new GetContextPacksQuery(pageNumber ?? 1, pageSize ?? 12);
+        var query = new GetContextPacksQuery(pageNumber ?? 1, pageSize ?? 12, search);
         var result = await sender.Send(query, cancellationToken);
 
         if (result.IsFailure)

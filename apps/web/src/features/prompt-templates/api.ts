@@ -15,11 +15,18 @@ import type { PagedResponse } from "@/shared/types/pagination";
 export const getPromptTemplates = async (
     pageNumber: number = 1,
     pageSize: number = 12,
+    search?: string,
+    provider?: number
 ): Promise<PagedResponse<PromptTemplateSummaryDto>> => {
-    const response = await httpClient.get(
-        `/prompt-templates?pageNumber=${pageNumber}&pageSize=${pageSize}`,
-    );
+    
+    const params = new URLSearchParams();
+    params.append("pageNumber", pageNumber.toString());
+    params.append("pageSize", pageSize.toString());
+    
+    if (search) params.append("search", search);
+    if (provider !== undefined && provider !== null) params.append("provider", provider.toString());
 
+    const response = await httpClient.get(`/prompt-templates?${params.toString()}`);
     return response.data;
 };
 

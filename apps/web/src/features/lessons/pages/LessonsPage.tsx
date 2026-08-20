@@ -10,49 +10,82 @@ import {
     ErrorState,
     EmptyState,
     Pagination,
+    SearchFilterBar
 } from "@/shared/components/ui";
 import { LessonCard } from "@/features/lessons/components";
+
+// Map your Lesson Status Enum for the filter dropdown
+// Adjust these numbers based on how your C# enum is defined!
+const STATUSES = [
+    { id: 0, name: "Generating" },
+    { id: 1, name: "Completed" },
+    { id: 2, name: "Failed" },
+];
 
 export function LessonsPage() {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // --- STATE AS SOURCE OF TRUTH (Initialized from URL) ---
-    const [currentPage, setCurrentPage] = useState(() =>
-        parseInt(searchParams.get("page") || "1", 10),
-    );
-    const [pageSize, setPageSize] = useState(() =>
-        parseInt(searchParams.get("limit") || "6", 10),
-    );
+    // --- 1. URL IS THE SOURCE OF TRUTH ---
+    const currentPage = parseInt(searchParams.get("page") || "1", 10);
+    const pageSize = parseInt(searchParams.get("limit") || "6", 10);
+    const searchParam = searchParams.get("search") || "";
+    const statusParam = searchParams.get("status");
 
+    // Local state for search input to prevent lag while typing
+    const [searchInput, setSearchInput] = useState(searchParam);
     const [pagedData, setPagedData] =
         useState<PagedResponse<LessonSummaryDto> | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // 1. Sync internal state back to the URL seamlessly
+    // --- 2. DEBOUNCED SEARCH ---
     useEffect(() => {
-        setSearchParams(
-            (prev) => {
-                prev.set("page", currentPage.toString());
-                prev.set("limit", pageSize.toString());
-                return prev;
-            },
-            { replace: true },
-        );
-    }, [currentPage, pageSize, setSearchParams]);
+        const timer = setTimeout(() => {
+            setSearchParams(
+                (prev) => {
+                    if (searchInput) prev.set("search", searchInput);
+                    else prev.delete("search");
 
-    // 2. Fetch data based on internal state
+                    if (searchInput !== searchParam) {
+                        prev.set("page", "1");
+                    }
+                    return prev;
+                },
+                { replace: true },
+            );
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchInput, setSearchParams, searchParam]);
+
+    // --- 3. FETCH DATA ---
     useEffect(() => {
         const fetchLessons = async () => {
             setIsLoading(true);
             try {
-                const data = await getLessons(currentPage, pageSize);
+                const parsedStatus = statusParam
+                    ? parseInt(statusParam, 10)
+                    : undefined;
+
+                const data = await getLessons(
+                    currentPage,
+                    pageSize,
+                    searchParam,
+                    parsedStatus,
+                );
+
                 setPagedData(data);
 
-                // If page doesn't exist, reset state to page 1
+                // If page doesn't exist, reset state to page 1 via URL
                 if (data.items.length === 0 && currentPage > 1) {
-                    setCurrentPage(1);
+                    setSearchParams(
+                        (prev) => {
+                            prev.set("page", "1");
+                            return prev;
+                        },
+                        { replace: true },
+                    );
                 }
             } catch (err) {
                 console.error("Failed to fetch lessons:", err);
@@ -63,20 +96,51 @@ export function LessonsPage() {
         };
 
         fetchLessons();
-    }, [currentPage, pageSize]);
+    }, [currentPage, pageSize, searchParam, statusParam, setSearchParams]);
 
-    // 3. Handlers update state
+    // --- 4. HANDLERS ---
     const handlePageChange = (newPage: number) => {
-        setCurrentPage(newPage);
+        setSearchParams((prev) => {
+            prev.set("page", newPage.toString());
+            return prev;
+        });
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     const handlePageSizeChange = (newSize: number) => {
-        setCurrentPage(1);
-        setPageSize(newSize);
+        setSearchParams((prev) => {
+            prev.set("page", "1");
+            prev.set("limit", newSize.toString());
+            return prev;
+        });
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
-    
+
+    const handleStatusChange = (value: string) => {
+        setSearchParams((prev) => {
+            if (value) prev.set("status", value);
+            else prev.delete("status");
+            prev.set("page", "1");
+            return prev;
+        });
+    };
+
+    const clearFilters = () => {
+        setSearchInput("");
+        setSearchParams((prev) => {
+            prev.delete("search");
+            prev.delete("status");
+            prev.set("page", "1");
+            return prev;
+        });
+    };
+
+    const isFiltering = !!searchParam || !!statusParam;
+
+    // --- SMART RENDER LOGIC ---
+    const showSearchAndFilter =
+        pagedData !== null && (pagedData.totalCount > 0 || isFiltering);
+
     return (
         <Section>
             <Container>
@@ -91,26 +155,53 @@ export function LessonsPage() {
                     }
                 />
 
-                {/* 2. Various States */}
+                {/* 2. Modern Search & Filter Bar */}
+                {showSearchAndFilter && (
+                    <SearchFilterBar
+                        searchValue={searchInput}
+                        onSearchChange={setSearchInput}
+                        searchPlaceholder="Search by title, topic, or audience..."
+                        filterValue={statusParam || ""}
+                        onFilterChange={handleStatusChange} // <-- Beautifully clean!
+                        filterOptions={STATUSES}
+                        filterPlaceholder="All Statuses"
+                    />
+                )}
+
+                {/* 3. States & Data */}
                 {isLoading && <LoadingState message="Loading lessons..." />}
 
                 {error && <ErrorState message={error} />}
 
-                {!isLoading && !error && pagedData?.totalCount === 0 && (
-                    <EmptyState
-                        message="No lessons generated yet."
-                        action={
-                            <Button
-                                variant="secondary"
-                                onClick={() => navigate("/lessons/new")}
-                            >
-                                Generate your first lesson
-                            </Button>
-                        }
-                    />
-                )}
+                {!isLoading &&
+                    !error &&
+                    pagedData?.totalCount === 0 &&
+                    (isFiltering ? (
+                        <EmptyState
+                            message="No lessons match your search criteria."
+                            action={
+                                <Button
+                                    variant="secondary"
+                                    onClick={clearFilters}
+                                >
+                                    Clear Filters
+                                </Button>
+                            }
+                        />
+                    ) : (
+                        <EmptyState
+                            message="No lessons generated yet."
+                            action={
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => navigate("/lessons/new")}
+                                >
+                                    Generate your first lesson
+                                </Button>
+                            }
+                        />
+                    ))}
 
-                {/* 3. The Data Grid */}
                 {!isLoading &&
                     !error &&
                     pagedData &&
@@ -127,10 +218,11 @@ export function LessonsPage() {
                                     />
                                 ))}
                             </div>
+
                             <Pagination
                                 currentPage={pagedData.pageNumber}
                                 totalPages={pagedData.totalPages}
-                                pageSize={pagedData.pageSize}                                
+                                pageSize={pagedData.pageSize}
                                 totalCount={pagedData.totalCount}
                                 hasNextPage={pagedData.hasNextPage}
                                 hasPreviousPage={pagedData.hasPreviousPage}

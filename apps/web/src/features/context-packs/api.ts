@@ -11,11 +11,15 @@ import type { PagedResponse } from "@/shared/types/pagination";
 export const getContextPacks = async (
     pageNumber: number = 1,
     pageSize: number = 12,
+    search?: string
 ): Promise<PagedResponse<ContextPackSummaryDto>> => {
-    const response = await httpClient.get(
-        `/context-packs?pageNumber=${pageNumber}&pageSize=${pageSize}`,
-    );
+    const params = new URLSearchParams();
+    params.append("pageNumber", pageNumber.toString());
+    params.append("pageSize", pageSize.toString());
     
+    if (search) params.append("search", search);
+
+    const response = await httpClient.get(`/context-packs?${params.toString()}`);
     return response.data;
 };
 
