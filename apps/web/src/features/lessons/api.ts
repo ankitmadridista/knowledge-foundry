@@ -24,10 +24,17 @@ export const generateLesson = async (
 export const getLessons = async (
     pageNumber: number = 1,
     pageSize: number = 6,
+    search?: string,
+    status?: number,
 ): Promise<PagedResponse<LessonSummaryDto>> => {
-    const response = await httpClient.get(
-        `/lessons?pageNumber=${pageNumber}&pageSize=${pageSize}`,
-    );
+    const params = new URLSearchParams();
+    params.append("pageNumber", pageNumber.toString());
+    params.append("pageSize", pageSize.toString());
+
+    if (search) params.append("search", search);
+    if (status !== undefined && status !== null) params.append("status", status.toString());
+
+    const response = await httpClient.get(`/lessons?${params.toString()}`);
     return response.data;
 };
 
