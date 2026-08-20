@@ -10,7 +10,7 @@ import {
     ErrorState,
     LoadingState,
     Pagination,
-    Input,
+    SearchFilterBar,
 } from "@/shared/components/ui";
 import type { PagedResponse } from "@/shared/types/pagination";
 
@@ -136,54 +136,11 @@ export function ContextPacksListPage() {
 
                 {/* 2. Modern Full-Width Search Bar */}
                 {showSearch && (
-                    <div className="mb-8">
-                        <div className="relative w-full group">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500 group-focus-within:text-indigo-400 transition-colors">
-                                {/* Search Icon */}
-                                <svg
-                                    className="h-4 w-4"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                    />
-                                </svg>
-                            </div>
-                            <Input
-                                type="text"
-                                placeholder="Search by name, description, or tags..."
-                                value={searchInput}
-                                onChange={(e) => setSearchInput(e.target.value)}
-                                className="pl-10 pr-10 w-full bg-zinc-900/50 border-zinc-800 focus:bg-zinc-950 transition-all rounded-lg"
-                            />
-                            {/* Clear Input Button (Only shows when there is text) */}
-                            {searchInput && (
-                                <button
-                                    onClick={() => setSearchInput("")}
-                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-500 hover:text-zinc-300 transition-colors"
-                                >
-                                    <svg
-                                        className="h-4 w-4"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M6 18L18 6M6 6l12 12"
-                                        />
-                                    </svg>
-                                </button>
-                            )}
-                        </div>
-                    </div>
+                    <SearchFilterBar
+                        searchValue={searchInput}
+                        onSearchChange={setSearchInput}
+                        searchPlaceholder="Search by name, description, or tags..."
+                    />
                 )}
 
                 {/* 3. Various States */}
