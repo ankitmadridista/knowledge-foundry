@@ -19,10 +19,11 @@ internal sealed class GetLessonsQueryHandler
         GetLessonsQuery request,
         CancellationToken cancellationToken)
     {
-        // 1. Fetch paged data and total count from the DB
         var (lessons, totalCount) = await _repository.GetPagedAsync(
             request.PageNumber,
             request.PageSize,
+            request.SearchTerm,
+            request.Status,
             cancellationToken);
 
         // 2. Map Entities to DTOs

@@ -18,6 +18,8 @@ public interface ILessonRepository
     Task<(IReadOnlyList<Lesson> Items, int TotalCount)> GetPagedAsync(
         int pageNumber,
         int pageSize,
+        string? searchTerm = null,
+        int? status = null,
         CancellationToken cancellationToken = default);
 
     void Remove(Lesson lesson);
