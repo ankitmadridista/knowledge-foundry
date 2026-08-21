@@ -1,10 +1,10 @@
-using System.ClientModel;
 using KnowledgeFoundry.Application.Abstractions.Services;
 using KnowledgeFoundry.Application.PromptTemplates.Queries.GetActivePromptPayload;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using Microsoft.Extensions.Configuration;
 using OpenAI;
 using OpenAI.Chat;
+using System.ClientModel;
 
 namespace KnowledgeFoundry.AIPlatform.Services;
 
@@ -23,7 +23,6 @@ internal sealed class MultiModelExecutionService : IPromptExecutionService
         string model,
         CancellationToken cancellationToken = default)
     {
-        // 1. Resolve API Key and Endpoint based on Provider
         var (apiKey, endpoint) = GetProviderConfig(provider);
 
         if (string.IsNullOrWhiteSpace(apiKey))
@@ -31,7 +30,7 @@ internal sealed class MultiModelExecutionService : IPromptExecutionService
             throw new InvalidOperationException($"API Key for provider '{provider}' is missing in configuration.");
         }
 
-        // 2. Initialize the OpenAI client pointing to the dynamically selected provider
+        // 1. Pure, native OpenAI Options. No hacks needed!
         var options = new OpenAIClientOptions
         {
             Endpoint = new Uri(endpoint)
@@ -39,7 +38,6 @@ internal sealed class MultiModelExecutionService : IPromptExecutionService
 
         var chatClient = new ChatClient(model, new ApiKeyCredential(apiKey), options);
 
-        // 3. Map Clean Architecture DTOs to OpenAI's official types
         var openAiMessages = new List<ChatMessage>();
 
         foreach (var msg in messages)
@@ -52,25 +50,38 @@ internal sealed class MultiModelExecutionService : IPromptExecutionService
             });
         }
 
-        var sw = System.Diagnostics.Stopwatch.StartNew();
-        var completion = await chatClient.CompleteChatAsync(openAiMessages, cancellationToken: cancellationToken);
-        sw.Stop();
+        try
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var completion = await chatClient.CompleteChatAsync(openAiMessages, cancellationToken: cancellationToken);
+            sw.Stop();
 
-        // 5. Extract text and telemetry
-        var responseText = completion.Value.Content[0].Text;
+            var responseText = completion.Value.Content[0].Text;
+            var tokensUsed = completion.Value.Usage?.TotalTokenCount ?? 0;
 
-        // Grab token usage (if the provider supplies it, otherwise 0)
-        var tokensUsed = completion.Value.Usage?.TotalTokenCount ?? 0;
+            return new ExecutionTelemetry(responseText, tokensUsed, sw.ElapsedMilliseconds);
+        }
+        catch (ClientResultException ex)
+        {
+            // 1. Extract the technical details for backend logging
+            var rawResponse = ex.GetRawResponse();
+            var technicalError = rawResponse?.Content?.ToString() ?? ex.Message;
 
-        return new ExecutionTelemetry(responseText, tokensUsed, sw.ElapsedMilliseconds);
+            // LOG THIS TO YOUR CONSOLE OR SEQ/DATADOG (Not the UI)
+            Console.WriteLine($"[CRITICAL AI ERROR] Status: {ex.Status} | Provider: {provider} | Details: {technicalError}");
+
+            // 2. Generate the safe, user-friendly UI message
+            var uiMessage = GetUserFriendlyErrorMessage(ex.Status);
+
+            // 3. Send ONLY the friendly message back to the Application Layer / Frontend
+            throw new Exception(uiMessage);
+        }
     }
 
     private (string? ApiKey, string Endpoint) GetProviderConfig(AiProvider provider)
     {
-        // Dynamically fetch the API key using string interpolation (e.g., "Groq:ApiKey")
         var apiKey = _configuration[$"{provider}:ApiKey"];
 
-        // Map the correct OpenAI-compatible base URL for the requested provider
         var endpoint = provider switch
         {
             AiProvider.Groq => "https://api.groq.com/openai/v1/",
@@ -80,5 +91,32 @@ internal sealed class MultiModelExecutionService : IPromptExecutionService
         };
 
         return (apiKey, endpoint);
+    }
+
+    private static string GetUserFriendlyErrorMessage(int httpStatusCode)
+    {
+        return httpStatusCode switch
+        {
+            // 400 Bad Request (Usually Context Length exceeded or invalid payload)
+            400 => "The prompt is too large or contains unsupported content. Please shorten the text and try again.",
+
+            // 401 / 403 (Bad API keys, Geo-blocking, Safety filters)
+            401 or 403 => "The AI provider rejected the request due to authorization or safety policies. Please contact support.",
+
+            // 402 Payment Required (OpenRouter or Groq out of credits)
+            402 => "Our AI services are currently out of credits. Please notify the administrator.",
+
+            // 404 Not Found (Model deprecated, renamed, or doesn't exist)
+            404 => "The selected AI model is currently unavailable or offline. Please select a different model and try again.",
+
+            // 429 Too Many Requests (Rate limits)
+            429 => "The AI network is currently experiencing high traffic. Please wait a few seconds and try again.",
+
+            // 500+ (Provider servers are down)
+            >= 500 => "The AI provider is experiencing temporary downtime. Please try again later.",
+
+            // Fallback
+            _ => "An unexpected error occurred while communicating with the AI. Please try again."
+        };
     }
 }

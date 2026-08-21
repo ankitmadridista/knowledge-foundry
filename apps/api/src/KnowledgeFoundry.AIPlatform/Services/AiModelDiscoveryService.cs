@@ -23,14 +23,16 @@ internal sealed class AiModelDiscoveryService : IAiModelDiscoveryService
         var availableModels = new List<AiModelDto>();
         var providers = new[] { AiProvider.Groq, AiProvider.OpenRouter, AiProvider.Gemini };
 
-        // --- NEW: Blocklist to filter out audio, vision, and moderation models ---
+        // Blocklist to filter out non-chat models across all providers
         var blacklistedKeywords = new[]
         {
             "whisper",   // Audio transcription
             "guard",     // Prompt safety moderation
             "compound",  // Internal routing models
             "clip",      // Image embeddings
-            "vision"     // Pure vision models
+            "vision",    // Pure vision models
+            "embedding", // Text embeddings
+            "aqa"        // Google's Attributed Question Answering
         };
 
         foreach (var provider in providers)
@@ -39,20 +41,10 @@ internal sealed class AiModelDiscoveryService : IAiModelDiscoveryService
 
             try
             {
-                if (provider == AiProvider.Gemini)
-                {
-                    availableModels.Add(new AiModelDto((int)provider, provider.ToString(), "gemini-1.5-flash"));
-                    availableModels.Add(new AiModelDto((int)provider, provider.ToString(), "gemini-1.5-pro"));
-                    continue;
-                }
-
-                if (provider == AiProvider.Groq && string.IsNullOrWhiteSpace(apiKey))
-                {
-                    continue;
-                }
-
                 var request = new HttpRequestMessage(HttpMethod.Get, $"{endpoint}models");
 
+                // 1. FIX: Only add the header if the key exists. 
+                // This allows OpenRouter to fetch its public free model list even if you haven't set a key yet!
                 if (!string.IsNullOrWhiteSpace(apiKey))
                 {
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
@@ -73,20 +65,31 @@ internal sealed class AiModelDiscoveryService : IAiModelDiscoveryService
 
                         if (string.IsNullOrEmpty(modelId)) continue;
 
-                        // --- NEW: Apply the Blocklist ---
                         bool isBlacklisted = blacklistedKeywords.Any(keyword =>
                             modelId.Contains(keyword, StringComparison.OrdinalIgnoreCase));
 
                         if (isBlacklisted) continue;
 
-                        // OpenRouter specific logic: ONLY allow models where prompt pricing is "0"
+                        // OpenRouter specific logic: ONLY allow free models
                         if (provider == AiProvider.OpenRouter)
                         {
                             if (element.TryGetProperty("pricing", out var pricing))
                             {
-                                var promptPrice = pricing.GetProperty("prompt").GetString();
+                                // 2. FIX: Safely use TryGetProperty instead of GetProperty.
+                                // This prevents the entire loop from crashing if an OpenRouter image model is missing the "prompt" price.
+                                if (pricing.TryGetProperty("prompt", out var promptElement))
+                                {
+                                    // Handle both string "0" and integer 0 formats just to be safe
+                                    var promptPrice = promptElement.ValueKind == JsonValueKind.String
+                                        ? promptElement.GetString()
+                                        : promptElement.GetRawText();
 
-                                if (promptPrice != "0" && promptPrice != "0.0") continue;
+                                    if (promptPrice != "0" && promptPrice != "0.0") continue;
+                                }
+                                else
+                                {
+                                    continue; // Skip models that don't have a prompt price
+                                }
                             }
                         }
 
@@ -110,6 +113,7 @@ internal sealed class AiModelDiscoveryService : IAiModelDiscoveryService
     private (string? ApiKey, string Endpoint) GetProviderConfig(AiProvider provider)
     {
         var apiKey = _configuration[$"{provider}:ApiKey"];
+
         var endpoint = provider switch
         {
             AiProvider.Groq => "https://api.groq.com/openai/v1/",
@@ -117,6 +121,7 @@ internal sealed class AiModelDiscoveryService : IAiModelDiscoveryService
             AiProvider.Gemini => "https://generativelanguage.googleapis.com/v1beta/openai/",
             _ => throw new NotSupportedException($"Provider {provider} not supported.")
         };
+
         return (apiKey, endpoint);
     }
 }

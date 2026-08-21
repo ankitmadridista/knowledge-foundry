@@ -24,11 +24,11 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy.WithOrigins(
-                "http://localhost:3000",       // Common Next.js/React local dev port
-                "http://localhost:5173",       // Common Vite local dev port
-                "https://*.vercel.app"         // Vercel deployment wildcard
+                "http://localhost:3000",       // Next.js local
+                "http://localhost:5173",       // Vite local
+                "https://knowledge-foundry.vercel.app/"
             )
-              .SetIsOriginAllowed(origin => true)
+              // .SetIsOriginAllowed(origin => true) <--- REMOVED THIS ENTIRELY
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
