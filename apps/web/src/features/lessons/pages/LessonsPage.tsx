@@ -10,9 +10,11 @@ import {
     ErrorState,
     EmptyState,
     Pagination,
-    SearchFilterBar
+    SearchFilterBar,
 } from "@/shared/components/ui";
 import { LessonCard } from "@/features/lessons/components";
+import { useAppConfig } from "@/app/providers/AppConfigProvider";
+import toast from "react-hot-toast";
 
 // Map your Lesson Status Enum for the filter dropdown
 // Adjust these numbers based on how your C# enum is defined!
@@ -25,6 +27,7 @@ const STATUSES = [
 export function LessonsPage() {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
+    const { config } = useAppConfig();
 
     // --- 1. URL IS THE SOURCE OF TRUTH ---
     const currentPage = parseInt(searchParams.get("page") || "1", 10);
@@ -135,6 +138,17 @@ export function LessonsPage() {
         });
     };
 
+    const handleGenerateNewClick = () => {
+        if (config && pagedData && pagedData.totalCount >= config.maxLessons) {
+            toast.error(
+                `Limit reached! You can only generate up to ${config.maxLessons} lessons.`,
+                { duration: 4000 },
+            );
+            return;
+        }
+        navigate("/lessons/new");
+    };
+
     const isFiltering = !!searchParam || !!statusParam;
 
     // --- SMART RENDER LOGIC ---
@@ -149,7 +163,7 @@ export function LessonsPage() {
                     title="Lesson Library"
                     description="View and manage your AI-generated educational content."
                     action={
-                        <Button onClick={() => navigate("/lessons/new")}>
+                        <Button onClick={handleGenerateNewClick}>
                             + Generate Lesson
                         </Button>
                     }
@@ -162,7 +176,7 @@ export function LessonsPage() {
                         onSearchChange={setSearchInput}
                         searchPlaceholder="Search by title, topic, or audience..."
                         filterValue={statusParam || ""}
-                        onFilterChange={handleStatusChange} // <-- Beautifully clean!
+                        onFilterChange={handleStatusChange}
                         filterOptions={STATUSES}
                         filterPlaceholder="All Statuses"
                     />
