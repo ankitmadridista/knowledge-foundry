@@ -7,7 +7,7 @@ export function MainLayout() {
         <>
             <Navbar />
 
-            <main>
+            <main className="flex-1 flex flex-col">
                 <Outlet />
             </main>
 

@@ -5,33 +5,33 @@ export interface WorkflowStepModel {
 
 export const workflowSteps: WorkflowStepModel[] = [
     {
-        title: "Context Packs",
+        title: "Knowledge Injection",
         description:
-            "Domain knowledge and instructional context are loaded before generation begins."
+            "Domain-specific Context Packs are loaded to ground the AI and prevent hallucinations.",
     },
     {
-        title: "Prompt Templates",
+        title: "Prompt Orchestration",
         description:
-            "Versioned prompt templates guide every AI interaction."
+            "Version-controlled templates format the request for optimal LLM comprehension.",
     },
     {
-        title: "LLM Execution",
+        title: "Model Execution",
         description:
-            "Gemini or another provider generates structured educational content."
+            "Payloads are routed to the selected AI provider (Gemini, Groq, or OpenRouter).",
     },
     {
-        title: "Evaluation",
+        title: "Automated Evaluation",
         description:
-            "Responses are validated against quality metrics and evaluation datasets."
+            "Responses are strictly validated against predefined educational quality metrics.",
     },
     {
-        title: "Reflection",
+        title: "Iterative Reflection",
         description:
-            "Feedback is incorporated to iteratively improve generated content."
+            "Feedback loops prompt the AI to refine and improve the content autonomously.",
     },
     {
-        title: "Final Output",
+        title: "Curated Output",
         description:
-            "The validated lesson becomes available to the learner."
-    }
+            "A polished, high-fidelity educational lesson is delivered to the learner.",
+    },
 ];
