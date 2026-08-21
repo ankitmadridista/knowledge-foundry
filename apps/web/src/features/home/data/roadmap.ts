@@ -21,14 +21,19 @@ export const roadmap: RoadmapItem[] = [
     },
     {
         title: "Context Packs",
-        description:
-            "Reusable contextual knowledge supplied to AI workflows.",
+        description: "Reusable contextual knowledge supplied to AI workflows.",
         status: "completed",
     },
     {
         title: "Lesson Generation",
         description:
             "Generate educational content using orchestrated AI pipelines.",
+        status: "completed",
+    },
+    {
+        title: "Multi-Model Support",
+        description:
+            "Seamlessly switch between Gemini, Groq, and OpenRouter at runtime.",
         status: "completed",
     },
     {
@@ -42,11 +47,5 @@ export const roadmap: RoadmapItem[] = [
         description:
             "Allow AI to critique and improve its own outputs iteratively.",
         status: "planned",
-    },
-    {
-        title: "Multi-Model Support",
-        description:
-            "Support Gemini, OpenAI, OpenRouter, Ollama and future providers.",
-        status: "in-progress",
     },
 ];
