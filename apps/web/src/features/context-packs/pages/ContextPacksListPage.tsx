@@ -13,10 +13,13 @@ import {
     SearchFilterBar,
 } from "@/shared/components/ui";
 import type { PagedResponse } from "@/shared/types/pagination";
+import { useAppConfig } from "@/app/providers/AppConfigProvider";
+import toast from "react-hot-toast";
 
 export function ContextPacksListPage() {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
+    const { config } = useAppConfig();
 
     // --- 1. URL IS THE SOURCE OF TRUTH ---
     const currentPage = parseInt(searchParams.get("page") || "1", 10);
@@ -113,6 +116,21 @@ export function ContextPacksListPage() {
         });
     };
 
+    const handleCreateNewClick = () => {
+        if (
+            config &&
+            pagedData &&
+            pagedData.totalCount >= config.maxContextPacks
+        ) {
+            toast.error(
+                `Limit reached! You can only create up to ${config.maxContextPacks} context packs.`,
+                { duration: 4000 },
+            );
+            return;
+        }
+        navigate("/context-packs/new");
+    };
+
     const isFiltering = !!searchParam;
 
     // --- SMART RENDER LOGIC ---
@@ -128,7 +146,7 @@ export function ContextPacksListPage() {
                     title="Context Packs"
                     description="Manage dynamic knowledge payloads to inject into your prompt templates."
                     action={
-                        <Button onClick={() => navigate("/context-packs/new")}>
+                        <Button onClick={handleCreateNewClick}>
                             + New Context Pack
                         </Button>
                     }

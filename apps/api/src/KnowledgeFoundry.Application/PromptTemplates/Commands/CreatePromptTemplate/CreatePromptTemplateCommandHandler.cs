@@ -8,13 +8,16 @@ public sealed class CreatePromptTemplateCommandHandler
     : IRequestHandler<CreatePromptTemplateCommand, Result<Guid>>
 {
     private readonly IPromptTemplateRepository _repository;
+    private readonly ICorpSettingsRepository _settingsRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public CreatePromptTemplateCommandHandler(
         IPromptTemplateRepository repository,
+        ICorpSettingsRepository settingsRepository,
         IUnitOfWork unitOfWork)
     {
         _repository = repository;
+        _settingsRepository = settingsRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -22,6 +25,16 @@ public sealed class CreatePromptTemplateCommandHandler
         CreatePromptTemplateCommand request,
         CancellationToken cancellationToken)
     {
+        var currentCount = await _repository.CountAsync(cancellationToken);
+        var settings = await _settingsRepository.GetSettingsAsync(cancellationToken);
+
+        if (currentCount >= settings.MaxPromptTemplates)
+        {
+            return Result<Guid>.Failure(new Error(
+                "Quota.Exceeded",
+                $"You have reached the maximum allowed Prompt Templates ({settings.MaxPromptTemplates}). Upgrade your plan to create more."));
+        }
+
         var template = PromptTemplate.Create(
             request.Identifier,
             request.Name,

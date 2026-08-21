@@ -130,7 +130,7 @@ export function CreateTemplatePage() {
                         </div>
                     ) : (
                         <CreatePromptTemplateForm
-                            availableModels={aiModels} // <-- Pass the live models!
+                            availableModels={aiModels}
                             onSubmit={handleSubmit}
                             onCancel={() => navigate("/templates")}
                             isSubmitting={isSubmitting}

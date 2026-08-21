@@ -30,4 +30,6 @@ public interface IPromptTemplateRepository
         Guid templateId,
         int versionNumber,
         CancellationToken cancellationToken);
+
+    Task<int> CountAsync(CancellationToken cancellationToken = default);
 }

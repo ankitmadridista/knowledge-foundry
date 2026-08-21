@@ -13,6 +13,8 @@ import {
 } from "@/shared/components/ui";
 import { PromptTemplateCard } from "@/features/prompt-templates/components";
 import type { PagedResponse } from "@/shared/types/pagination";
+import { useAppConfig } from "@/app/providers/AppConfigProvider";
+import toast from "react-hot-toast";
 
 const PROVIDERS = [
     { id: 0, name: "Groq" },
@@ -23,6 +25,7 @@ const PROVIDERS = [
 export function TemplatesPage() {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
+    const { config } = useAppConfig();
 
     // --- 1. URL IS THE SOURCE OF TRUTH ---
     const currentPage = parseInt(searchParams.get("page") || "1", 10);
@@ -133,11 +136,24 @@ export function TemplatesPage() {
         });
     };
 
+    const handleCreateNewClick = () => {
+        if (
+            config &&
+            pagedData &&
+            pagedData.totalCount >= config.maxPromptTemplates
+        ) {
+            toast.error(
+                `Limit reached! You can only create up to ${config.maxPromptTemplates} prompt templates.`,
+                { duration: 4000 },
+            );
+            return;
+        }
+        navigate("/templates/new");
+    };
+
     const isFiltering = !!searchParam || !!providerParam;
 
     // --- SMART RENDER LOGIC ---
-    // Only show the search bar if there is data in the DB, OR if the user is actively filtering.
-    // We do NOT hide it during `isLoading`, otherwise the input vanishes while typing!
     const showSearchAndFilter =
         pagedData !== null && (pagedData.totalCount > 0 || isFiltering);
 
@@ -149,7 +165,7 @@ export function TemplatesPage() {
                     title="Prompt Library"
                     description="Manage and execute your AI prompt templates."
                     action={
-                        <Button onClick={() => navigate("/templates/new")}>
+                        <Button onClick={handleCreateNewClick}>
                             + New Template
                         </Button>
                     }
@@ -162,7 +178,7 @@ export function TemplatesPage() {
                         onSearchChange={setSearchInput}
                         searchPlaceholder="Search by title, description, or tags..."
                         filterValue={providerParam || ""}
-                        onFilterChange={handleProviderChange} // <-- Beautifully clean!
+                        onFilterChange={handleProviderChange}
                         filterOptions={PROVIDERS}
                         filterPlaceholder="All Providers"
                     />
@@ -194,7 +210,7 @@ export function TemplatesPage() {
                             action={
                                 <Button
                                     variant="secondary"
-                                    onClick={() => navigate("/templates/new")}
+                                    onClick={handleCreateNewClick}
                                 >
                                     Create your first template
                                 </Button>

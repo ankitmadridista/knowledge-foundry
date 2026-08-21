@@ -21,4 +21,6 @@ public interface IContextPackRepository
         CancellationToken cancellationToken = default);
 
     Task SaveChangesAsync(CancellationToken cancellationToken);
+
+    Task<int> CountAsync(CancellationToken cancellationToken = default);
 }

@@ -2,6 +2,7 @@ using KnowledgeFoundry.Application.Abstractions.Persistence;
 using KnowledgeFoundry.Domain.AiPlatform;
 using KnowledgeFoundry.Domain.ContextPacks;
 using KnowledgeFoundry.Domain.Lessons;
+using KnowledgeFoundry.Domain.Settings;
 using KnowledgeFoundry.Infrastructure.DomainEvents;
 using Microsoft.EntityFrameworkCore;
 
@@ -43,6 +44,7 @@ public sealed class KnowledgeFoundryDbContext
     public DbSet<ContextPack> ContextPacks => Set<ContextPack>();
     public DbSet<Lesson> Lessons => Set<Lesson>();
     public DbSet<AiExecutionLog> AiExecutionLogs => Set<AiExecutionLog>();
+    public DbSet<CorpSettings> CorpSettings => Set<CorpSettings>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

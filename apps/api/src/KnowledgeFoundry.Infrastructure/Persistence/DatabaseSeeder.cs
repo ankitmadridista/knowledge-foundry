@@ -2,6 +2,7 @@ using KnowledgeFoundry.Domain.ContextPacks;
 using KnowledgeFoundry.Domain.ContextPacks.ValueObjects;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using KnowledgeFoundry.Domain.PromptTemplates.ValueObjects;
+using KnowledgeFoundry.Domain.Settings;
 using Microsoft.EntityFrameworkCore;
 
 namespace KnowledgeFoundry.Infrastructure.Persistence;
@@ -20,6 +21,19 @@ public class DatabaseSeeder : IDatabaseSeeder
         // 1. Ensure the database is created and all migrations are applied.
         // This is magic for new devs: they don't even need to run 'dotnet ef database update'!
         await _context.Database.MigrateAsync();
+
+        if (!await _context.CorpSettings.AnyAsync())
+        {
+            var defaultSettings = CorpSettings.Create(
+                maxPromptTemplates: 25,
+                maxContextPacks: 50,
+                maxLessons: 50
+            );
+
+            // If you added the static Guid ID to the entity, it will use that automatically!
+            await _context.CorpSettings.AddAsync(defaultSettings);
+            await _context.SaveChangesAsync(); // Save immediately so it's ready for the app
+        }
 
         // 2. Check if we already have data. If we do, exit early.
         if (await _context.PromptTemplates.AnyAsync() || await _context.ContextPacks.AnyAsync())

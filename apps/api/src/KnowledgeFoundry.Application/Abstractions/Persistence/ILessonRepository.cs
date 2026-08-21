@@ -23,4 +23,6 @@ public interface ILessonRepository
         CancellationToken cancellationToken = default);
 
     void Remove(Lesson lesson);
+
+    Task<int> CountAsync(CancellationToken cancellationToken = default);
 }

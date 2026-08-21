@@ -1,7 +1,6 @@
 import axios from "axios";
 import environment from "@/shared/config/environment";
 import toast from "react-hot-toast";
-// import { toast } from "@/your-toast-library-path"; // <-- Import your global Toast system here!
 
 export const httpClient = axios.create({
   baseURL: environment.apiBaseUrl,

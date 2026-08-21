@@ -3,6 +3,7 @@ using KnowledgeFoundry.Api.Endpoints.AiPlatform;
 using KnowledgeFoundry.Api.Endpoints.ContextPacks;
 using KnowledgeFoundry.Api.Endpoints.Lessons;
 using KnowledgeFoundry.Api.Endpoints.PromptTemplates;
+using KnowledgeFoundry.Api.Endpoints.Settings;
 using KnowledgeFoundry.Api.Middleware;
 using KnowledgeFoundry.Application.DependencyInjection;
 using KnowledgeFoundry.Infrastructure;
@@ -57,6 +58,7 @@ app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", timestamp =
    .ExcludeFromDescription();
 
 // Map our feature endpoints
+app.MapConfigEndpoints();
 app.MapPromptTemplateEndpoints();
 app.MapContextPackEndpoints();
 app.MapLessonEndpoints();

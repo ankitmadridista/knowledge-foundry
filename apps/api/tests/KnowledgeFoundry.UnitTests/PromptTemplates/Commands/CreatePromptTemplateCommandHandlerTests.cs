@@ -9,14 +9,16 @@ namespace KnowledgeFoundry.UnitTests.PromptTemplates.Commands.CreatePromptTempla
 public class CreatePromptTemplateCommandHandlerTests
 {
     private readonly IPromptTemplateRepository _repositoryMock;
+    private readonly ICorpSettingsRepository _settingsRepositoryMock;
     private readonly IUnitOfWork _unitOfWorkMock;
     private readonly CreatePromptTemplateCommandHandler _handler;
 
     public CreatePromptTemplateCommandHandlerTests()
     {
         _repositoryMock = Substitute.For<IPromptTemplateRepository>();
+        _settingsRepositoryMock = Substitute.For<ICorpSettingsRepository>();
         _unitOfWorkMock = Substitute.For<IUnitOfWork>();
-        _handler = new CreatePromptTemplateCommandHandler(_repositoryMock, _unitOfWorkMock);
+        _handler = new CreatePromptTemplateCommandHandler(_repositoryMock, _settingsRepositoryMock, _unitOfWorkMock);
     }
 
     [Fact]
