@@ -30,6 +30,8 @@ public sealed class CorpSettings : Entity
         if (maxLessons < 0)
             throw new ArgumentOutOfRangeException(nameof(maxLessons), "Quota cannot be negative.");
 
+        Id = GlobalSettingsId;
+
         MaxPromptTemplates = maxPromptTemplates;
         MaxContextPacks = maxContextPacks;
         MaxLessons = maxLessons;
