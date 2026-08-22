@@ -236,12 +236,15 @@ export function GenerateLessonForm({
                             disabled={formData.provider === undefined}
                             className={selectClasses}
                         >
-                            <option value="">(Use Template Default)</option>
-                            {modelsForCurrentProvider.map((m) => (
-                                <option key={m.modelId} value={m.modelId}>
-                                    {m.modelId}
-                                </option>
-                            ))}
+                            {formData.provider === undefined ? (
+                                <option value="">(Use Template Default)</option>
+                            ) : (
+                                modelsForCurrentProvider.map((m) => (
+                                    <option key={m.modelId} value={m.modelId}>
+                                        {m.modelId}
+                                    </option>
+                                ))
+                            )}
                         </select>
                     </div>
                 </div>

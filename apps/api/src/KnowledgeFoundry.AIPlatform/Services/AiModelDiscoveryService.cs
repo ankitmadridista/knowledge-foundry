@@ -27,12 +27,16 @@ internal sealed class AiModelDiscoveryService : IAiModelDiscoveryService
         var blacklistedKeywords = new[]
         {
             "whisper",   // Audio transcription
-            "guard",     // Prompt safety moderation
-            "compound",  // Internal routing models
-            "clip",      // Image embeddings
-            "vision",    // Pure vision models
+            "guard",     // Safety moderation
+            "compound",  // Routing models
+            "clip",      // Embeddings
+            "vision",    // Vision only
             "embedding", // Text embeddings
-            "aqa"        // Google's Attributed Question Answering
+            "aqa",       // Question Answering
+            "veo",       // Google Video Generation
+            "lyria",     // Google Music/Audio Generation
+            "robotics",  // Google Robotics
+            "tts"        // Text-to-Speech
         };
 
         foreach (var provider in providers)
@@ -43,7 +47,7 @@ internal sealed class AiModelDiscoveryService : IAiModelDiscoveryService
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, $"{endpoint}models");
 
-                // 1. FIX: Only add the header if the key exists. 
+                // Only add the header if the key exists. 
                 // This allows OpenRouter to fetch its public free model list even if you haven't set a key yet!
                 if (!string.IsNullOrWhiteSpace(apiKey))
                 {
@@ -70,16 +74,20 @@ internal sealed class AiModelDiscoveryService : IAiModelDiscoveryService
 
                         if (isBlacklisted) continue;
 
-                        // OpenRouter specific logic: ONLY allow free models
+                        // OpenRouter specific logic: STRICTLY ONLY allow free models
                         if (provider == AiProvider.OpenRouter)
                         {
+                            // 1. STRICT SUFFIX CHECK: Must explicitly end in ":free"
+                            if (!modelId.EndsWith(":free", StringComparison.OrdinalIgnoreCase))
+                            {
+                                continue;
+                            }
+
+                            // 2. DOUBLE-LOCK: Ensure the prompt price is actually 0
                             if (element.TryGetProperty("pricing", out var pricing))
                             {
-                                // 2. FIX: Safely use TryGetProperty instead of GetProperty.
-                                // This prevents the entire loop from crashing if an OpenRouter image model is missing the "prompt" price.
                                 if (pricing.TryGetProperty("prompt", out var promptElement))
                                 {
-                                    // Handle both string "0" and integer 0 formats just to be safe
                                     var promptPrice = promptElement.ValueKind == JsonValueKind.String
                                         ? promptElement.GetString()
                                         : promptElement.GetRawText();
@@ -88,7 +96,7 @@ internal sealed class AiModelDiscoveryService : IAiModelDiscoveryService
                                 }
                                 else
                                 {
-                                    continue; // Skip models that don't have a prompt price
+                                    continue;
                                 }
                             }
                         }

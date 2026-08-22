@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { isAxiosError } from "axios";
 import {
     getActivePayload,
     executeTemplate,
@@ -17,6 +16,7 @@ import {
     PromptExecutionForm,
     PromptExecutionResult,
 } from "@/features/prompt-templates/components";
+import { extractErrorMessage } from "@/shared/utils/error";
 
 export function TemplateExecutionPage() {
     const { identifier } = useParams<{ identifier: string }>();
@@ -37,25 +37,6 @@ export function TemplateExecutionPage() {
     const [isExecuting, setIsExecuting] = useState(false);
     const [result, setResult] = useState<ExecuteTemplateResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
-
-    const extractErrorMessage = (
-        err: unknown,
-        fallbackMessage: string,
-    ): string => {
-        if (isAxiosError(err) && err.response?.data) {
-            const data = err.response.data;
-            return (
-                data.message ||
-                data.detail ||
-                data.title ||
-                JSON.stringify(data)
-            );
-        }
-        if (err instanceof Error) {
-            return err.message;
-        }
-        return fallbackMessage;
-    };
 
     useEffect(() => {
         let isMounted = true;
@@ -155,10 +136,10 @@ export function TemplateExecutionPage() {
         <Section>
             <Container>
                 <button
-                    onClick={() => navigate("/templates")}
+                    onClick={() => navigate("/templates/${identifier}")}
                     className="text-indigo-400 hover:text-indigo-300 transition-colors mb-6 flex items-center gap-2 text-sm font-medium"
                 >
-                    &larr; Back to Templates
+                    &larr; Back to {identifier}
                 </button>
 
                 <PageHeader
