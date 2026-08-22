@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { isAxiosError } from "axios";
 import { Section, Container, PageHeader } from "@/shared/components/layout";
 import { ErrorState } from "@/shared/components/ui";
 import { generateLesson, getLessonById } from "@/features/lessons/api";
@@ -19,6 +18,7 @@ import {
 } from "@/features/lessons/components";
 import type { ContextPackSummaryDto } from "@/features/context-packs/types";
 import type { LessonDto } from "@/features/lessons/types";
+import { extractErrorMessage } from "@/shared/utils/error";
 
 export function GenerateLessonPage() {
     const navigate = useNavigate();
@@ -35,28 +35,8 @@ export function GenerateLessonPage() {
     const [contextPacks, setContextPacks] = useState<ContextPackSummaryDto[]>(
         [],
     );
-    const [availableModels, setAvailableModels] = useState<AiModelDto[]>([]); // <-- NEW State
+    const [availableModels, setAvailableModels] = useState<AiModelDto[]>([]);
     const [remixSource, setRemixSource] = useState<LessonDto | null>(null);
-
-    // Helper to extract clean error messages from our .NET backend
-    const extractErrorMessage = (
-        err: unknown,
-        fallbackMessage: string,
-    ): string => {
-        if (isAxiosError(err) && err.response?.data) {
-            const data = err.response.data;
-            return (
-                data.message ||
-                data.detail ||
-                data.title ||
-                JSON.stringify(data)
-            );
-        }
-        if (err instanceof Error) {
-            return err.message;
-        }
-        return fallbackMessage;
-    };
 
     // Fetch Templates, Context Packs, Models, and (optionally) the Remix Lesson on load
     useEffect(() => {
@@ -121,8 +101,8 @@ export function GenerateLessonPage() {
                 audience: formData.audience,
                 promptTemplateId: formData.promptTemplateId,
                 contextPackId: formData.contextPackId || null,
-                provider: formData.provider, // <-- NEW Map Override
-                model: formData.model, // <-- NEW Map Override
+                provider: formData.provider,
+                model: formData.model,
             };
 
             const newLessonId = await generateLesson(request);
@@ -144,20 +124,33 @@ export function GenerateLessonPage() {
             <Container>
                 <div className="mx-auto max-w-4xl">
                     <button
-                        onClick={() => navigate("/lessons")}
+                        onClick={() =>
+                            navigate(
+                                remixId ? `/lessons/${remixId}` : "/lessons",
+                            )
+                        }
                         className="text-indigo-400 hover:text-indigo-300 transition-colors mb-6 flex items-center gap-2 text-sm font-medium"
                     >
-                        &larr; Back to Lessons
+                        &larr;{" "}
+                        {!remixId
+                            ? "Back to Lessons"
+                            : `Back to ${remixSource?.title || "Lesson"}`}
                     </button>
 
                     <PageHeader
                         title={
-                            remixId ? "Remix Lesson" : "Generate a New Lesson"
+                            !remixId
+                                ? "Generate a New Lesson"
+                                : remixSource?.status === "Failed"
+                                  ? "Retry Lesson Generation"
+                                  : "Remix Lesson"
                         }
                         description={
-                            remixId
-                                ? "Tweak the inputs below to generate a new variation of this lesson."
-                                : "Combine an AI Persona with your Context Packs to generate high-quality educational content."
+                            !remixId
+                                ? "Combine an AI Persona with your Context Packs to generate high-quality educational content."
+                                : remixSource?.status === "Failed"
+                                  ? "Your previous attempt failed. Tweak your settings or try a different AI provider below." // <-- Smart Description!
+                                  : "Tweak the inputs below to generate a new variation of this lesson."
                         }
                     />
 

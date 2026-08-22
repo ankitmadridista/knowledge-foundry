@@ -50,6 +50,8 @@ public sealed class GetActivePromptPayloadQueryHandler
             .ToList();
 
         var dto = new PromptPayloadDto(
+            template.Id,
+            template.Name.Value,
             template.Identifier.Value,
             messages,
             variables,

@@ -43,21 +43,30 @@ internal sealed class PromptTemplateRepository
     }
 
     public async Task<PromptTemplate?> GetByIdentifierAsync(
-        string identifier,
-        CancellationToken cancellationToken)
+    string identifier,
+    CancellationToken cancellationToken)
     {
-        // Notice we are normalizing the identifier to upper case just in case
-        var normalizedIdentifier = identifier.ToUpperInvariant();
-
-        return await _dbContext.PromptTemplates
+        // 1. Build the base query with all your existing includes
+        var query = _dbContext.PromptTemplates
             .Include(x => x.Versions)
                 .ThenInclude(v => v.Messages)
             .Include(x => x.Versions)
                 .ThenInclude(v => v.Variables)
-            .Include(x => x.Tags)
-            .FirstOrDefaultAsync(
-                x => x.Identifier.Value == normalizedIdentifier,
-                cancellationToken);
+            .Include(x => x.Tags);
+
+        // 2. Check if the incoming string is actually a GUID
+        if (Guid.TryParse(identifier, out var guidId))
+        {
+            // It's a GUID: Query against the Strongly-Typed ID's underlying value
+            return await query.FirstOrDefaultAsync(x => x.Id == guidId, cancellationToken);
+        }
+
+        // 3. It's a String Identifier: Apply your normalization logic
+        var normalizedIdentifier = identifier.ToUpperInvariant();
+
+        return await query.FirstOrDefaultAsync(
+            x => x.Identifier.Value == normalizedIdentifier,
+            cancellationToken);
     }
 
     public async Task<IReadOnlyList<PromptTemplate>> GetAllAsync(

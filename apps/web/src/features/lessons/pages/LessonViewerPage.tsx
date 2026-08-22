@@ -114,10 +114,9 @@ export function LessonViewerPage() {
                         lesson={lesson}
                         onDelete={handleDeleteClick}
                     />
-
                     <LessonContent
                         lesson={lesson}
-                        onRetry={() => navigate("/lessons/new")}
+                        onRetry={() => navigate(`/lessons/new?remixId=${lesson.id}`)}
                         onUpdateContent={handleUpdateContent}
                     />
                 </div>
