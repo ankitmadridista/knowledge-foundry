@@ -8,6 +8,7 @@ using KnowledgeFoundry.Api.Middleware;
 using KnowledgeFoundry.Application.DependencyInjection;
 using KnowledgeFoundry.Infrastructure;
 using KnowledgeFoundry.Infrastructure.Persistence;
+using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,14 +24,19 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:3000",       // Next.js local
-                "http://localhost:5173",       // Vite local
-                "https://knowledge-foundry.vercel.app/"
-            )
-              // .SetIsOriginAllowed(origin => true) <--- REMOVED THIS ENTIRELY
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        // Dynamically pull the origins from appsettings.json or Environment Variables
+        var allowedOrigins = builder.Configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>();
+
+        if (allowedOrigins != null && allowedOrigins.Length > 0)
+        {
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        }
+        else
+        {
+            Console.WriteLine("WARNING: No CORS AllowedOrigins found in configuration! API requests from the browser will fail.");
+        }
     });
 });
 
