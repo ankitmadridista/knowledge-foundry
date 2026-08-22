@@ -18,7 +18,10 @@ public sealed record GenerateLessonRequest(
     Guid PromptTemplateId,
     Guid? ContextPackId,
     int? Provider = null,
-    string? Model = null);
+    string? Model = null,
+    Guid? CriticPromptTemplateId = null,
+    int? CriticProvider = null,
+    string? CriticModel = null);
 
 public sealed record UpdateLessonContentRequest(
     string NewContent);
@@ -59,7 +62,10 @@ public static class LessonEndpoints
             request.PromptTemplateId,
             request.ContextPackId,
             request.Provider.HasValue ? (AiProvider)request.Provider.Value : null,
-            request.Model);
+            request.Model,
+            request.CriticPromptTemplateId,
+            request.CriticProvider.HasValue ? (AiProvider)request.CriticProvider.Value : null,
+            request.CriticModel);
 
         var result = await sender.Send(command, cancellationToken);
 

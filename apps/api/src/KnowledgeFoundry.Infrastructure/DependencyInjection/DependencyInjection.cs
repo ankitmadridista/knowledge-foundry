@@ -1,4 +1,6 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
+using KnowledgeFoundry.Application.BackgroundProcessing;
+using KnowledgeFoundry.Infrastructure.BackgroundProcessing;
 using KnowledgeFoundry.Infrastructure.DomainEvents;
 using KnowledgeFoundry.Infrastructure.Persistence;
 using KnowledgeFoundry.Infrastructure.Persistence.Repositories;
@@ -34,6 +36,10 @@ public static class DependencyInjection
         services.AddScoped<IAiExecutionLogRepository, AiExecutionLogRepository>();
 
         services.AddScoped<ICorpSettingsRepository, CorpSettingsRepository>();
+
+        services.AddSingleton<ILessonGenerationQueue, LessonGenerationQueue>();
+
+        services.AddHostedService<LessonGenerationWorker>();
 
         return services;
     }

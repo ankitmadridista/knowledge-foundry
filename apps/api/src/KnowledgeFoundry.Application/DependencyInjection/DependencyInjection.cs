@@ -1,4 +1,3 @@
-using KnowledgeFoundry.Application.Abstractions.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace KnowledgeFoundry.Application.DependencyInjection;

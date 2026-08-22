@@ -11,5 +11,8 @@ public sealed record GenerateLessonCommand(
     Guid PromptTemplateId,
     Guid? ContextPackId,
     AiProvider? OverrideProvider = null,
-    string? OverrideModel = null
+    string? OverrideModel = null,
+    Guid? CriticPromptTemplateId = null,
+    AiProvider? CriticProvider = null,
+    string? CriticModel = null
     ) : IRequest<Result<Guid>>;
