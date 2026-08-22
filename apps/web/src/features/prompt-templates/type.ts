@@ -13,6 +13,8 @@ export interface VariableDto {
 }
 
 export interface PromptTemplatePayloadDto {
+    id: string,
+    name: string,
     templateId: string;
     versionId: string;
     text: string;

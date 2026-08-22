@@ -7,6 +7,8 @@ namespace KnowledgeFoundry.Application.PromptTemplates.Queries.GetActivePromptPa
 public record MessagePayloadDto(string Role, string Content);
 
 public record PromptPayloadDto(
+    Guid Id,
+    string Name,
     string Identifier,
     IEnumerable<MessagePayloadDto> Messages,
     IEnumerable<string> Variables,

@@ -101,8 +101,8 @@ export function GenerateLessonPage() {
                 audience: formData.audience,
                 promptTemplateId: formData.promptTemplateId,
                 contextPackId: formData.contextPackId || null,
-                provider: formData.provider, // <-- NEW Map Override
-                model: formData.model, // <-- NEW Map Override
+                provider: formData.provider,
+                model: formData.model,
             };
 
             const newLessonId = await generateLesson(request);
@@ -124,10 +124,17 @@ export function GenerateLessonPage() {
             <Container>
                 <div className="mx-auto max-w-4xl">
                     <button
-                        onClick={() => navigate("/lessons")}
+                        onClick={() =>
+                            navigate(
+                                remixId ? `/lessons/${remixId}` : "/lessons",
+                            )
+                        }
                         className="text-indigo-400 hover:text-indigo-300 transition-colors mb-6 flex items-center gap-2 text-sm font-medium"
                     >
-                        &larr; Back to Lessons
+                        &larr;{" "}
+                        {!remixId
+                            ? "Back to Lessons"
+                            : `Back to ${remixSource?.title || "Lesson"}`}
                     </button>
 
                     <PageHeader
@@ -135,7 +142,7 @@ export function GenerateLessonPage() {
                             !remixId
                                 ? "Generate a New Lesson"
                                 : remixSource?.status === "Failed"
-                                  ? "Retry Lesson Generation" // <-- Smart Title!
+                                  ? "Retry Lesson Generation"
                                   : "Remix Lesson"
                         }
                         description={

@@ -19,6 +19,7 @@ import {
 import { extractErrorMessage } from "@/shared/utils/error";
 
 export function TemplateExecutionPage() {
+    // identifier here is the GUID from the URL
     const { identifier } = useParams<{ identifier: string }>();
     const navigate = useNavigate();
 
@@ -30,7 +31,9 @@ export function TemplateExecutionPage() {
     >({});
     const [availableModels, setAvailableModels] = useState<AiModelDto[]>([]);
 
-    const [selectedProvider, setSelectedProvider] = useState<number>(0);
+    const [selectedProvider, setSelectedProvider] = useState<
+        number | undefined
+    >(undefined);
     const [selectedModel, setSelectedModel] = useState<string>("");
 
     const [isLoading, setIsLoading] = useState(true);
@@ -54,20 +57,18 @@ export function TemplateExecutionPage() {
                 setPayload(payloadData);
                 setAvailableModels(modelsData);
 
-                // Set initial variables
+                // --- FIX: Strictly typed using your VariableDto array! ---
                 const initialVars: Record<string, string> = {};
-                payloadData.variables.forEach((v) => {
-                    initialVars[v.name] = v.defaultValue || "";
+                payloadData.variables.forEach((variable) => {
+                    // We can safely grab the name, and fallback to empty string if defaultValue is null
+                    initialVars[variable.name] = variable.defaultValue || "";
                 });
                 setVariableValues(initialVars);
 
-                // --- NEW: Use Template Defaults! ---
                 if (payloadData.provider !== undefined && payloadData.model) {
                     setSelectedProvider(payloadData.provider);
                     setSelectedModel(payloadData.model);
-                }
-                // Fallback to the first available model if the template somehow lacks them
-                else if (modelsData.length > 0) {
+                } else if (modelsData.length > 0) {
                     setSelectedProvider(modelsData[0].providerId);
                     setSelectedModel(modelsData[0].modelId);
                 }
@@ -96,7 +97,7 @@ export function TemplateExecutionPage() {
     };
 
     const handleExecute = async () => {
-        if (!identifier) return;
+        if (!identifier || selectedProvider === undefined) return;
         setIsExecuting(true);
         setError(null);
         try {
@@ -118,12 +119,8 @@ export function TemplateExecutionPage() {
         }
     };
 
-    const variableNames =
-        payload?.variables
-            .map((v) => (typeof v === "string" ? v : v.name || v.defaultValue))
-            .filter(
-                (v): v is string => typeof v === "string" && v.length > 0,
-            ) || [];
+    // --- FIX: Strictly map the VariableDto[] to string[] for the child component ---
+    const variableNames: string[] = payload?.variables.map((v) => v.name) || [];
 
     const currentProviderModels = availableModels.filter(
         (m) => m.providerId === selectedProvider,
@@ -136,16 +133,16 @@ export function TemplateExecutionPage() {
         <Section>
             <Container>
                 <button
-                    onClick={() => navigate("/templates/${identifier}")}
+                    onClick={() => navigate(`/templates/${identifier}`)}
                     className="text-indigo-400 hover:text-indigo-300 transition-colors mb-6 flex items-center gap-2 text-sm font-medium"
                 >
-                    &larr; Back to {identifier}
+                    &larr; Back to {payload?.name || "Template Details"}
                 </button>
 
                 <PageHeader
                     title={
                         <div className="flex items-center gap-3">
-                            <span>{identifier}</span>
+                            <span>{payload?.name || "Execute Prompt"}</span>
                             <span className="text-sm md:text-base font-semibold tracking-wide text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-0.5 rounded-md mt-1">
                                 v{payload?.versionNumber}.0
                             </span>
@@ -154,14 +151,17 @@ export function TemplateExecutionPage() {
                     description="Provide variables and select an active model to execute this prompt."
                 />
 
-                {/* Model Override Bar */}
                 <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-lg border border-zinc-800 bg-zinc-950/60">
                     <div>
                         <label className="block text-xs font-medium text-zinc-400 mb-1">
                             AI Provider
                         </label>
                         <select
-                            value={selectedProvider}
+                            value={
+                                selectedProvider !== undefined
+                                    ? selectedProvider
+                                    : ""
+                            }
                             onChange={(e) => {
                                 const provId = parseInt(e.target.value, 10);
                                 setSelectedProvider(provId);
@@ -219,7 +219,6 @@ export function TemplateExecutionPage() {
                         onExecute={handleExecute}
                         isExecuting={isExecuting}
                     />
-
                     <PromptExecutionResult result={result} />
                 </div>
             </Container>

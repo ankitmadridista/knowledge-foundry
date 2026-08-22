@@ -15,6 +15,7 @@ import {
     PromptVersionTable,
 } from "@/features/prompt-templates/components";
 import toast from "react-hot-toast";
+
 export function TemplateDetailsPage() {
     const { identifier } = useParams<{ identifier: string }>();
     const navigate = useNavigate();
@@ -135,9 +136,7 @@ export function TemplateDetailsPage() {
                         template={template}
                         hasActiveVersion={hasActiveVersion}
                         onExecute={() =>
-                            navigate(
-                                `/templates/${template.identifier}/execute`,
-                            )
+                            navigate(`/templates/${template.id}/execute`)
                         }
                     />
 
