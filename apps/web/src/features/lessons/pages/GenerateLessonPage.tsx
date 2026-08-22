@@ -103,6 +103,9 @@ export function GenerateLessonPage() {
                 contextPackId: formData.contextPackId || null,
                 provider: formData.provider,
                 model: formData.model,
+                criticPromptTemplateId: formData.criticPromptTemplateId || null,
+                criticProvider: formData.criticProvider,
+                criticModel: formData.criticModel,
             };
 
             const newLessonId = await generateLesson(request);

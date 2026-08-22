@@ -20,6 +20,9 @@ export interface GenerateLessonFormData {
     contextPackId: string;
     provider?: number;
     model?: string;
+    criticPromptTemplateId?: string | null;
+    criticProvider?: number;
+    criticModel?: string;
 }
 
 interface GenerateLessonFormProps {
@@ -41,15 +44,17 @@ export function GenerateLessonForm({
     onCancel,
     isSubmitting,
 }: GenerateLessonFormProps) {
-    // --- UPDATED: Initial state pulls provider and model from the remix data! ---
     const [formData, setFormData] = useState<GenerateLessonFormData>({
         title: initialData?.title ? `${initialData.title} (Remix)` : "",
         topic: initialData?.topic || "",
         audience: initialData?.audience || "8th Grade Students",
         promptTemplateId: initialData?.promptTemplateId || "",
         contextPackId: initialData?.contextPackId || "",
-        provider: initialData?.provider ?? undefined, // <-- NEW
-        model: initialData?.model ?? undefined, // <-- NEW
+        provider: initialData?.provider ?? undefined,
+        model: initialData?.model ?? undefined,
+        criticPromptTemplateId: initialData?.criticPromptTemplateId || "",
+        criticProvider: undefined, 
+        criticModel: undefined,
     });
 
     const handleChange = (
@@ -80,6 +85,28 @@ export function GenerateLessonForm({
                             : "",
                 }));
             }
+        }
+        else if (name === "criticProvider") {
+            if (value === "") {
+                setFormData((prev) => ({
+                    ...prev,
+                    criticProvider: undefined,
+                    criticModel: undefined,
+                }));
+            } else {
+                const newProviderInt = parseInt(value, 10);
+                const newProviderModels = availableModels.filter(
+                    (m) => m.providerId === newProviderInt,
+                );
+                setFormData((prev) => ({
+                    ...prev,
+                    criticProvider: newProviderInt,
+                    criticModel:
+                        newProviderModels.length > 0
+                            ? newProviderModels[0].modelId
+                            : "",
+                }));
+            }
         } else {
             setFormData((prev) => ({ ...prev, [name]: value }));
         }
@@ -100,12 +127,17 @@ export function GenerateLessonForm({
         (m) => m.providerId === formData.provider,
     );
 
+    const modelsForCriticProvider = (availableModels || []).filter(
+        (m) => m.providerId === formData.criticProvider,
+    );
+
     const selectClasses =
         "flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm ring-offset-zinc-950 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50";
 
     return (
         <Card className="p-6 md:p-8 border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.05)]">
             <form onSubmit={handleSubmit} className="space-y-6">
+                {/* --- TITLE & AUDIENCE --- */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <Label>Lesson Title *</Label>
@@ -131,6 +163,7 @@ export function GenerateLessonForm({
                     </div>
                 </div>
 
+                {/* --- TOPIC --- */}
                 <div>
                     <Label>Lesson Topic *</Label>
                     <Text className="text-xs text-zinc-500 mb-3">
@@ -150,6 +183,7 @@ export function GenerateLessonForm({
 
                 <hr className="border-zinc-800 my-8" />
 
+                {/* --- ACTOR TEMPLATE & CONTEXT PACK --- */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <Label>AI Persona (Prompt Template) *</Label>
@@ -192,7 +226,6 @@ export function GenerateLessonForm({
                             <option value="">
                                 None (Rely on AI's general knowledge)
                             </option>
-                            {/* --- FIX: Safe mapping here --- */}
                             {(contextPacks || []).map((c) => (
                                 <option key={c.id} value={c.id}>
                                     {c.name}
@@ -202,6 +235,7 @@ export function GenerateLessonForm({
                     </div>
                 </div>
 
+                {/* --- ACTOR MODEL OVERRIDES --- */}
                 <div className="mt-4 p-4 rounded-lg border border-zinc-800 bg-zinc-950/40 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-xs font-medium text-zinc-400 mb-1">
@@ -249,6 +283,105 @@ export function GenerateLessonForm({
                     </div>
                 </div>
 
+                <hr className="border-zinc-800 my-8" />
+
+                {/* --- NEW: CRITIC SELECTION --- */}
+                <div>
+                    <div className="mb-4">
+                        <Label className="text-lg">
+                            Iterative Reflection (Optional)
+                        </Label>
+                        <Text className="text-xs text-zinc-500 mt-1">
+                            Select a Critic Persona to review the initial draft
+                            and enforce rules. The Actor will rewrite the lesson
+                            based on the Critic's feedback.
+                        </Text>
+                    </div>
+
+                    <div className="mb-4">
+                        <Label>Critic Persona</Label>
+                        <select
+                            name="criticPromptTemplateId"
+                            value={formData.criticPromptTemplateId || ""}
+                            onChange={handleChange}
+                            className={selectClasses}
+                            disabled={
+                                isSubmitting ||
+                                !templates ||
+                                templates.length === 0
+                            }
+                        >
+                            <option value="">
+                                None (Skip reflection step)
+                            </option>
+                            {(templates || []).map((t) => (
+                                <option key={t.id} value={t.id}>
+                                    {t.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Only show the Critic Provider/Model overrides if a Critic is actually selected */}
+                    {formData.criticPromptTemplateId && (
+                        <div className="p-4 rounded-lg border border-zinc-800/80 bg-indigo-950/10 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-medium text-zinc-400 mb-1">
+                                    Critic AI Provider
+                                </label>
+                                <select
+                                    name="criticProvider"
+                                    value={
+                                        formData.criticProvider !== undefined
+                                            ? formData.criticProvider
+                                            : ""
+                                    }
+                                    onChange={handleChange}
+                                    className={selectClasses}
+                                >
+                                    <option value="">
+                                        (Use Template Default)
+                                    </option>
+                                    {providers.map((p) => (
+                                        <option key={p.id} value={p.id}>
+                                            {p.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-zinc-400 mb-1">
+                                    Critic Model
+                                </label>
+                                <select
+                                    name="criticModel"
+                                    value={formData.criticModel || ""}
+                                    onChange={handleChange}
+                                    disabled={
+                                        formData.criticProvider === undefined
+                                    }
+                                    className={selectClasses}
+                                >
+                                    {formData.criticProvider === undefined ? (
+                                        <option value="">
+                                            (Use Template Default)
+                                        </option>
+                                    ) : (
+                                        modelsForCriticProvider.map((m) => (
+                                            <option
+                                                key={m.modelId}
+                                                value={m.modelId}
+                                            >
+                                                {m.modelId}
+                                            </option>
+                                        ))
+                                    )}
+                                </select>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
                 <div className="flex justify-end gap-4 pt-6 mt-6 border-t border-zinc-800">
                     <Button
                         type="button"
@@ -266,7 +399,7 @@ export function GenerateLessonForm({
                         }
                     >
                         {isSubmitting
-                            ? "Generating Lesson (This takes ~20s)..."
+                            ? "Starting Engine..."
                             : initialData
                               ? "Generate Remix"
                               : "Generate Lesson"}
