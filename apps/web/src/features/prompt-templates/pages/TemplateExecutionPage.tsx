@@ -19,7 +19,6 @@ import {
 import { extractErrorMessage } from "@/shared/utils/error";
 
 export function TemplateExecutionPage() {
-    // identifier here is the GUID from the URL
     const { identifier } = useParams<{ identifier: string }>();
     const navigate = useNavigate();
 
@@ -57,11 +56,9 @@ export function TemplateExecutionPage() {
                 setPayload(payloadData);
                 setAvailableModels(modelsData);
 
-                // --- FIX: Strictly typed using your VariableDto array! ---
                 const initialVars: Record<string, string> = {};
-                payloadData.variables.forEach((variable) => {
-                    // We can safely grab the name, and fallback to empty string if defaultValue is null
-                    initialVars[variable.name] = variable.defaultValue || "";
+                payloadData.variables.forEach((variableName) => {
+                    initialVars[variableName] = "";
                 });
                 setVariableValues(initialVars);
 
@@ -119,8 +116,7 @@ export function TemplateExecutionPage() {
         }
     };
 
-    // --- FIX: Strictly map the VariableDto[] to string[] for the child component ---
-    const variableNames: string[] = payload?.variables.map((v) => v.name) || [];
+    const variableNames: string[] = payload?.variables || [];
 
     const currentProviderModels = availableModels.filter(
         (m) => m.providerId === selectedProvider,

@@ -7,11 +7,6 @@ export interface PromptTemplateSummaryDto {
     tags: string[];
 }
 
-export interface VariableDto {
-    name: string;
-    defaultValue: string | null;
-}
-
 export interface PromptTemplatePayloadDto {
     id: string,
     name: string,
@@ -20,7 +15,7 @@ export interface PromptTemplatePayloadDto {
     text: string;
     provider: number;
     model: string;
-    variables: VariableDto[];
+    variables: string[];
     versionNumber: number;
 }
 
