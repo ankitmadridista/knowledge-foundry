@@ -74,7 +74,7 @@ internal sealed class LessonConfiguration : IEntityTypeConfiguration<Lesson>
         {
             notes.Property(x => x.Value)
                 .HasColumnName("CritiqueNotes")
-                .HasMaxLength(4000)
+                .HasColumnType("text")
                 .IsRequired(false);
         });
     }
