@@ -7,7 +7,10 @@ import {
     Textarea,
     Text,
 } from "@/shared/components/ui";
-import type { AiModelDto, CreatePromptTemplateFormData } from "@/features/prompt-templates/type";
+import type {
+    AiModelDto,
+    CreatePromptTemplateFormData,
+} from "@/features/prompt-templates/type";
 
 interface CreatePromptTemplateFormProps {
     availableModels: AiModelDto[];
@@ -97,7 +100,7 @@ export function CreatePromptTemplateForm({
     };
 
     return (
-        <Card className="p-6 md:p-8">
+        <Card className="p-6 md:p-8 border-indigo-500/10 shadow-[0_0_15px_rgba(99,102,241,0.03)]">
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -174,37 +177,83 @@ export function CreatePromptTemplateForm({
                         name="tags"
                         value={formData.tags}
                         onChange={handleChange}
-                        placeholder="e.g., classification, extraction, ai"
+                        placeholder="e.g., actor, critic, extraction, ai"
                     />
                 </div>
 
                 <hr className="border-zinc-800 my-8" />
 
+                <div className="bg-indigo-950/20 border border-indigo-500/30 rounded-lg p-4 mb-6">
+                    <h4 className="text-sm font-semibold text-indigo-300 mb-2 flex items-center gap-2">
+                        <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                        </svg>
+                        System Variables Guide
+                    </h4>
+                    <p className="text-xs text-zinc-300 mb-3">
+                        The Generation Engine automatically injects data into
+                        these exact placeholders. Use them in your prompts below
+                        to connect this template to the rest of the application:
+                    </p>
+                    <ul className="text-xs text-zinc-400 space-y-1.5 list-disc list-inside ml-2">
+                        <li>
+                            <code className="text-indigo-200 bg-indigo-950/50 px-1.5 py-0.5 rounded font-mono">{`{Topic}`}</code>{" "}
+                            - The specific subject matter requested by the user.
+                        </li>
+                        <li>
+                            <code className="text-indigo-200 bg-indigo-950/50 px-1.5 py-0.5 rounded font-mono">{`{Audience}`}</code>{" "}
+                            - The target demographic for the output.
+                        </li>
+                        <li>
+                            <code className="text-indigo-200 bg-indigo-950/50 px-1.5 py-0.5 rounded font-mono">{`{Context}`}</code>{" "}
+                            - The text content of the selected Knowledge Base.
+                        </li>
+                        <li>
+                            <code className="text-indigo-200 bg-indigo-950/50 px-1.5 py-0.5 rounded font-mono">{`{Draft}`}</code>{" "}
+                            - <i>(Critics Only)</i> The initial draft generated
+                            by the Actor model.
+                        </li>
+                    </ul>
+                </div>
+
                 <div>
                     <Label>System Context *</Label>
                     <Text className="text-xs text-zinc-500 mb-3">
-                        Instructions guiding the AI. Use {"{VariableName}"} for
-                        inputs.
+                        Core instructions guiding the AI's behavior and
+                        constraints.
                     </Text>
                     <Textarea
                         required
                         name="systemContext"
                         value={formData.systemContext}
                         onChange={handleChange}
-                        rows={3}
-                        className="font-mono text-sm"
+                        rows={4}
+                        className="font-mono text-sm leading-relaxed"
                     />
                 </div>
 
                 <div>
                     <Label>User Message *</Label>
+                    <Text className="text-xs text-zinc-500 mb-3">
+                        The prompt template containing your System Variables.
+                    </Text>
                     <Textarea
                         required
                         name="userMessage"
                         value={formData.userMessage}
                         onChange={handleChange}
-                        rows={5}
-                        className="font-mono text-sm"
+                        rows={6}
+                        className="font-mono text-sm leading-relaxed"
                     />
                 </div>
 
@@ -213,6 +262,7 @@ export function CreatePromptTemplateForm({
                         type="button"
                         variant="secondary"
                         onClick={onCancel}
+                        disabled={isSubmitting}
                     >
                         Cancel
                     </Button>
