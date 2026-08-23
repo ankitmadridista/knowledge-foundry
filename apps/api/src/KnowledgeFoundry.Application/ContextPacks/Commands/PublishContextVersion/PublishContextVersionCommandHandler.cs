@@ -1,15 +1,8 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
 using KnowledgeFoundry.Application.Common.Errors;
 using KnowledgeFoundry.Application.Common.Results;
-using KnowledgeFoundry.Application.ContextPacks.Commands.ActivateContextVersion;
-using KnowledgeFoundry.Application.PromptTemplates.Commands.PublishPromptVersion;
 using KnowledgeFoundry.Domain.ContextPacks.ValueObjects;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KnowledgeFoundry.Application.ContextPacks.Commands.PublishContextVersion
 {

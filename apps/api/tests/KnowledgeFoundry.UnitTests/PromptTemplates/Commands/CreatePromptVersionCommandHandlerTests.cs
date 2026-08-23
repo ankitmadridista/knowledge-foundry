@@ -1,6 +1,6 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
 using KnowledgeFoundry.Application.Common.Errors;
-using KnowledgeFoundry.Application.Common.Models;
+using KnowledgeFoundry.Application.DomainModels;
 using KnowledgeFoundry.Application.PromptTemplates.Commands.CreatePromptVersion;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using NSubstitute;

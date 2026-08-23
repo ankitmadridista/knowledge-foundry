@@ -1,5 +1,6 @@
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using KnowledgeFoundry.Application.PromptTemplates.Queries.GetActivePromptPayload;
+using KnowledgeFoundry.Application.DomainModels;
 
 namespace KnowledgeFoundry.Application.Abstractions.Services;
 

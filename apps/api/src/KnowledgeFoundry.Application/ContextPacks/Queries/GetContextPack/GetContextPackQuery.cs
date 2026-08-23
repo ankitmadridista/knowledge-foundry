@@ -1,5 +1,5 @@
 using KnowledgeFoundry.Application.Common.Results;
-using KnowledgeFoundry.Application.ContextPacks.Models;
+using KnowledgeFoundry.Application.DomainModels;
 using MediatR;
 
 namespace KnowledgeFoundry.Application.ContextPacks.Queries.GetContextPack;

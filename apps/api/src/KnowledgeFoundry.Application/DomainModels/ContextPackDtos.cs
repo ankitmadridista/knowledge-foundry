@@ -1,4 +1,4 @@
-namespace KnowledgeFoundry.Application.ContextPacks.Models;
+namespace KnowledgeFoundry.Application.DomainModels;
 
 public sealed record ContextSectionDto(string Title, string Content, int Order);
 public sealed record ContextPackVersionDto(int VersionNumber, string Status, DateTime CreatedAt);

@@ -1,5 +1,5 @@
 using KnowledgeFoundry.Application.Abstractions.Services;
-using KnowledgeFoundry.Application.PromptTemplates.Queries.GetActivePromptPayload;
+using KnowledgeFoundry.Application.DomainModels;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using Microsoft.Extensions.Configuration;
 using OpenAI;

@@ -1,6 +1,8 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
 using KnowledgeFoundry.Application.Common.Errors;
 using KnowledgeFoundry.Application.Common.Results;
+using KnowledgeFoundry.Application.DomainModels;
+using KnowledgeFoundry.Domain.AiPlatform;
 using MediatR;
 
 namespace KnowledgeFoundry.Application.Lessons.Queries.GetLessonById;
@@ -9,7 +11,7 @@ internal sealed class GetLessonByIdQueryHandler
     : IRequestHandler<GetLessonByIdQuery, Result<LessonDto>>
 {
     private readonly ILessonRepository _repository;
-    private readonly IAiExecutionLogRepository _logRepository; // <-- Inject new repo
+    private readonly IAiExecutionLogRepository _logRepository;
 
     public GetLessonByIdQueryHandler(
         ILessonRepository repository,
@@ -31,7 +33,7 @@ internal sealed class GetLessonByIdQueryHandler
         }
 
         // Fetch the execution log if the lesson has one!
-        KnowledgeFoundry.Domain.AiPlatform.AiExecutionLog? executionLog = null;
+        AiExecutionLog? executionLog = null;
         if (lesson.AiExecutionLogId.HasValue)
         {
             executionLog = await _logRepository.GetByIdAsync(lesson.AiExecutionLogId.Value, cancellationToken);
@@ -47,10 +49,11 @@ internal sealed class GetLessonByIdQueryHandler
             lesson.ErrorMessage,
             lesson.PromptTemplateId,
             lesson.ContextPackId,
+            lesson.CriticPromptTemplateId,
+            lesson.CritiqueNotes?.Value,
             lesson.CreatedAt,
             lesson.CompletedAt,
             lesson.IsManuallyEdited,
-
             executionLog?.Provider,
             executionLog?.Model.Value,
             executionLog?.TokensUsed,

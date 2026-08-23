@@ -1,6 +1,7 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
 using KnowledgeFoundry.Application.Abstractions.Services;
 using KnowledgeFoundry.Application.BackgroundProcessing;
+using KnowledgeFoundry.Application.DomainModels;
 using KnowledgeFoundry.Application.PromptTemplates.Queries.GetActivePromptPayload;
 using KnowledgeFoundry.Domain.AiPlatform;
 using KnowledgeFoundry.Domain.AiPlatform.Enums;
