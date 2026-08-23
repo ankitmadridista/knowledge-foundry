@@ -2,6 +2,7 @@ using KnowledgeFoundry.Domain.Common.Exceptions;
 using KnowledgeFoundry.Domain.ContextPacks.Enums;
 using KnowledgeFoundry.Domain.ContextPacks.Events;
 using KnowledgeFoundry.Domain.ContextPacks.ValueObjects;
+using KnowledgeFoundry.Domain.PromptTemplates.ValueObjects;
 
 namespace KnowledgeFoundry.Domain.ContextPacks;
 
@@ -51,8 +52,10 @@ public sealed class ContextPack : Entity
     public ContextPackVersion CreateVersion(IEnumerable<ContextSection> sections)
     {
         var versionNumber = _versions.Count == 0
-            ? new ContextVersionNumber(1)
-            : _versions.Last().VersionNumber.Next();
+        ? new ContextVersionNumber(1)
+        : _versions.OrderByDescending(v => v.VersionNumber.Value)
+                   .First()
+                   .VersionNumber.Next();
 
         var version = ContextPackVersion.Create(versionNumber, sections);
         _versions.Add(version);

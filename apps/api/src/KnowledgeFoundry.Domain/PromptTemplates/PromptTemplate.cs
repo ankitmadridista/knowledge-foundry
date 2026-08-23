@@ -72,8 +72,10 @@ public sealed class PromptTemplate : Entity
         PromptCapability capability)
     {
         var versionNumber = _versions.Count == 0
-            ? new PromptVersionNumber(1)
-            : _versions.Last().VersionNumber.Next();
+        ? new PromptVersionNumber(1)
+        : _versions.OrderByDescending(v => v.VersionNumber.Value)
+                   .First()
+                   .VersionNumber.Next();
 
         var version = PromptTemplateVersion.Create(
             versionNumber,
