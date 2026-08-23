@@ -7,11 +7,7 @@ import {
     Textarea,
     Heading,
 } from "@/shared/components/ui";
-
-export interface ContextSectionData {
-    title: string;
-    content: string;
-}
+import type { ContextSectionData } from "../types";
 
 interface ContextPackVersionFormProps {
     initialSections?: ContextSectionData[];

@@ -7,21 +7,10 @@ import {
     Textarea,
     Text,
 } from "@/shared/components/ui";
-import type { AiModelDto } from "@/features/prompt-templates/type"; // <-- Import DTO
-
-export interface CreatePromptTemplateFormData {
-    name: string;
-    identifier: string;
-    description: string;
-    tags: string;
-    provider: number;
-    model: string;
-    systemContext: string;
-    userMessage: string;
-}
+import type { AiModelDto, CreatePromptTemplateFormData } from "@/features/prompt-templates/type";
 
 interface CreatePromptTemplateFormProps {
-    availableModels: AiModelDto[]; // <-- NEW PROP
+    availableModels: AiModelDto[];
     onSubmit: (data: CreatePromptTemplateFormData) => void;
     onCancel: () => void;
     isSubmitting: boolean;

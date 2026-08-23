@@ -7,7 +7,6 @@ interface LessonCardProps {
 }
 
 export function LessonCard({ lesson, onClick }: LessonCardProps) {
-    // Helper to color-code the status
     const getStatusStyles = (status: string) => {
         switch (status) {
             case "Completed":
@@ -21,7 +20,6 @@ export function LessonCard({ lesson, onClick }: LessonCardProps) {
         }
     };
 
-    // Format the date nicely
     const formattedDate = new Date(lesson.createdAt).toLocaleDateString(
         undefined,
         {

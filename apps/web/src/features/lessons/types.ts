@@ -47,3 +47,16 @@ export interface LessonDto {
     tokensUsed?: number | null;
     executionTimeMs?: number | null;
 }
+
+export interface GenerateLessonFormData {
+    title: string;
+    topic: string;
+    audience: string;
+    promptTemplateId: string;
+    contextPackId: string;
+    provider?: number;
+    model?: string;
+    criticPromptTemplateId?: string | null;
+    criticProvider?: number;
+    criticModel?: string;
+}

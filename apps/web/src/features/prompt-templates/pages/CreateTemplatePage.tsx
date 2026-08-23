@@ -3,17 +3,15 @@ import { useNavigate } from "react-router-dom";
 import {
     createPromptTemplate,
     addPromptVersion,
-    getAvailableModels, // <-- NEW
+    getAvailableModels,
 } from "@/features/prompt-templates/api";
 import { Section, Container, PageHeader } from "@/shared/components/layout";
-import { ErrorState } from "@/shared/components/ui"; // <-- Ensure LoadingState is imported
-import {
-    CreatePromptTemplateForm,
-    type CreatePromptTemplateFormData,
-} from "@/features/prompt-templates/components";
+import { ErrorState } from "@/shared/components/ui";
+import { CreatePromptTemplateForm } from "@/features/prompt-templates/components";
 import type {
     CreatePromptTemplateRequest,
     AiModelDto,
+    CreatePromptTemplateFormData,
 } from "@/features/prompt-templates/type";
 import { isAxiosError } from "axios";
 
@@ -87,9 +85,14 @@ export function CreateTemplatePage() {
                     "That identifier is already in use. Please choose a unique identifier.",
                 );
             } else if (isAxiosError(err) && err.response?.data) {
-                const data = err.response.data as { message?: string; detail?: string };
+                const data = err.response.data as {
+                    message?: string;
+                    detail?: string;
+                };
                 setError(
-                    data.message || data.detail || "Failed to create and activate template.",
+                    data.message ||
+                        data.detail ||
+                        "Failed to create and activate template.",
                 );
             } else {
                 setError(

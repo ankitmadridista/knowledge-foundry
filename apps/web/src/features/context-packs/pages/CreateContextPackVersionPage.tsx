@@ -5,13 +5,13 @@ import {
     getContextPackVersion,
     createContextPackVersion,
 } from "@/features/context-packs/api";
-import type { ContextPackDto } from "@/features/context-packs/types";
+import type {
+    ContextPackDto,
+    ContextSectionData,
+} from "@/features/context-packs/types";
 import { Section, Container, PageHeader } from "@/shared/components/layout";
 import { LoadingState, ErrorState } from "@/shared/components/ui";
-import {
-    ContextPackVersionForm,
-    type ContextSectionData,
-} from "@/features/context-packs/components";
+import { ContextPackVersionForm } from "@/features/context-packs/components";
 
 export function CreateContextPackVersionPage() {
     const { id } = useParams<{ id: string }>();

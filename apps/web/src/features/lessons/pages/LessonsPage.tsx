@@ -16,8 +16,6 @@ import { LessonCard } from "@/features/lessons/components";
 import { useAppConfig } from "@/app/providers/AppConfigProvider";
 import toast from "react-hot-toast";
 
-// Map your Lesson Status Enum for the filter dropdown
-// Adjust these numbers based on how your C# enum is defined!
 const STATUSES = [
     { id: 0, name: "Generating" },
     { id: 1, name: "Completed" },

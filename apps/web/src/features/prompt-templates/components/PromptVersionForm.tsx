@@ -1,10 +1,6 @@
 import { useState } from "react";
 import { Button, Card, Label, Textarea, Text } from "@/shared/components/ui";
-
-export interface PromptVersionFormData {
-    systemContext: string;
-    userMessage: string;
-}
+import type { PromptVersionFormData } from "../type";
 
 interface PromptVersionFormProps {
     initialSystemContext?: string;

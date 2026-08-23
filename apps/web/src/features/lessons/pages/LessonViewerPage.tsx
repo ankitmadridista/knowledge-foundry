@@ -35,8 +35,6 @@ export function LessonViewerPage() {
 
                 setLesson(data);
 
-                // --- NEW: The Polling Engine ---
-                // If the backend is still working, wait 2 seconds and fetch again!
                 const isProcessing = [
                     "Drafting",
                     "Critiquing",

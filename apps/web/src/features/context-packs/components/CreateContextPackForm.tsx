@@ -8,15 +8,7 @@ import {
     Heading,
     Text,
 } from "@/shared/components/ui";
-import type { ContextSectionData } from "./ContextPackVersionForm"; // Reuse the type if available, otherwise redefine it
-
-export interface CreateContextPackFormData {
-    name: string;
-    identifier: string;
-    description: string;
-    tags: string;
-    sections: ContextSectionData[]; // CHANGED: Now an array of sections
-}
+import type { CreateContextPackFormData } from "../types";
 
 interface CreateContextPackFormProps {
     onSubmit: (data: CreateContextPackFormData) => void;

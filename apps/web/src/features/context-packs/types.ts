@@ -44,3 +44,16 @@ export interface CreateContextPackRequest {
 export interface CreateContextPackVersionRequest {
     sections: ContextSectionDto[];
 }
+
+export interface ContextSectionData {
+    title: string;
+    content: string;
+}
+
+export interface CreateContextPackFormData {
+    name: string;
+    identifier: string;
+    description: string;
+    tags: string;
+    sections: ContextSectionData[];
+}

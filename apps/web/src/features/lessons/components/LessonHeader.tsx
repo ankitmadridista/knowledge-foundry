@@ -33,11 +33,11 @@ export function LessonHeader({ lesson, onDelete }: LessonHeaderProps) {
                     </h1>
                     <div className="flex flex-wrap items-center gap-3">
                         {renderStatusBadge(lesson.status)}
-                        
+
                         {lesson.isManuallyEdited && (
                             <Badge variant="warning">Manually Edited</Badge>
                         )}
-                        
+
                         <span className="text-xs font-mono bg-zinc-800 text-zinc-400 px-2 py-1 rounded-md border border-zinc-700">
                             {lesson.id.split("-")[0]}
                         </span>
@@ -46,19 +46,20 @@ export function LessonHeader({ lesson, onDelete }: LessonHeaderProps) {
 
                 {/* Right Side: Actions (Only show if generation is complete/failed) */}
                 {lesson.status !== "Generating" && (
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
-                        <Button 
-                            variant="secondary" 
-                            className="flex-1 sm:flex-none border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/50"
+                    <div className="flex items-center gap-3 w-full sm:w-auto shrink-0 mt-4 sm:mt-0">
+                        <Button
+                            variant="secondary"
+                            className="flex-1 sm:flex-none border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/50 whitespace-nowrap"
                             onClick={onDelete}
                         >
                             Delete
                         </Button>
-                        <Button 
-                            variant="primary" 
-                            className="flex-1 sm:flex-none bg-indigo-500 hover:bg-indigo-600"
-                            // Pass the ID as a query param so the form can pre-fill
-                            onClick={() => navigate(`/lessons/new?remixId=${lesson.id}`)}
+                        <Button
+                            variant="primary"
+                            className="flex-1 sm:flex-none bg-indigo-500 hover:bg-indigo-600 whitespace-nowrap"
+                            onClick={() =>
+                                navigate(`/lessons/new?remixId=${lesson.id}`)
+                            }
                         >
                             Remix Lesson
                         </Button>
