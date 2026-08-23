@@ -2,7 +2,6 @@ using KnowledgeFoundry.Application.Abstractions.Persistence;
 using KnowledgeFoundry.Application.Abstractions.Services;
 using KnowledgeFoundry.Application.BackgroundProcessing;
 using KnowledgeFoundry.Application.DomainModels;
-using KnowledgeFoundry.Application.PromptTemplates.Queries.GetActivePromptPayload;
 using KnowledgeFoundry.Domain.AiPlatform;
 using KnowledgeFoundry.Domain.AiPlatform.Enums;
 using KnowledgeFoundry.Domain.ContextPacks.Enums;
@@ -52,22 +51,23 @@ public class LessonGenerationWorker : BackgroundService
 
                 _logger.LogInformation("Processing Lesson ID: {LessonId}", job.LessonId);
 
-                // Fetch the lesson we created in the HTTP request
                 var lesson = await lessonRepo.GetByIdAsync(job.LessonId, stoppingToken);
                 if (lesson == null) continue;
 
                 try
                 {
-                    // 1. Load the Context Pack content (if provided)
+                    // 1. Load Context Pack
                     string contextContent = await LoadContextPackAsync(job.ContextPackId, contextPackRepo, stoppingToken);
 
-                    // 2. Load the Actor Template
+                    // 2. Load Actor Template
                     var actorTemplate = await templateRepo.GetByIdAsync(job.PromptTemplateId, stoppingToken);
-                    var actorVersion = actorTemplate!.Versions.Single(v => v.Status == PromptStatus.Active);
+
+                    var actorVersion = actorTemplate!.Versions.FirstOrDefault(v => v.Status == PromptStatus.Active);
+                    if (actorVersion == null) throw new Exception("Actor Persona has no active version.");
+
                     var actorProvider = job.DraftProviderId.HasValue ? (AiProvider)job.DraftProviderId.Value : actorTemplate.Provider;
                     var actorModel = job.DraftModel ?? actorTemplate.Model.Value;
 
-                    // 3. Prepare the Actor's initial messages
                     var actorMessages = BuildMessages(actorVersion.Messages, job.Topic, job.Audience, contextContent, draftContent: null);
 
                     // ==========================================
@@ -76,7 +76,6 @@ public class LessonGenerationWorker : BackgroundService
                     var draftResult = await executionService.ExecuteAsync(actorMessages, actorProvider, actorModel, stoppingToken);
                     var draftLogId = await LogExecutionAsync(actorProvider, actorModel, draftResult, job.PromptTemplateId, executionLogRepo, stoppingToken);
 
-                    // If no Critic was selected, we are completely done!
                     if (!job.CriticPromptTemplateId.HasValue)
                     {
                         lesson.MarkAsCompleted(draftResult.Response, draftLogId);
@@ -88,14 +87,16 @@ public class LessonGenerationWorker : BackgroundService
                     // PHASE 2: CRITIQUING
                     // ==========================================
                     lesson.TransitionToCritiquing();
-                    await db.SaveChangesAsync(stoppingToken); // <-- Saves to DB so the UI updates to "Critiquing" in real-time!
+                    await db.SaveChangesAsync(stoppingToken);
 
                     var criticTemplate = await templateRepo.GetByIdAsync(job.CriticPromptTemplateId.Value, stoppingToken);
-                    var criticVersion = criticTemplate!.Versions.Single(v => v.Status == PromptStatus.Active);
+
+                    var criticVersion = criticTemplate!.Versions.FirstOrDefault(v => v.Status == PromptStatus.Active);
+                    if (criticVersion == null) throw new Exception("Critic Persona has no active version.");
+
                     var criticProvider = job.CriticProviderId.HasValue ? (AiProvider)job.CriticProviderId.Value : criticTemplate.Provider;
                     var criticModel = job.CriticModel ?? criticTemplate.Model.Value;
 
-                    // Inject the Draft into the Critic's prompt
                     var criticMessages = BuildMessages(criticVersion.Messages, job.Topic, job.Audience, contextContent, draftResult.Response);
 
                     var critiqueResult = await executionService.ExecuteAsync(criticMessages, criticProvider, criticModel, stoppingToken);
@@ -105,9 +106,8 @@ public class LessonGenerationWorker : BackgroundService
                     // PHASE 3: REFINING
                     // ==========================================
                     lesson.TransitionToRefining(critiqueResult.Response);
-                    await db.SaveChangesAsync(stoppingToken); // <-- Saves to DB so the UI updates to "Refining" in real-time!
+                    await db.SaveChangesAsync(stoppingToken);
 
-                    // Build the conversational history for the Actor to refine its work
                     var refinementMessages = new List<MessagePayloadDto>(actorMessages)
                     {
                         new MessagePayloadDto("assistant", draftResult.Response),
@@ -117,33 +117,50 @@ public class LessonGenerationWorker : BackgroundService
                     var refineResult = await executionService.ExecuteAsync(refinementMessages, actorProvider, actorModel, stoppingToken);
                     var refineLogId = await LogExecutionAsync(actorProvider, actorModel, refineResult, job.PromptTemplateId, executionLogRepo, stoppingToken);
 
-                    // Mark as complete using the final refined response!
                     lesson.MarkAsCompleted(refineResult.Response, refineLogId);
                     await db.SaveChangesAsync(stoppingToken);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failed to generate lesson {LessonId}", job.LessonId);
-                    lesson.MarkAsFailed(ex.Message);
-                    await db.SaveChangesAsync(stoppingToken);
+
+                    try
+                    {
+                        using var failScope = _serviceProvider.CreateScope();
+                        var failDb = failScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                        var failRepo = failScope.ServiceProvider.GetRequiredService<ILessonRepository>();
+
+                        var failedLesson = await failRepo.GetByIdAsync(job.LessonId, CancellationToken.None);
+                        if (failedLesson != null)
+                        {
+                            // Truncate the error message just in case it exceeds column limits
+                            var safeErrorMessage = ex.Message.Length > 2000 ? ex.Message.Substring(0, 2000) + "..." : ex.Message;
+                            failedLesson.MarkAsFailed(safeErrorMessage);
+
+                            // Use CancellationToken.None so this saves even if the user refreshed the page
+                            await failDb.SaveChangesAsync(CancellationToken.None);
+                        }
+                    }
+                    catch (Exception fatalEx)
+                    {
+                        _logger.LogCritical(fatalEx, "FATAL: Could not even save the Failed status for Lesson {LessonId} to the database.", job.LessonId);
+                    }
                 }
             }
             catch (OperationCanceledException) { }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "A fatal error occurred while processing a background lesson.");
+                _logger.LogError(ex, "A fatal error occurred while preparing a background lesson job.");
             }
         }
     }
-
-    // --- Helper Methods to keep the main loop clean ---
 
     private static async Task<string> LoadContextPackAsync(Guid? contextPackId, IContextPackRepository repo, CancellationToken cancellationToken)
     {
         if (!contextPackId.HasValue) return string.Empty;
 
         var pack = await repo.GetByIdAsync(contextPackId.Value, cancellationToken);
-        var activePackVersion = pack?.Versions.SingleOrDefault(v => v.Status == ContextPackStatus.Active);
+        var activePackVersion = pack?.Versions.FirstOrDefault(v => v.Status == ContextPackStatus.Active); // Also added FirstOrDefault here to be safe!
 
         if (activePackVersion == null) return string.Empty;
 
