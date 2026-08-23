@@ -17,9 +17,11 @@ import { useAppConfig } from "@/app/providers/AppConfigProvider";
 import toast from "react-hot-toast";
 
 const STATUSES = [
-    { id: 0, name: "Generating" },
-    { id: 1, name: "Completed" },
-    { id: 2, name: "Failed" },
+    { id: 0, name: "Drafting" },
+    { id: 1, name: "Critiquing" },
+    { id: 2, name: "Refining" },
+    { id: 3, name: "Completed" },
+    { id: 4, name: "Failed" },
 ];
 
 export function LessonsPage() {
