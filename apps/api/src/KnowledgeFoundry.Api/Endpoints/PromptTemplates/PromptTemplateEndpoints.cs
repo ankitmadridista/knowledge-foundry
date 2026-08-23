@@ -1,5 +1,5 @@
 using KnowledgeFoundry.Application.Common.Errors;
-using KnowledgeFoundry.Application.Common.Models;
+using KnowledgeFoundry.Application.DomainModels;
 using KnowledgeFoundry.Application.PromptExecutions.Commands.ExecutePrompt;
 using KnowledgeFoundry.Application.PromptTemplates.Commands.ActivatePromptVersion;
 using KnowledgeFoundry.Application.PromptTemplates.Commands.CreatePromptTemplate;

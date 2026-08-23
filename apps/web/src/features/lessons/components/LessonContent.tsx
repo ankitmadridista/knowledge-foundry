@@ -5,7 +5,7 @@ import {
     MarkdownRenderer,
     Button,
     Textarea,
-    Badge, // <-- NEW: Imported Badge
+    Badge,
 } from "@/shared/components/ui";
 import type { LessonDto } from "@/features/lessons/types";
 import toast from "react-hot-toast";
@@ -60,19 +60,56 @@ export function LessonContent({
         }
     };
 
+    // Helper to determine if we are in one of the active pipeline states
+    const isProcessing = [
+        "Generating",
+        "Drafting",
+        "Critiquing",
+        "Refining",
+    ].includes(lesson.status);
+
     return (
-        <Card className="p-6 md:p-10 min-h-125 relative group">
-            {lesson.status === "Generating" && (
-                <div className="flex flex-col items-center justify-center h-full text-center py-20">
-                    <div className="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mb-4" />
-                    <h2 className="text-xl font-bold text-zinc-100 mb-2">
-                        AI is writing your lesson...
+        <Card className="p-6 md:p-10 min-h-75 relative group">
+            {isProcessing && (
+                <div className="flex flex-col items-center justify-center h-full text-center py-20 animate-in fade-in duration-500">
+                    <div className="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mb-6" />
+
+                    {/* Dynamic Real-Time Status Header */}
+                    <h2 className="text-xl font-bold text-zinc-100 mb-2 tracking-wide">
+                        {lesson.status === "Generating" &&
+                            "Initializing AI Engine..."}
+                        {lesson.status === "Drafting" &&
+                            "1/3: Drafting Initial Lesson..."}
+                        {lesson.status === "Critiquing" &&
+                            "2/3: Critic is Reviewing Draft..."}
+                        {lesson.status === "Refining" &&
+                            "3/3: Applying Final Polish..."}
                     </h2>
-                    <Text className="text-zinc-400 max-w-md">
-                        This usually takes 10-30 seconds depending on the
-                        complexity of the topic and the length of the context
-                        pack.
+
+                    {/* Dynamic Subtext */}
+                    <Text className="text-zinc-400 max-w-md h-12">
+                        {lesson.status === "Drafting" &&
+                            "The Actor is reading the Context Pack and writing the first draft."}
+                        {lesson.status === "Critiquing" &&
+                            "The Critic persona is analyzing the draft against its strict rules."}
+                        {lesson.status === "Refining" &&
+                            "The Actor is rewriting the lesson based on the Critic's feedback."}
+                        {lesson.status === "Generating" &&
+                            "Warming up the background workers."}
                     </Text>
+
+                    {/* Visual Progress Steps */}
+                    <div className="flex items-center justify-center gap-3 mt-8">
+                        <div
+                            className={`h-2 w-16 rounded-full transition-colors duration-500 ${["Drafting", "Critiquing", "Refining"].includes(lesson.status) ? "bg-indigo-500" : "bg-zinc-800"}`}
+                        />
+                        <div
+                            className={`h-2 w-16 rounded-full transition-colors duration-500 ${["Critiquing", "Refining"].includes(lesson.status) ? "bg-indigo-500" : "bg-zinc-800"}`}
+                        />
+                        <div
+                            className={`h-2 w-16 rounded-full transition-colors duration-500 ${lesson.status === "Refining" ? "bg-indigo-500" : "bg-zinc-800"}`}
+                        />
+                    </div>
                 </div>
             )}
 
@@ -145,10 +182,36 @@ export function LessonContent({
                         </div>
                     ) : (
                         /* VIEWING MODE */
-                        <div className="flex flex-col h-full">
-                            {/* --- ALWAYS VISIBLE ACTION BAR --- */}
+                        <div className="flex flex-col h-full animate-in fade-in duration-700">
+                            {/* --- OPTIONAL: SHOW CRITIC FEEDBACK IF IT EXISTS --- */}
+                            {lesson.critiqueNotes && (
+                                <div className="mb-8 p-4 rounded-lg bg-indigo-950/20 border border-indigo-500/20">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <svg
+                                            className="w-4 h-4 text-indigo-400"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
+                                        </svg>
+                                        <span className="text-sm font-semibold text-indigo-300 uppercase tracking-wider">
+                                            Critic Feedback Applied
+                                        </span>
+                                    </div>
+                                    <Text className="text-sm text-zinc-300 italic">
+                                        "{lesson.critiqueNotes}"
+                                    </Text>
+                                </div>
+                            )}
+
+                            {/* --- ACTION BAR --- */}
                             <div className="flex justify-end gap-2 mb-6 border-b border-zinc-800/50 pb-4 shrink-0">
-                                {/* COPY ICON BUTTON */}
                                 <button
                                     onClick={handleCopy}
                                     title="Copy raw markdown"
@@ -169,8 +232,6 @@ export function LessonContent({
                                         />
                                     </svg>
                                 </button>
-
-                                {/* EDIT ICON BUTTON */}
                                 <button
                                     onClick={handleEditClick}
                                     title="Edit Content"
@@ -197,7 +258,7 @@ export function LessonContent({
                                 <MarkdownRenderer content={lesson.content} />
                             </div>
 
-                            {/* --- NEW: TELEMETRY FOOTER --- */}
+                            {/* --- TELEMETRY FOOTER --- */}
                             {lesson.model && (
                                 <div className="mt-8 pt-4 border-t border-zinc-800/50 flex flex-wrap gap-3 shrink-0 opacity-80">
                                     <Badge variant="neutral">
@@ -206,19 +267,17 @@ export function LessonContent({
                                             {lesson.model}
                                         </span>
                                     </Badge>
-
                                     {lesson.tokensUsed !== null && (
                                         <Badge variant="neutral">
-                                            Tokens:{" "}
+                                            Total Tokens:{" "}
                                             <span className="text-zinc-100 ml-1">
                                                 {lesson.tokensUsed}
                                             </span>
                                         </Badge>
                                     )}
-
                                     {lesson.executionTimeMs !== null && (
                                         <Badge variant="neutral">
-                                            Time:{" "}
+                                            Total Time:{" "}
                                             <span className="text-zinc-100 ml-1">
                                                 {lesson.executionTimeMs}ms
                                             </span>

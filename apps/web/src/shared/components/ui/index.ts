@@ -19,3 +19,4 @@ export * from "./Toaster";
 export * from "./Modal";
 export * from "./Pagination"
 export * from "./SearchFilterBar"
+export * from "./AsyncSelect"

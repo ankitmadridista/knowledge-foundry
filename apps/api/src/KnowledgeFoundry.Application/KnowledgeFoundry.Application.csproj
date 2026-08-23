@@ -4,5 +4,6 @@
     <ProjectReference Include="..\KnowledgeFoundry.Domain\KnowledgeFoundry.Domain.csproj" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
 </Project>

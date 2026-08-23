@@ -6,10 +6,8 @@ import {
 } from "@/features/context-packs/api";
 import { Section, Container, PageHeader } from "@/shared/components/layout";
 import { ErrorState } from "@/shared/components/ui";
-import {
-    CreateContextPackForm,
-    type CreateContextPackFormData,
-} from "@/features/context-packs/components";
+import { CreateContextPackForm } from "@/features/context-packs/components";
+import type { CreateContextPackFormData } from "../types";
 
 export function CreateContextPackPage() {
     const navigate = useNavigate();

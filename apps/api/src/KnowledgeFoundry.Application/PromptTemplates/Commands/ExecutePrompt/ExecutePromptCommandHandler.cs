@@ -1,6 +1,7 @@
 using KnowledgeFoundry.Application.Abstractions.Services;
 using KnowledgeFoundry.Application.Common.Results;
 using KnowledgeFoundry.Application.ContextPacks.Queries.GetActiveContextPackPayload;
+using KnowledgeFoundry.Application.DomainModels;
 using KnowledgeFoundry.Application.PromptTemplates.Queries.GetActivePromptPayload;
 using MediatR;
 using System.Text.RegularExpressions;

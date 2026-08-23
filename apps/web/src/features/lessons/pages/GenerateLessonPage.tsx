@@ -3,21 +3,13 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Section, Container, PageHeader } from "@/shared/components/layout";
 import { ErrorState } from "@/shared/components/ui";
 import { generateLesson, getLessonById } from "@/features/lessons/api";
-import {
-    getPromptTemplates,
-    getAvailableModels,
-} from "@/features/prompt-templates/api"; // <-- Added getAvailableModels
+import { getAvailableModels } from "@/features/prompt-templates/api";
+import type { AiModelDto } from "@/features/prompt-templates/type";
+import { GenerateLessonForm } from "@/features/lessons/components";
 import type {
-    PromptTemplateSummaryDto,
-    AiModelDto,
-} from "@/features/prompt-templates/type"; // <-- Added AiModelDto
-import { getContextPacks } from "@/features/context-packs/api";
-import {
-    GenerateLessonForm,
-    type GenerateLessonFormData,
-} from "@/features/lessons/components";
-import type { ContextPackSummaryDto } from "@/features/context-packs/types";
-import type { LessonDto } from "@/features/lessons/types";
+    GenerateLessonFormData,
+    LessonDto,
+} from "@/features/lessons/types";
 import { extractErrorMessage } from "@/shared/utils/error";
 
 export function GenerateLessonPage() {
@@ -29,12 +21,6 @@ export function GenerateLessonPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoadingDependencies, setIsLoadingDependencies] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
-    // Dropdown & Pre-fill Data
-    const [templates, setTemplates] = useState<PromptTemplateSummaryDto[]>([]);
-    const [contextPacks, setContextPacks] = useState<ContextPackSummaryDto[]>(
-        [],
-    );
     const [availableModels, setAvailableModels] = useState<AiModelDto[]>([]);
     const [remixSource, setRemixSource] = useState<LessonDto | null>(null);
 
@@ -44,18 +30,10 @@ export function GenerateLessonPage() {
 
         const fetchDependencies = async () => {
             try {
-                // Fetch basic dropdowns + live AI Models concurrently
-                const [templatesData, packsData, modelsData] =
-                    await Promise.all([
-                        getPromptTemplates(),
-                        getContextPacks(),
-                        getAvailableModels(), // <-- NEW API Call
-                    ]);
+                const modelsData = await getAvailableModels();
 
                 if (!isMounted) return;
-                setTemplates(templatesData.items);
-                setContextPacks(packsData.items);
-                setAvailableModels(modelsData); // <-- Store Models
+                setAvailableModels(modelsData);
 
                 if (remixId) {
                     try {
@@ -73,7 +51,7 @@ export function GenerateLessonPage() {
                     console.error("Failed to load dependencies", err);
                     const msg = extractErrorMessage(
                         err,
-                        "Failed to load Prompt Templates, Context Packs, or AI Models. Please try refreshing.",
+                        "Failed to load AI Models. Please try refreshing.",
                     );
                     setError(msg);
                 }
@@ -103,6 +81,9 @@ export function GenerateLessonPage() {
                 contextPackId: formData.contextPackId || null,
                 provider: formData.provider,
                 model: formData.model,
+                criticPromptTemplateId: formData.criticPromptTemplateId || null,
+                criticProvider: formData.criticProvider,
+                criticModel: formData.criticModel,
             };
 
             const newLessonId = await generateLesson(request);
@@ -166,8 +147,6 @@ export function GenerateLessonPage() {
                         </div>
                     ) : (
                         <GenerateLessonForm
-                            templates={templates}
-                            contextPacks={contextPacks}
                             availableModels={availableModels}
                             initialData={remixSource}
                             onSubmit={handleSubmit}

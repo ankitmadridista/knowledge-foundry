@@ -24,27 +24,44 @@ export function LessonViewerPage() {
 
     useEffect(() => {
         let isMounted = true;
+        let timeoutId: ReturnType<typeof setTimeout>;
+
         if (!id) return;
 
         const fetchLesson = async () => {
             try {
                 const data = await getLessonById(id);
                 if (!isMounted) return;
+
                 setLesson(data);
+
+                const isProcessing = [
+                    "Drafting",
+                    "Critiquing",
+                    "Refining",
+                    "Generating",
+                ].includes(data.status);
+
+                if (isProcessing) {
+                    timeoutId = setTimeout(fetchLesson, 2000);
+                }
             } catch (err) {
                 if (isMounted)
                     setError(
                         `Failed to load the lesson. It may not exist. ${err}`,
                     );
             } finally {
+                // Only clear the initial loading state once we have the first payload
                 if (isMounted) setIsLoading(false);
             }
         };
 
         fetchLesson();
 
+        // Cleanup: Stop polling immediately if the user navigates away from the page
         return () => {
             isMounted = false;
+            clearTimeout(timeoutId);
         };
     }, [id]);
 
@@ -53,17 +70,16 @@ export function LessonViewerPage() {
 
         try {
             await updateLessonContent(lesson.id, { newContent });
-            // Optimistically update the UI so we don't have to reload from the server!
             setLesson({
                 ...lesson,
                 content: newContent,
-                isManuallyEdited: true, // Flip the flag locally!
+                isManuallyEdited: true,
             });
             toast.success("Lesson updated successfully!");
         } catch (err) {
             console.error("Failed to update lesson content:", err);
             toast.error("Failed to save your edits. Please try again.");
-            throw err; // Re-throw so the child component knows the save failed
+            throw err;
         }
     };
 
@@ -83,7 +99,7 @@ export function LessonViewerPage() {
             console.error("Failed to delete lesson:", err);
             toast.error("Failed to delete the lesson. Please try again.");
             setIsDeleting(false);
-            setIsDeleteModalOpen(false); // Close modal on failure so they can try again
+            setIsDeleteModalOpen(false);
         }
     };
 
@@ -116,7 +132,9 @@ export function LessonViewerPage() {
                     />
                     <LessonContent
                         lesson={lesson}
-                        onRetry={() => navigate(`/lessons/new?remixId=${lesson.id}`)}
+                        onRetry={() =>
+                            navigate(`/lessons/new?remixId=${lesson.id}`)
+                        }
                         onUpdateContent={handleUpdateContent}
                     />
                 </div>
@@ -124,7 +142,7 @@ export function LessonViewerPage() {
 
             <Modal
                 isOpen={isDeleteModalOpen}
-                onClose={() => !isDeleting && setIsDeleteModalOpen(false)} // Prevent closing while deleting
+                onClose={() => !isDeleting && setIsDeleteModalOpen(false)}
                 title="Delete Lesson"
                 description={`Are you sure you want to delete "${lesson.title}"? This action cannot be undone and you will lose all generated content.`}
                 primaryActionLabel="Delete Lesson"

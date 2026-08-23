@@ -8,8 +8,6 @@ import {
 import type { PromptTemplateDetailsDto } from "@/features/prompt-templates/type";
 import { Section, Container } from "@/shared/components/layout";
 import { LoadingState, ErrorState } from "@/shared/components/ui";
-
-// Import our new Feature Components
 import {
     PromptTemplateHeader,
     PromptVersionTable,

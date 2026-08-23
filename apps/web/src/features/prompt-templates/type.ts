@@ -8,8 +8,8 @@ export interface PromptTemplateSummaryDto {
 }
 
 export interface PromptTemplatePayloadDto {
-    id: string,
-    name: string,
+    id: string;
+    name: string;
     templateId: string;
     versionId: string;
     text: string;
@@ -91,4 +91,20 @@ export interface AiModelDto {
     providerId: number;
     providerName: string;
     modelId: string;
+}
+
+export interface CreatePromptTemplateFormData {
+    name: string;
+    identifier: string;
+    description: string;
+    tags: string;
+    provider: number;
+    model: string;
+    systemContext: string;
+    userMessage: string;
+}
+
+export interface PromptVersionFormData {
+    systemContext: string;
+    userMessage: string;
 }

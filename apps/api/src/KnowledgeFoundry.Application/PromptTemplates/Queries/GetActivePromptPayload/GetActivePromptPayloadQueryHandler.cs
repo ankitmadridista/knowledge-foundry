@@ -1,6 +1,7 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
 using KnowledgeFoundry.Application.Common.Errors;
 using KnowledgeFoundry.Application.Common.Results;
+using KnowledgeFoundry.Application.DomainModels;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using MediatR;
 

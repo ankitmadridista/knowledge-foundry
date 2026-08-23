@@ -3,11 +3,11 @@ using KnowledgeFoundry.Application.ContextPacks.Commands.ActivateContextVersion;
 using KnowledgeFoundry.Application.ContextPacks.Commands.CreateContextPack;
 using KnowledgeFoundry.Application.ContextPacks.Commands.CreateContextVersion;
 using KnowledgeFoundry.Application.ContextPacks.Commands.PublishContextVersion;
-using KnowledgeFoundry.Application.ContextPacks.Models;
 using KnowledgeFoundry.Application.ContextPacks.Queries.GetActiveContextPackPayload;
 using KnowledgeFoundry.Application.ContextPacks.Queries.GetContextPack;
 using KnowledgeFoundry.Application.ContextPacks.Queries.GetContextPacks;
 using KnowledgeFoundry.Application.ContextPacks.Queries.GetContextPackVersion;
+using KnowledgeFoundry.Application.DomainModels;
 using MediatR;
 
 namespace KnowledgeFoundry.Api.Endpoints.ContextPacks;

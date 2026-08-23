@@ -59,12 +59,23 @@ internal sealed class LessonConfiguration : IEntityTypeConfiguration<Lesson>
             .IsRequired();
 
         builder.Property(x => x.ContextPackId)
-            .IsRequired(false); // Nullable trace
+            .IsRequired(false);
 
         builder.Property(x => x.CreatedAt)
             .IsRequired();
 
         builder.Property(x => x.CompletedAt)
             .IsRequired(false);
+
+        builder.Property(x => x.CriticPromptTemplateId)
+            .IsRequired(false);
+
+        builder.OwnsOne(x => x.CritiqueNotes, notes =>
+        {
+            notes.Property(x => x.Value)
+                .HasColumnName("CritiqueNotes")
+                .HasMaxLength(4000)
+                .IsRequired(false);
+        });
     }
 }

@@ -6,8 +6,8 @@ using MediatR;
 namespace KnowledgeFoundry.Application.PromptExecutions.Commands.ExecutePrompt;
 
 public record ExecutePromptCommand(
-    string Identifier,
-    Dictionary<string, string> Variables,
-    AiProvider? OverrideProvider = null,
-    string? OverrideModel = null
-) : IRequest<Result<ExecutionTelemetry>>;
+        string Identifier,
+        Dictionary<string, string> Variables,
+        AiProvider? OverrideProvider = null,
+        string? OverrideModel = null
+    ) : IRequest<Result<ExecutionTelemetry>>;

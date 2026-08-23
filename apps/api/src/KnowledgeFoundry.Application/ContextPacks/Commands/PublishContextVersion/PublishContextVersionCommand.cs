@@ -3,6 +3,7 @@ using MediatR;
 
 namespace KnowledgeFoundry.Application.ContextPacks.Commands.PublishContextVersion
 {
-    public sealed record PublishContextVersionCommand(Guid ContextPackId,
-    int VersionNumber) : IRequest<Result<bool>>;
+    public sealed record PublishContextVersionCommand(
+        Guid ContextPackId,
+        int VersionNumber) : IRequest<Result<bool>>;
 }

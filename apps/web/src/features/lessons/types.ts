@@ -6,6 +6,9 @@ export interface GenerateLessonRequest {
     contextPackId?: string | null;
     provider?: number;
     model?: string;
+    criticPromptTemplateId?: string | null;
+    criticProvider?: number;
+    criticModel?: string;
 }
 
 export interface UpdateLessonContentRequest {
@@ -17,7 +20,7 @@ export interface LessonSummaryDto {
     title: string;
     topic: string;
     audience: string;
-    status: string; // "Generating", "Completed", "Failed"
+    status: "Drafting" | "Critiquing" | "Refining" | "Completed" | "Failed" | string; 
     createdAt: string;
     completedAt?: string | null;
     isManuallyEdited?: boolean;
@@ -29,11 +32,13 @@ export interface LessonDto {
     title: string;
     topic: string;
     audience: string;
-    content?: string | null; // The Markdown! Null if status is "Generating"
-    status: string;
+    content?: string | null;
+    status: "Drafting" | "Critiquing" | "Refining" | "Completed" | "Failed" | string;
     errorMessage?: string | null;
     promptTemplateId: string;
     contextPackId?: string | null;
+    criticPromptTemplateId?: string | null;
+    critiqueNotes?: string | null;
     createdAt: string;
     completedAt?: string | null;
     isManuallyEdited?: boolean;
@@ -41,4 +46,17 @@ export interface LessonDto {
     model?: string | null;
     tokensUsed?: number | null;
     executionTimeMs?: number | null;
+}
+
+export interface GenerateLessonFormData {
+    title: string;
+    topic: string;
+    audience: string;
+    promptTemplateId: string;
+    contextPackId: string;
+    provider?: number;
+    model?: string;
+    criticPromptTemplateId?: string | null;
+    criticProvider?: number;
+    criticModel?: string;
 }

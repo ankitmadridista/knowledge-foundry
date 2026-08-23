@@ -1,6 +1,8 @@
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 
-public sealed record LessonSummaryDto(
+namespace KnowledgeFoundry.Application.DomainModels;
+
+public sealed record LessonDtos(
     Guid Id,
     string Title,
     string Topic,
@@ -22,6 +24,8 @@ public sealed record LessonDto(
     string? ErrorMessage,
     Guid PromptTemplateId,
     Guid? ContextPackId,
+    Guid? CriticPromptTemplateId,
+    string? CritiqueNotes,
     DateTime CreatedAt,
     DateTime? CompletedAt,
     bool IsManuallyEdited,

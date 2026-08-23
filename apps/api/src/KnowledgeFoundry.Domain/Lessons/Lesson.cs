@@ -29,12 +29,15 @@ public sealed class Lesson : Entity
 
     public DateTime CreatedAt { get; private set; }
     public DateTime? CompletedAt { get; private set; }
+    public Guid? CriticPromptTemplateId { get; private set; }
+    public CritiqueNotes? CritiqueNotes { get; private set; }
 
     private Lesson(
         LessonTitle title,
         LessonTopic topic,
         LessonAudience audience,
         Guid promptTemplateId,
+        Guid? criticPromptTemplateId,
         Guid? contextPackId)
     {
         Title = title ?? throw new ArgumentNullException(nameof(title));
@@ -42,9 +45,10 @@ public sealed class Lesson : Entity
         Audience = audience ?? throw new ArgumentNullException(nameof(audience));
 
         PromptTemplateId = promptTemplateId;
+        CriticPromptTemplateId = criticPromptTemplateId;
         ContextPackId = contextPackId;
 
-        Status = LessonStatus.Generating;
+        Status = LessonStatus.Drafting;
         IsManuallyEdited = false;
         CreatedAt = DateTime.UtcNow;
     }
@@ -54,6 +58,7 @@ public sealed class Lesson : Entity
         string topic,
         string audience,
         Guid promptTemplateId,
+        Guid? criticPromptTemplateId,
         Guid? contextPackId)
     {
         return new Lesson(
@@ -61,13 +66,31 @@ public sealed class Lesson : Entity
             new LessonTopic(topic),
             new LessonAudience(audience),
             promptTemplateId,
+            criticPromptTemplateId,
             contextPackId);
+    }
+
+    public void TransitionToCritiquing()
+    {
+        if (Status != LessonStatus.Drafting)
+            throw new InvalidOperationException("Can only transition to Critiquing from Drafting.");
+
+        Status = LessonStatus.Critiquing;
+    }
+
+    public void TransitionToRefining(string critiqueFeedback)
+    {
+        if (Status != LessonStatus.Critiquing)
+            throw new InvalidOperationException("Can only transition to Refining from Critiquing.");
+
+        CritiqueNotes = new CritiqueNotes(critiqueFeedback);
+        Status = LessonStatus.Refining;
     }
 
     public void MarkAsCompleted(string generatedContent, Guid aiExecutionLogId)
     {
-        if (Status != LessonStatus.Generating)
-            throw new InvalidOperationException("Only generating lessons can be marked as completed.");
+        if (Status != LessonStatus.Drafting && Status != LessonStatus.Refining)
+            throw new InvalidOperationException("Invalid state transition to Completed.");
 
         Content = new LessonContent(generatedContent);
         AiExecutionLogId = aiExecutionLogId;
@@ -79,8 +102,8 @@ public sealed class Lesson : Entity
 
     public void MarkAsFailed(string errorReason)
     {
-        if (Status != LessonStatus.Generating)
-            throw new InvalidOperationException("Only generating lessons can be marked as failed.");
+        if (Status == LessonStatus.Completed)
+            throw new InvalidOperationException("Cannot fail a completed lesson.");
 
         ErrorMessage = errorReason;
         Status = LessonStatus.Failed;
