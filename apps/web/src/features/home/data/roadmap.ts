@@ -40,7 +40,7 @@ export const roadmap: RoadmapItem[] = [
         title: "Evaluation Engine",
         description:
             "Automatically evaluate AI-generated content using configurable metrics.",
-        status: "planned",
+        status: "in-progress",
     },
     {
         title: "Reflection Loop",
