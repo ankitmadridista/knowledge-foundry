@@ -62,7 +62,14 @@ internal sealed class AiModelDiscoveryService : IAiModelDiscoveryService
                     foreach (var element in dataArray.EnumerateArray())
                     {
                         var modelId = element.GetProperty("id").GetString();
-                        if (string.IsNullOrEmpty(modelId) || blacklistedKeywords.Any(k => modelId.Contains(k, StringComparison.OrdinalIgnoreCase))) continue;
+                        if(string.IsNullOrWhiteSpace(modelId)) continue;
+
+                        if (provider == AiProvider.Gemini && modelId.StartsWith("models/", StringComparison.OrdinalIgnoreCase))
+                        {
+                            modelId = modelId.Substring(7);
+                        }
+
+                        if (blacklistedKeywords.Any(k => modelId.Contains(k, StringComparison.OrdinalIgnoreCase))) continue;
                         rawModelIds.Add(modelId);
                     }
 

@@ -74,7 +74,15 @@ internal sealed class GeminiFreeModelPolicy : IFreeModelPolicy
                 foreach (var element in dataArray.EnumerateArray())
                 {
                     var id = element.GetProperty("id").GetString();
-                    if (!string.IsNullOrEmpty(id)) onlineModels.Add(id);
+                    if (!string.IsNullOrEmpty(id))
+                    {
+                        if (id.StartsWith("models/", StringComparison.OrdinalIgnoreCase))
+                        {
+                            id = id.Substring(7);
+                        }
+
+                        onlineModels.Add(id);
+                    }
                 }
             }
             catch { }
