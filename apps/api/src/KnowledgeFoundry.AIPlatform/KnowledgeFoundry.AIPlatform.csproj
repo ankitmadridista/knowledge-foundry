@@ -5,6 +5,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\KnowledgeFoundry.Application\KnowledgeFoundry.Application.csproj" />
-    <PackageReference Include="Microsoft.Extensions.Http" />
+      <PackageReference Include="Microsoft.Extensions.Http" />
+      <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
+      <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
   </ItemGroup>
 </Project>

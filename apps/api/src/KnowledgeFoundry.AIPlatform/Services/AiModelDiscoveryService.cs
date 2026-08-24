@@ -1,7 +1,10 @@
+using KnowledgeFoundry.AIPlatform.Models;
 using KnowledgeFoundry.Application.Abstractions.Services;
 using KnowledgeFoundry.Application.Common.Models;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
@@ -10,112 +13,94 @@ namespace KnowledgeFoundry.AIPlatform.Services;
 internal sealed class AiModelDiscoveryService : IAiModelDiscoveryService
 {
     private readonly IConfiguration _configuration;
+    private readonly IMemoryCache _cache;
     private readonly HttpClient _httpClient;
+    private readonly IFreeModelVerificationService _verificationService;
+    private readonly ILogger<AiModelDiscoveryService> _logger;
 
-    public AiModelDiscoveryService(IConfiguration configuration, HttpClient httpClient)
+    public AiModelDiscoveryService(
+        IConfiguration configuration,
+        IMemoryCache cache,
+        HttpClient httpClient,
+        IFreeModelVerificationService verificationService,
+        ILogger<AiModelDiscoveryService> logger)
     {
         _configuration = configuration;
+        _cache = cache;
         _httpClient = httpClient;
+        _verificationService = verificationService;
+        _logger = logger;
     }
 
     public async Task<List<AiModelDto>> GetAvailableModelsAsync(CancellationToken cancellationToken = default)
     {
-        var availableModels = new List<AiModelDto>();
+        const string cacheKey = "discovery:verified-models";
+
+        // 1. Check outer discovery cache
+        if (_cache.TryGetValue<List<AiModelDto>>(cacheKey, out var cachedModels) && cachedModels != null)
+        {
+            _logger.LogInformation("🚀 [Discovery Cache HIT] Returning {Count} verified models directly from RAM (Zero HTTP calls).", cachedModels.Count);
+            return cachedModels;
+        }
+
+        _logger.LogInformation("🔍 [Discovery Cache MISS] Fetching catalogs and verifying models across all providers...");
+
+        var discoveredModels = new List<AiModelDto>();
         var providers = new[] { AiProvider.Groq, AiProvider.OpenRouter, AiProvider.Gemini };
 
-        // Blocklist to filter out non-chat models across all providers
-        var blacklistedKeywords = new[]
-        {
-            "whisper",   // Audio transcription
-            "guard",     // Safety moderation
-            "compound",  // Routing models
-            "clip",      // Embeddings
-            "vision",    // Vision only
-            "embedding", // Text embeddings
-            "aqa",       // Question Answering
-            "veo",       // Google Video Generation
-            "lyria",     // Google Music/Audio Generation
-            "robotics",  // Google Robotics
-            "tts"        // Text-to-Speech
-        };
+        var blacklistedKeywords = new[] { "whisper", "guard", "compound", "clip", "vision", "embedding", "aqa", "veo", "lyria", "robotics", "tts" };
 
         foreach (var provider in providers)
         {
             var (apiKey, endpoint) = GetProviderConfig(provider);
-
             try
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, $"{endpoint}models");
-
-                // Only add the header if the key exists. 
-                // This allows OpenRouter to fetch its public free model list even if you haven't set a key yet!
-                if (!string.IsNullOrWhiteSpace(apiKey))
-                {
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-                }
+                if (!string.IsNullOrWhiteSpace(apiKey)) request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
                 var response = await _httpClient.SendAsync(request, cancellationToken);
-
                 if (!response.IsSuccessStatusCode) continue;
 
                 var json = await response.Content.ReadAsStringAsync(cancellationToken);
                 using var document = JsonDocument.Parse(json);
+                if (!document.RootElement.TryGetProperty("data", out var dataArray)) continue;
 
-                if (document.RootElement.TryGetProperty("data", out var dataArray))
+                var rawModelIds = new List<string>();
+                foreach (var element in dataArray.EnumerateArray())
                 {
-                    foreach (var element in dataArray.EnumerateArray())
+                    var modelId = element.GetProperty("id").GetString();
+                    if (string.IsNullOrWhiteSpace(modelId)) continue;
+
+                    if (provider == AiProvider.Gemini && modelId.StartsWith("models/", StringComparison.OrdinalIgnoreCase))
                     {
-                        var modelId = element.GetProperty("id").GetString();
+                        modelId = modelId.Substring(7);
+                    }
 
-                        if (string.IsNullOrEmpty(modelId)) continue;
+                    if (blacklistedKeywords.Any(k => modelId.Contains(k, StringComparison.OrdinalIgnoreCase))) continue;
+                    rawModelIds.Add(modelId);
+                }
 
-                        bool isBlacklisted = blacklistedKeywords.Any(keyword =>
-                            modelId.Contains(keyword, StringComparison.OrdinalIgnoreCase));
-
-                        if (isBlacklisted) continue;
-
-                        // OpenRouter specific logic: STRICTLY ONLY allow free models
-                        if (provider == AiProvider.OpenRouter)
-                        {
-                            // 1. STRICT SUFFIX CHECK: Must explicitly end in ":free"
-                            if (!modelId.EndsWith(":free", StringComparison.OrdinalIgnoreCase))
-                            {
-                                continue;
-                            }
-
-                            // 2. DOUBLE-LOCK: Ensure the prompt price is actually 0
-                            if (element.TryGetProperty("pricing", out var pricing))
-                            {
-                                if (pricing.TryGetProperty("prompt", out var promptElement))
-                                {
-                                    var promptPrice = promptElement.ValueKind == JsonValueKind.String
-                                        ? promptElement.GetString()
-                                        : promptElement.GetRawText();
-
-                                    if (promptPrice != "0" && promptPrice != "0.0") continue;
-                                }
-                                else
-                                {
-                                    continue;
-                                }
-                            }
-                        }
-
-                        availableModels.Add(new AiModelDto(
-                            (int)provider,
-                            provider.ToString(),
-                            modelId
-                        ));
+                foreach (var modelId in rawModelIds)
+                {
+                    var verificationResult = await _verificationService.VerifyModelAsync(provider, modelId, cancellationToken);
+                    if (verificationResult == FreeModelResult.Free)
+                    {
+                        discoveredModels.Add(new AiModelDto((int)provider, provider.ToString(), modelId));
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to fetch {provider} models: {ex.Message}");
+                _logger.LogError(ex, "Failed to discover models for provider {Provider}", provider);
             }
         }
 
-        return availableModels.OrderBy(m => m.ProviderId).ThenBy(m => m.ModelId).ToList();
+        var finalizedList = discoveredModels.OrderBy(m => m.ProviderId).ThenBy(m => m.ModelId).ToList();
+
+        // 2. Cache the finalized list for 5 minutes
+        _cache.Set(cacheKey, finalizedList, TimeSpan.FromMinutes(5));
+
+        return finalizedList;
     }
 
     private (string? ApiKey, string Endpoint) GetProviderConfig(AiProvider provider)
