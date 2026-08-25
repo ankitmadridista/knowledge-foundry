@@ -45,6 +45,8 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+app.UseMiddleware<CorrelationIdMiddleware>();
+
 app.UseExceptionHandler();
 
 app.UseSwagger();

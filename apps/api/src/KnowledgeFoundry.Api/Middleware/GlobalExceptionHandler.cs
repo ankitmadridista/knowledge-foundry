@@ -1,3 +1,4 @@
+using KnowledgeFoundry.Application.Abstractions.Services;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,7 +18,12 @@ internal sealed class GlobalExceptionHandler : IExceptionHandler
         Exception exception,
         CancellationToken cancellationToken)
     {
-        // 1. Log the actual exception with stack trace for backend developers
+        var correlationContext = httpContext.RequestServices.GetRequiredService<ICorrelationIdContext>();
+        var correlationId = correlationContext.CorrelationId;
+
+        // 1. Log the actual exception. 
+        // Note: Because we wrapped the pipeline in logger.BeginScope in our middleware, 
+        // this log will AUTOMATICALLY include the CorrelationId!
         _logger.LogError(
             exception, "An unhandled exception occurred: {Message}", exception.Message);
 
@@ -30,15 +36,15 @@ internal sealed class GlobalExceptionHandler : IExceptionHandler
             Detail = "An unexpected error occurred while processing your request."
         };
 
-        // We can add extension data if needed (e.g., a TraceId for support tickets)
+        // 3. Attach BOTH the built-in TraceIdentifier and custom CorrelationId
         problemDetails.Extensions.Add("traceId", httpContext.TraceIdentifier);
+        problemDetails.Extensions.Add("correlationId", correlationId);
 
         httpContext.Response.StatusCode = problemDetails.Status.Value;
 
-        // 3. Write the JSON response
+        // 4. Write the JSON response
         await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
 
-        // Return true to signal that this exception has been handled and shouldn't propagate further
         return true;
     }
 }
