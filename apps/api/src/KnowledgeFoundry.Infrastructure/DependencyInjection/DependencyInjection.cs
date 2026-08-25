@@ -1,6 +1,8 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
+using KnowledgeFoundry.Application.Abstractions.Services;
 using KnowledgeFoundry.Application.BackgroundProcessing;
 using KnowledgeFoundry.Infrastructure.BackgroundProcessing;
+using KnowledgeFoundry.Infrastructure.CorrelationContext;
 using KnowledgeFoundry.Infrastructure.DomainEvents;
 using KnowledgeFoundry.Infrastructure.Persistence;
 using KnowledgeFoundry.Infrastructure.Persistence.Repositories;
@@ -40,6 +42,8 @@ public static class DependencyInjection
         services.AddSingleton<ILessonGenerationQueue, LessonGenerationQueue>();
 
         services.AddHostedService<LessonGenerationWorker>();
+
+        services.AddScoped<ICorrelationIdContext, CorrelationIdContext>();
 
         return services;
     }
