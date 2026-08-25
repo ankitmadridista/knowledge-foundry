@@ -5,6 +5,7 @@ using KnowledgeFoundry.Api.Endpoints.Lessons;
 using KnowledgeFoundry.Api.Endpoints.PromptTemplates;
 using KnowledgeFoundry.Api.Endpoints.Settings;
 using KnowledgeFoundry.Api.Middleware;
+using KnowledgeFoundry.Api.Swagger;
 using KnowledgeFoundry.Application.DependencyInjection;
 using KnowledgeFoundry.Infrastructure;
 using KnowledgeFoundry.Infrastructure.Persistence;
@@ -41,7 +42,10 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.OperationFilter<CorrelationIdHeaderParameter>();
+});
 
 var app = builder.Build();
 
