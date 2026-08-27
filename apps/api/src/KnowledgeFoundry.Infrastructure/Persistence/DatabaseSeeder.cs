@@ -27,7 +27,8 @@ public class DatabaseSeeder : IDatabaseSeeder
             var defaultSettings = CorpSettings.Create(
                 maxPromptTemplates: 25,
                 maxContextPacks: 50,
-                maxLessons: 50
+                maxLessons: 50,
+                enableDynamicModelDiscovery: false
             );
 
             // If you added the static Guid ID to the entity, it will use that automatically!
