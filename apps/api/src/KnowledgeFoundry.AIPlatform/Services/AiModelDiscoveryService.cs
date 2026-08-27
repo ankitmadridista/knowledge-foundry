@@ -1,4 +1,5 @@
 using KnowledgeFoundry.AIPlatform.Models;
+using KnowledgeFoundry.Application.Abstractions.Persistence;
 using KnowledgeFoundry.Application.Abstractions.Services;
 using KnowledgeFoundry.Application.Common.Models;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
@@ -16,6 +17,7 @@ internal sealed class AiModelDiscoveryService : IAiModelDiscoveryService
     private readonly IMemoryCache _cache;
     private readonly HttpClient _httpClient;
     private readonly IFreeModelVerificationService _verificationService;
+    private readonly ICorpSettingsRepository _corpSettingsRepository;
     private readonly ILogger<AiModelDiscoveryService> _logger;
 
     public AiModelDiscoveryService(
@@ -23,20 +25,33 @@ internal sealed class AiModelDiscoveryService : IAiModelDiscoveryService
         IMemoryCache cache,
         HttpClient httpClient,
         IFreeModelVerificationService verificationService,
+        ICorpSettingsRepository corpSettingsRepository,
         ILogger<AiModelDiscoveryService> logger)
     {
         _configuration = configuration;
         _cache = cache;
         _httpClient = httpClient;
         _verificationService = verificationService;
+        _corpSettingsRepository = corpSettingsRepository;
         _logger = logger;
     }
 
     public async Task<List<AiModelDto>> GetAvailableModelsAsync(CancellationToken cancellationToken = default)
     {
+        // 1. Fetch the feature toggle from the Database
+        var settings = await _corpSettingsRepository.GetSettingsAsync(cancellationToken);
+
+        // 2. Fallback Mode (Discovery is OFF)
+        if (!settings.EnableDynamicModelDiscovery)
+        {
+            _logger.LogInformation("⚡ [Discovery Mode: OFFLINE] Dynamic discovery is disabled. Loading hardcoded verified models from configuration.");
+            return GetHardcodedModelsFromConfig();
+        }
+
+        // 3. Dynamic Mode (Discovery is ON) - Using our existing Caching Logic
         const string cacheKey = "discovery:verified-models";
 
-        // 1. Check outer discovery cache
+        // Check outer discovery cache
         if (_cache.TryGetValue<List<AiModelDto>>(cacheKey, out var cachedModels) && cachedModels != null)
         {
             _logger.LogInformation("🚀 [Discovery Cache HIT] Returning {Count} verified models directly from RAM (Zero HTTP calls).", cachedModels.Count);
@@ -97,10 +112,31 @@ internal sealed class AiModelDiscoveryService : IAiModelDiscoveryService
 
         var finalizedList = discoveredModels.OrderBy(m => m.ProviderId).ThenBy(m => m.ModelId).ToList();
 
-        // 2. Cache the finalized list for 5 minutes
         _cache.Set(cacheKey, finalizedList, TimeSpan.FromMinutes(5));
 
         return finalizedList;
+    }
+
+    /// <summary>
+    /// Bypasses HTTP entirely and reads the AuthorizedFreeModels directly from appsettings.json
+    /// </summary>
+    private List<AiModelDto> GetHardcodedModelsFromConfig()
+    {
+        var offlineModels = new List<AiModelDto>();
+        var providers = new[] { AiProvider.Groq, AiProvider.OpenRouter, AiProvider.Gemini };
+
+        foreach (var provider in providers)
+        {
+            // Read the string array directly from configuration
+            var authorizedModels = _configuration.GetSection($"{provider}:AuthorizedFreeModels").Get<string[]>() ?? Array.Empty<string>();
+
+            foreach (var modelId in authorizedModels)
+            {
+                offlineModels.Add(new AiModelDto((int)provider, provider.ToString(), modelId));
+            }
+        }
+
+        return offlineModels.OrderBy(m => m.ProviderId).ThenBy(m => m.ModelId).ToList();
     }
 
     private (string? ApiKey, string Endpoint) GetProviderConfig(AiProvider provider)
