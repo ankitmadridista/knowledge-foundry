@@ -12,6 +12,7 @@ internal sealed class OpenRouterFreeModelPolicy : IFreeModelPolicy
     private readonly HttpClient _httpClient;
     private readonly IMemoryCache _cache;
     private readonly string? _apiKey;
+    private readonly HashSet<string> _authorizedFreeModels;
 
     public AiProvider Provider => AiProvider.OpenRouter;
 
@@ -20,18 +21,20 @@ internal sealed class OpenRouterFreeModelPolicy : IFreeModelPolicy
         _httpClient = httpClient;
         _cache = cache;
         _apiKey = configuration["OpenRouter:ApiKey"];
+        var modelsFromConfig = configuration.GetSection("OpenRouter:AuthorizedFreeModels").Get<string[]>() ?? Array.Empty<string>();
+        _authorizedFreeModels = new HashSet<string>(modelsFromConfig, StringComparer.OrdinalIgnoreCase);
     }
 
-    public async Task<FreeModelResult> EvaluateAsync(string modelId, CancellationToken cancellationToken = default)
+    public async Task<FreeModelResult> EvaluateAsync(string modelId, bool isDynamicDiscoveryEnabled, CancellationToken cancellationToken = default)
     {
-        // Rule 1: Fast-fail models that don't even claim to be free
         if (!modelId.EndsWith(":free", StringComparison.OrdinalIgnoreCase) &&
             !modelId.Equals("openrouter/free", StringComparison.OrdinalIgnoreCase))
         {
             return FreeModelResult.NotFree;
         }
 
-        // Fetch the entire evaluated catalog from Cache (or generate it if missing)
+        if (!isDynamicDiscoveryEnabled) return _authorizedFreeModels.Contains(modelId) ? FreeModelResult.Free : FreeModelResult.Unknown;
+
         var catalogCache = await GetEvaluatedCatalogAsync(cancellationToken);
 
         if (catalogCache.TryGetValue(modelId, out var result))
