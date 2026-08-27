@@ -26,26 +26,15 @@ internal sealed class GeminiFreeModelPolicy : IFreeModelPolicy
         _authorizedFreeModels = new HashSet<string>(modelsFromConfig, StringComparer.OrdinalIgnoreCase);
     }
 
-    public async Task<FreeModelResult> EvaluateAsync(string modelId, CancellationToken cancellationToken = default)
+    public async Task<FreeModelResult> EvaluateAsync(string modelId, bool isDynamicDiscoveryEnabled, CancellationToken cancellationToken = default)
     {
-        // Fail-closed as Unknown if the configuration is missing or empty
-        if (_authorizedFreeModels.Count == 0)
-        {
-            return FreeModelResult.Unknown;
-        }
+        if (_authorizedFreeModels.Count == 0) return FreeModelResult.Unknown;
+        if (!_authorizedFreeModels.Contains(modelId)) return FreeModelResult.NotFree;
 
-        if (!_authorizedFreeModels.Contains(modelId))
-        {
-            return FreeModelResult.NotFree;
-        }
+        if (!isDynamicDiscoveryEnabled) return FreeModelResult.Free;
 
         var onlineModels = await GetOnlineModelsAsync(cancellationToken);
-
-        // Intersect Authorization with Availability
-        if (onlineModels.Contains(modelId))
-        {
-            return FreeModelResult.Free;
-        }
+        if (onlineModels.Contains(modelId)) return FreeModelResult.Free;
 
         return FreeModelResult.Unknown;
     }

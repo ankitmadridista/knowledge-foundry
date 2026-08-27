@@ -9,7 +9,7 @@ internal interface IFreeModelPolicy
 
     /// <summary>
     /// Evaluates whether a specific model ID is eligible for free-tier execution.
-    /// Must NEVER throw unhandled exceptions. Must return FreeModelResult.Unknown on failure.
     /// </summary>
-    Task<FreeModelResult> EvaluateAsync(string modelId, CancellationToken cancellationToken = default);
+    /// <param name="isDynamicDiscoveryEnabled">If false, policies should bypass HTTP checks and trust local config.</param>
+    Task<FreeModelResult> EvaluateAsync(string modelId, bool isDynamicDiscoveryEnabled, CancellationToken cancellationToken = default);
 }

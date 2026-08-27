@@ -14,6 +14,9 @@ public sealed class ExecutePromptCommandHandler
     private readonly IMediator _mediator;
     private readonly IPromptExecutionService _executionService;
 
+    // Compiled Regex for performance (standard practice in high-throughput handlers)
+    private static readonly Regex ContextRegex = new(@"\{Context:([a-zA-Z0-9_-]+)\}", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     public ExecutePromptCommandHandler(
         IMediator mediator,
         IPromptExecutionService executionService)
@@ -34,41 +37,56 @@ public sealed class ExecutePromptCommandHandler
         if (payloadResult.IsFailure) return Result<ExecutionTelemetry>.Failure(payloadResult.Error);
 
         var messages = payloadResult.Value.Messages.ToList();
-        var injectedMessages = new List<MessagePayloadDto>();
-        var contextRegex = new Regex(@"\{Context:([a-zA-Z0-9_-]+)\}", RegexOptions.IgnoreCase);
 
-        // 2. Process each message
+       var uniqueContextIdentifiers = messages
+            .SelectMany(m => ContextRegex.Matches(m.Content).Select(match => match.Groups[1].Value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var contextDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var identifier in uniqueContextIdentifiers)
+        {
+            var contextResult = await _mediator.Send(
+                new GetActiveContextPackPayloadQuery(identifier),
+                cancellationToken);
+
+            if (contextResult.IsFailure)
+            {
+                return Result<ExecutionTelemetry>.Failure(contextResult.Error);
+            }
+
+            contextDictionary[identifier] = contextResult.Value;
+        }
+
+        // 3. Process and Inject variables into each message
+        var injectedMessages = new List<MessagePayloadDto>(messages.Count);
+
         foreach (var message in messages)
         {
             var content = message.Content;
 
             // --- CONTEXT PACK INJECTION ---
-            var contextMatches = contextRegex.Matches(content);
+            var contextMatches = ContextRegex.Matches(content);
             foreach (Match match in contextMatches)
             {
                 var contextIdentifier = match.Groups[1].Value;
-                var contextResult = await _mediator.Send(
-                    new GetActiveContextPackPayloadQuery(contextIdentifier),
-                    cancellationToken);
-
-                if (contextResult.IsFailure)
+                if (contextDictionary.TryGetValue(contextIdentifier, out var packContent))
                 {
-                    return Result<ExecutionTelemetry>.Failure(contextResult.Error);
+                    // Replaces {Context:Identifier} with the actual textbook data
+                    content = content.Replace(match.Value, packContent, StringComparison.OrdinalIgnoreCase);
                 }
-
-                content = content.Replace(match.Value, contextResult.Value);
             }
 
-            // 3. Inject standard user variables
             foreach (var variable in request.Variables)
             {
-                content = content.Replace($"{{{variable.Key}}}", variable.Value);
+                content = content.Replace($"{{{variable.Key}}}", variable.Value, StringComparison.OrdinalIgnoreCase);
             }
 
             injectedMessages.Add(new MessagePayloadDto(message.Role, content));
         }
 
-        // 4. Send to LLM (using the overrides if provided)
+        // 4. Send to LLM Pipeline
         try
         {
             var provider = request.OverrideProvider ?? payloadResult.Value.Provider;
@@ -76,7 +94,6 @@ public sealed class ExecutePromptCommandHandler
                 ? request.OverrideModel
                 : payloadResult.Value.Model;
 
-            // response is now an ExecutionTelemetry object!
             var response = await _executionService.ExecuteAsync(
                 injectedMessages,
                 provider,
