@@ -46,3 +46,23 @@ export const pingBackend = async (): Promise<void> => {
         console.warn("Backend wake-up ping failed or timed out. It might still be booting.", error);
     }
 };
+
+export const setupAxiosAuth = (getToken: () => Promise<string | null>) => {
+  // Prevent adding multiple interceptors if this runs more than once
+  httpClient.interceptors.request.clear(); 
+  
+  httpClient.interceptors.request.use(
+    async (config) => {
+      try {
+        const token = await getToken();
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      } catch (error) {
+        console.error("Failed to fetch Clerk token", error);
+      }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+};
