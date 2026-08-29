@@ -1,3 +1,4 @@
+using KnowledgeFoundry.Domain.Common.ValueObjects;
 using KnowledgeFoundry.Domain.Lessons;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -40,8 +41,16 @@ internal sealed class LessonConfiguration : IEntityTypeConfiguration<Lesson>
         {
             content.Property(x => x.Value)
                 .HasColumnName("Content")
-                .IsRequired(false); // Nullable because it starts as Generating
+                .IsRequired(false);
         });
+
+        builder.Property(x => x.OwnerId)
+            .HasConversion(
+                id => id != null ? id.Value : null,
+                value => string.IsNullOrWhiteSpace(value) ? null : new UserId(value))
+            .HasColumnName("OwnerId")
+            .HasMaxLength(64)
+            .IsRequired();
 
         builder.Property(x => x.Status)
             .HasConversion<int>()

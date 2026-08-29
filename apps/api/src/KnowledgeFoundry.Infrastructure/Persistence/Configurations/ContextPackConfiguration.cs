@@ -1,3 +1,4 @@
+using KnowledgeFoundry.Domain.Common.ValueObjects;
 using KnowledgeFoundry.Domain.ContextPacks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -41,6 +42,14 @@ internal sealed class ContextPackConfiguration
                 .HasColumnName("Description")
                 .HasMaxLength(2000);
         });
+
+        builder.Property(x => x.OwnerId)
+            .HasConversion(
+                id => id != null ? id.Value : null,
+                value => string.IsNullOrWhiteSpace(value) ? null : new UserId(value))
+            .HasColumnName("OwnerId")
+            .HasMaxLength(64)
+            .IsRequired(false);
 
         // Child Entities: Versions
         builder.OwnsMany(x => x.Versions, version =>
