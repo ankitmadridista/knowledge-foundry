@@ -49,6 +49,7 @@ public sealed class CreateContextPackCommandHandler
             request.Identifier,
             request.Name,
             request.Description,
+            null,
             request.Tags);
 
         // 3. Persist to Database

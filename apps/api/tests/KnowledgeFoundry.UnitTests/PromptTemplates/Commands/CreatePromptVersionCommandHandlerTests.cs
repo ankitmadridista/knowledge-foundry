@@ -33,6 +33,7 @@ public class CreatePromptVersionCommandHandlerTests
             PromptPurpose.LessonGeneration,
             AiProvider.Groq,
             "Groq",
+            "dev123",
             new[] { "test" });
 
         _repositoryMock
