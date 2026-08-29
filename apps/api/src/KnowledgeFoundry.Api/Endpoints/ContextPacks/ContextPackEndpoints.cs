@@ -36,7 +36,8 @@ public static class ContextPackEndpoints
     public static void MapContextPackEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/context-packs")
-            .WithTags("Context Packs");
+            .WithTags("Context Packs")
+            .RequireAuthorization();
 
         group.MapPost("/", CreateContextPack);
 

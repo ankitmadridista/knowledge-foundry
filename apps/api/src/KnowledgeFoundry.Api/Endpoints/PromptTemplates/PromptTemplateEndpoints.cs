@@ -44,7 +44,8 @@ public static class PromptTemplateEndpoints
     public static void MapPromptTemplateEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/prompt-templates")
-            .WithTags("Prompt Templates");
+            .WithTags("Prompt Templates")
+            .RequireAuthorization();
 
         group.MapPost("/", CreatePromptTemplate);
 

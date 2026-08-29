@@ -12,7 +12,6 @@ using KnowledgeFoundry.Infrastructure.BackgroundProcessing;
 using KnowledgeFoundry.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -64,41 +63,12 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.OperationFilter<CorrelationIdHeaderParameter>();
-
-    // 3. Swagger JWT definition
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and your token.",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-
-    //c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    //{
-    //    {
-    //        new OpenApiSecurityScheme
-    //        {
-    //            Reference = new OpenApiReference
-    //            {
-    //                Type = ReferenceType.SecurityScheme,
-    //                Id = "Bearer"
-    //            }
-    //        },
-    //        new List<string>()
-    //    }
-    //});
-});
+// 3. CLEAN ARCHITECTURE: Call our new Swagger Extension!
+builder.Services.AddSwaggerDocumentation();
 
 var app = builder.Build();
 
 app.UseMiddleware<CorrelationIdMiddleware>();
-
 app.UseExceptionHandler();
 
 app.UseSwagger();
@@ -110,10 +80,9 @@ app.UseSwaggerUI(c =>
 });
 
 // app.UseHttpsRedirection();
-
 app.UseCors("AllowFrontend");
 
-// 4. Auth Middlewares in required sequence
+// 4. Auth Middlewares
 app.UseAuthentication();
 app.UseAuthorization();
 

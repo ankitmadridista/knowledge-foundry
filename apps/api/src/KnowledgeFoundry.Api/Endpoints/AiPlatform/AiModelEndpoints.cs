@@ -8,7 +8,8 @@ public static class AiModelEndpoints
     public static void MapAiModelEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/ai-models")
-            .WithTags("AI Platform");
+            .WithTags("AI Platform")
+            .RequireAuthorization();
 
         group.MapGet("/", GetAvailableModels)
             .WithName("GetAvailableModels");

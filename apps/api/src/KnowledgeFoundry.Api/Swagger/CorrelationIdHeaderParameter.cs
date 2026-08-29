@@ -1,5 +1,5 @@
-using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.OpenApi.Models;
 
 namespace KnowledgeFoundry.Api.Swagger;
 
@@ -17,7 +17,7 @@ internal sealed class CorrelationIdHeaderParameter : IOperationFilter
             Required = false,
             Schema = new OpenApiSchema
             {
-                Type = JsonSchemaType.String
+                Type = "string"
             }
         });
     }
