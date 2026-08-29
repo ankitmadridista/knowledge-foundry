@@ -8,8 +8,11 @@ using KnowledgeFoundry.Api.Middleware;
 using KnowledgeFoundry.Api.Swagger;
 using KnowledgeFoundry.Application.DependencyInjection;
 using KnowledgeFoundry.Infrastructure;
+using KnowledgeFoundry.Infrastructure.BackgroundProcessing;
 using KnowledgeFoundry.Infrastructure.Persistence;
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +21,27 @@ builder.Services
     .AddAIPlatform()
     .AddInfrastructure(builder.Configuration);
 
+// 1. Worker registration
+builder.Services.AddHostedService<LessonGenerationWorker>();
+
+// 2. JWT Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var authority = builder.Configuration["Authentication:Clerk:Authority"];
+        options.Authority = authority;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = authority,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            NameClaimType = ClaimTypes.NameIdentifier
+        };
+    });
+
+builder.Services.AddAuthorization();
+
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
@@ -25,9 +49,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        // Dynamically pull the origins from appsettings.json or Environment Variables
         var allowedOrigins = builder.Configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>();
-
         if (allowedOrigins != null && allowedOrigins.Length > 0)
         {
             policy.WithOrigins(allowedOrigins)
@@ -36,21 +58,17 @@ builder.Services.AddCors(options =>
         }
         else
         {
-            Console.WriteLine("WARNING: No CORS AllowedOrigins found in configuration! API requests from the browser will fail.");
+            Console.WriteLine("WARNING: No CORS AllowedOrigins found in configuration!");
         }
     });
 });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.OperationFilter<CorrelationIdHeaderParameter>();
-});
+// 3. CLEAN ARCHITECTURE: Call our new Swagger Extension!
+builder.Services.AddSwaggerDocumentation();
 
 var app = builder.Build();
 
 app.UseMiddleware<CorrelationIdMiddleware>();
-
 app.UseExceptionHandler();
 
 app.UseSwagger();
@@ -61,22 +79,25 @@ app.UseSwaggerUI(c =>
     c.EnableTryItOutByDefault();
 });
 
-//app.UseHttpsRedirection();
-
+// app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
+
+// 4. Auth Middlewares
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", timestamp = DateTime.UtcNow }))
    .WithTags("System")
    .ExcludeFromDescription();
 
-// Map our feature endpoints
+// Feature endpoints
 app.MapConfigEndpoints();
 app.MapPromptTemplateEndpoints();
 app.MapContextPackEndpoints();
 app.MapLessonEndpoints();
 app.MapAiModelEndpoints();
 
-// Apply database migrations and seed data automatically on startup!
+// Database migration & seeding
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;

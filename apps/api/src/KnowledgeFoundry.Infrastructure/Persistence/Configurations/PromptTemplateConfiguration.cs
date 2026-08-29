@@ -1,3 +1,4 @@
+using KnowledgeFoundry.Domain.Common.ValueObjects;
 using KnowledgeFoundry.Domain.PromptTemplates;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -54,6 +55,14 @@ internal sealed class PromptTemplateConfiguration
                 .HasMaxLength(100)
                 .IsRequired();
         });
+
+        builder.Property(x => x.OwnerId)
+            .HasConversion(
+                id => id != null ? id.Value : null,
+                value => string.IsNullOrWhiteSpace(value) ? null : new UserId(value))
+            .HasColumnName("OwnerId")
+            .HasMaxLength(64)
+            .IsRequired(false);
 
         builder.OwnsMany(x => x.Versions, version =>
         {

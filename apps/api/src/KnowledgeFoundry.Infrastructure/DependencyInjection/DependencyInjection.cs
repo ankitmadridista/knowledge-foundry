@@ -4,6 +4,7 @@ using KnowledgeFoundry.Application.BackgroundProcessing;
 using KnowledgeFoundry.Infrastructure.BackgroundProcessing;
 using KnowledgeFoundry.Infrastructure.CorrelationContext;
 using KnowledgeFoundry.Infrastructure.DomainEvents;
+using KnowledgeFoundry.Infrastructure.Identity;
 using KnowledgeFoundry.Infrastructure.Persistence;
 using KnowledgeFoundry.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -41,9 +42,10 @@ public static class DependencyInjection
 
         services.AddSingleton<ILessonGenerationQueue, LessonGenerationQueue>();
 
-        services.AddHostedService<LessonGenerationWorker>();
-
         services.AddScoped<ICorrelationIdContext, CorrelationIdContext>();
+
+        services.AddHttpContextAccessor(); // Required to read the current HTTP request
+        services.AddScoped<ICurrentUserContext, CurrentUserContext>();
 
         return services;
     }

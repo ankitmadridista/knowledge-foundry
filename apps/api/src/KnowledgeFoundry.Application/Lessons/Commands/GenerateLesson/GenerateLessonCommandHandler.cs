@@ -1,4 +1,5 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
+using KnowledgeFoundry.Application.Abstractions.Services;
 using KnowledgeFoundry.Application.BackgroundProcessing;
 using KnowledgeFoundry.Application.Common.Errors;
 using KnowledgeFoundry.Application.Common.Results;
@@ -17,6 +18,7 @@ public sealed class GenerateLessonCommandHandler
     private readonly ICorpSettingsRepository _settingsRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILessonGenerationQueue _queue;
+    private readonly ICurrentUserContext _currentUserContext;
 
     public GenerateLessonCommandHandler(
         ILessonRepository lessonRepository,
@@ -24,7 +26,8 @@ public sealed class GenerateLessonCommandHandler
         IContextPackRepository contextPackRepository,
         ICorpSettingsRepository settingsRepository,
         IUnitOfWork unitOfWork,
-        ILessonGenerationQueue queue)
+        ILessonGenerationQueue queue,
+        ICurrentUserContext currentUserContext)
     {
         _lessonRepository = lessonRepository;
         _templateRepository = templateRepository;
@@ -32,6 +35,7 @@ public sealed class GenerateLessonCommandHandler
         _settingsRepository = settingsRepository;
         _unitOfWork = unitOfWork;
         _queue = queue;
+        _currentUserContext = currentUserContext;
     }
 
     public async Task<Result<Guid>> Handle(
@@ -47,6 +51,12 @@ public sealed class GenerateLessonCommandHandler
             return Result<Guid>.Failure(new Error(
                 "Quota.Exceeded",
                 $"You have reached the maximum allowed Lessons ({settings.MaxLessons})."));
+        }
+
+        var userId = _currentUserContext.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Result<Guid>.Failure(new Error("Unauthorized", "You must be logged in."));
         }
 
         // 2. Validate the Actor Template (Fail fast if invalid)
@@ -75,6 +85,7 @@ public sealed class GenerateLessonCommandHandler
 
         // 5. Create the Initial Lesson Entity (Starts in 'Drafting' state)
         var lesson = Lesson.CreatePending(
+            _currentUserContext.UserId,
             request.Title,
             request.Topic,
             request.Audience,

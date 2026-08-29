@@ -9,7 +9,8 @@ public static class ConfigEndpoints
     {
         // We'll put this under /api/config
         var group = app.MapGroup("/api/config")
-            .WithTags("System Configuration");
+            .WithTags("System Configuration")
+            .RequireAuthorization();
 
         group.MapGet("/", GetConfig)
              .WithName("GetAppConfig");

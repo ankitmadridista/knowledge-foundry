@@ -1,8 +1,9 @@
 using KnowledgeFoundry.Domain.Common.Exceptions;
+using KnowledgeFoundry.Domain.Common.ValueObjects;
 using KnowledgeFoundry.Domain.PromptTemplates;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
-using KnowledgeFoundry.Domain.PromptTemplates.ValueObjects;
 using KnowledgeFoundry.Domain.PromptTemplates.Events;
+using KnowledgeFoundry.Domain.PromptTemplates.ValueObjects;
 
 
 public sealed class PromptTemplate : Entity
@@ -19,6 +20,7 @@ public sealed class PromptTemplate : Entity
     public PromptPurpose Purpose { get; private set; }
     public AiProvider Provider { get; private set; }
     public TargetModel Model { get; private set; } = null!;
+    public UserId? OwnerId { get; private set; }
 
     public IReadOnlyCollection<PromptTemplateVersion> Versions =>
         _versions.AsReadOnly();
@@ -33,6 +35,7 @@ public sealed class PromptTemplate : Entity
         PromptPurpose purpose,
         AiProvider provider,
         TargetModel model,
+        UserId? ownerId = null,
         IEnumerable<PromptTag>? tags = null)
     {
         Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier), "Identifier cannot be empty.");
@@ -41,6 +44,7 @@ public sealed class PromptTemplate : Entity
         Purpose = purpose;
         Provider = provider;
         Model = model ?? throw new ArgumentNullException(nameof(model), "Target model cannot be empty.");
+        OwnerId = ownerId;
 
         if (tags is not null)
         {
@@ -55,6 +59,7 @@ public sealed class PromptTemplate : Entity
         PromptPurpose purpose,
         AiProvider provider = AiProvider.Groq,
         string model = "llama-3.3-70b-versatile",
+        string? ownerId = null,
         IEnumerable<string>? tags = null)
     {
         return new PromptTemplate(
@@ -64,6 +69,7 @@ public sealed class PromptTemplate : Entity
             purpose,
             provider,
             new TargetModel(model),
+            string.IsNullOrWhiteSpace(ownerId) ? null : new UserId(ownerId),
             tags?.Select(t => new PromptTag(t)));
     }
 

@@ -29,6 +29,7 @@ namespace KnowledgeFoundry.IntegrationTests.Persistence
                 PromptPurpose.LessonGeneration,
                 AiProvider.Groq,
                 "Groq",
+                ownerId: null,
                 ["education"]);
 
             var version = template.CreateVersion(

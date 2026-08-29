@@ -3,19 +3,20 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-
-        <!-- Suppresses the annoying "Missing XML comment" warning -->
+        <!-- Suppresses missing XML comment warnings -->
         <NoWarn>$(NoWarn);1591</NoWarn>
     </PropertyGroup>
+
     <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+        <PackageReference Include="Microsoft.OpenApi" />
         <PackageReference Include="Swashbuckle.AspNetCore" />
     </ItemGroup>
 
@@ -24,5 +25,4 @@
         <ProjectReference Include="..\KnowledgeFoundry.AIPlatform\KnowledgeFoundry.AIPlatform.csproj" />
         <ProjectReference Include="..\KnowledgeFoundry.Infrastructure\KnowledgeFoundry.Infrastructure.csproj" />
     </ItemGroup>
-
 </Project>

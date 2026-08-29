@@ -32,6 +32,7 @@ public class GetPromptTemplateQueryHandlerTests
             PromptPurpose.LessonGeneration,
             AiProvider.Groq,
             "llama-3.3-70b-versatile",
+            null,
             new[] { "test" });
 
         _repositoryMock

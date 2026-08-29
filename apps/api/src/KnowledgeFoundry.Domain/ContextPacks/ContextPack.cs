@@ -1,8 +1,8 @@
 using KnowledgeFoundry.Domain.Common.Exceptions;
+using KnowledgeFoundry.Domain.Common.ValueObjects;
 using KnowledgeFoundry.Domain.ContextPacks.Enums;
 using KnowledgeFoundry.Domain.ContextPacks.Events;
 using KnowledgeFoundry.Domain.ContextPacks.ValueObjects;
-using KnowledgeFoundry.Domain.PromptTemplates.ValueObjects;
 
 namespace KnowledgeFoundry.Domain.ContextPacks;
 
@@ -14,6 +14,7 @@ public sealed class ContextPack : Entity
     public ContextPackIdentifier Identifier { get; private set; } = null!;
     public ContextPackName Name { get; private set; } = null!;
     public ContextPackDescription Description { get; private set; } = null!;
+    public UserId? OwnerId { get; private set; }
 
     public IReadOnlyCollection<ContextPackVersion> Versions => _versions.AsReadOnly();
     public IReadOnlyCollection<ContextTag> Tags => _tags.AsReadOnly();
@@ -24,11 +25,13 @@ public sealed class ContextPack : Entity
         ContextPackIdentifier identifier,
         ContextPackName name,
         ContextPackDescription description,
+        UserId? ownerId = null,
         IEnumerable<ContextTag>? tags = null)
     {
         Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
         Name = name ?? throw new ArgumentNullException(nameof(name));
         Description = description ?? throw new ArgumentNullException(nameof(description));
+        OwnerId = ownerId;
 
         if (tags is not null)
         {
@@ -40,12 +43,14 @@ public sealed class ContextPack : Entity
         string identifier,
         string name,
         string description,
+        string? ownerId = null,
         IEnumerable<string>? tags = null)
     {
         return new ContextPack(
             new ContextPackIdentifier(identifier),
             new ContextPackName(name),
             new ContextPackDescription(description),
+            string.IsNullOrWhiteSpace(ownerId) ? null : new UserId(ownerId),
             tags?.Select(t => new ContextTag(t)));
     }
 

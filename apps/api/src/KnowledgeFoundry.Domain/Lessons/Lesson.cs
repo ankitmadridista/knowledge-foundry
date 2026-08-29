@@ -1,3 +1,4 @@
+using KnowledgeFoundry.Domain.Common.ValueObjects;
 using KnowledgeFoundry.Domain.Lessons.Enums;
 using KnowledgeFoundry.Domain.Lessons.Events;
 using KnowledgeFoundry.Domain.Lessons.ValueObjects;
@@ -20,6 +21,7 @@ public sealed class Lesson : Entity
     public LessonStatus Status { get; private set; }
     public string? ErrorMessage { get; private set; }
     public bool IsManuallyEdited { get; private set; }
+    public UserId OwnerId { get; private set; } = null!;
 
     // Traceability
     public Guid PromptTemplateId { get; private set; }
@@ -33,6 +35,7 @@ public sealed class Lesson : Entity
     public CritiqueNotes? CritiqueNotes { get; private set; }
 
     private Lesson(
+        UserId ownerId,
         LessonTitle title,
         LessonTopic topic,
         LessonAudience audience,
@@ -40,6 +43,7 @@ public sealed class Lesson : Entity
         Guid? criticPromptTemplateId,
         Guid? contextPackId)
     {
+        OwnerId = ownerId ?? throw new ArgumentNullException(nameof(ownerId));
         Title = title ?? throw new ArgumentNullException(nameof(title));
         Topic = topic ?? throw new ArgumentNullException(nameof(topic));
         Audience = audience ?? throw new ArgumentNullException(nameof(audience));
@@ -54,6 +58,7 @@ public sealed class Lesson : Entity
     }
 
     public static Lesson CreatePending(
+        string ownerId,
         string title,
         string topic,
         string audience,
@@ -62,6 +67,7 @@ public sealed class Lesson : Entity
         Guid? contextPackId)
     {
         return new Lesson(
+            new UserId(ownerId),
             new LessonTitle(title),
             new LessonTopic(topic),
             new LessonAudience(audience),

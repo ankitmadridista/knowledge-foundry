@@ -33,7 +33,8 @@ public static class LessonEndpoints
     public static void MapLessonEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/lessons")
-            .WithTags("Lessons");
+            .WithTags("Lessons")
+            .RequireAuthorization();
 
         // Generation
         group.MapPost("/generate", GenerateLesson);
