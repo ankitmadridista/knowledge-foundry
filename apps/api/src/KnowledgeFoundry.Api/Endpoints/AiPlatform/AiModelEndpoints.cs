@@ -1,3 +1,4 @@
+using KnowledgeFoundry.Api.Extensions;
 using KnowledgeFoundry.Application.AiPlatform.Queries.GetAvailableModels;
 using MediatR;
 
@@ -9,7 +10,8 @@ public static class AiModelEndpoints
     {
         var group = app.MapGroup("/api/ai-models")
             .WithTags("AI Platform")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireRateLimiting(RateLimiterExtensions.ExpensiveAiPolicy);
 
         group.MapGet("/", GetAvailableModels)
             .WithName("GetAvailableModels");
