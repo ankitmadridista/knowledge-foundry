@@ -1,3 +1,4 @@
+using KnowledgeFoundry.Api.Extensions;
 using KnowledgeFoundry.Application.Common.Errors;
 using KnowledgeFoundry.Application.DomainModels;
 using KnowledgeFoundry.Application.PromptExecutions.Commands.ExecutePrompt;
@@ -45,7 +46,8 @@ public static class PromptTemplateEndpoints
     {
         var group = app.MapGroup("/api/prompt-templates")
             .WithTags("Prompt Templates")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireRateLimiting(RateLimiterExtensions.StandardPolicy);
 
         group.MapPost("/", CreatePromptTemplate);
 
@@ -59,7 +61,8 @@ public static class PromptTemplateEndpoints
 
         group.MapGet("/{identifier}/active-payload", GetActivePromptPayload);
 
-        group.MapPost("/{identifier}/execute", ExecutePrompt);
+        group.MapPost("/{identifier}/execute", ExecutePrompt)
+            .RequireRateLimiting(RateLimiterExtensions.ExpensiveAiPolicy);
 
         group.MapGet("/", GetPromptTemplates);
 

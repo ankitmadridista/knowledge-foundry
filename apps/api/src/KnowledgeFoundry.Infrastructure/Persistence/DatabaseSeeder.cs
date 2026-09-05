@@ -36,14 +36,19 @@ public class DatabaseSeeder : IDatabaseSeeder
             await _context.SaveChangesAsync(); // Save immediately so it's ready for the app
         }
 
-        // 2. Check if we already have data. If we do, exit early.
-        if (await _context.PromptTemplates.AnyAsync() || await _context.ContextPacks.AnyAsync())
+        // 2. Check and seed tables independently
+        if (!await _context.ContextPacks.AnyAsync())
         {
-            return;
+            await SeedContextPacksAsync();
         }
 
-        await SeedContextPacksAsync();
-        await SeedPromptTemplatesAsync();
+        if (!await _context.PromptTemplates.AnyAsync())
+        {
+            await SeedPromptTemplatesAsync();
+        }
+
+        // 3. Save all the new entities to the database!
+        await _context.SaveChangesAsync();
 
         // 3. Save all the new entities to the database!
         await _context.SaveChangesAsync();

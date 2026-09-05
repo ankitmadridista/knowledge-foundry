@@ -1,3 +1,4 @@
+using KnowledgeFoundry.Api.Extensions;
 using KnowledgeFoundry.Application.Common.Errors;
 using KnowledgeFoundry.Application.Lessons.Commands.DeleteLesson;
 using KnowledgeFoundry.Application.Lessons.Commands.GenerateLesson;
@@ -34,10 +35,12 @@ public static class LessonEndpoints
     {
         var group = app.MapGroup("/api/lessons")
             .WithTags("Lessons")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireRateLimiting(RateLimiterExtensions.StandardPolicy);
 
         // Generation
-        group.MapPost("/generate", GenerateLesson);
+        group.MapPost("/generate", GenerateLesson)
+            .RequireRateLimiting(RateLimiterExtensions.ExpensiveAiPolicy);
 
         // Queries
         group.MapGet("/", GetLessons);

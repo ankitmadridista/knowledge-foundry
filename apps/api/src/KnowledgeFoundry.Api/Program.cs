@@ -4,6 +4,7 @@ using KnowledgeFoundry.Api.Endpoints.ContextPacks;
 using KnowledgeFoundry.Api.Endpoints.Lessons;
 using KnowledgeFoundry.Api.Endpoints.PromptTemplates;
 using KnowledgeFoundry.Api.Endpoints.Settings;
+using KnowledgeFoundry.Api.Extensions;
 using KnowledgeFoundry.Api.Middleware;
 using KnowledgeFoundry.Api.Swagger;
 using KnowledgeFoundry.Application.DependencyInjection;
@@ -63,8 +64,9 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 3. CLEAN ARCHITECTURE: Call our new Swagger Extension!
 builder.Services.AddSwaggerDocumentation();
+
+builder.Services.AddKnowledgeFoundryRateLimiting(builder.Configuration);
 
 var app = builder.Build();
 
@@ -85,6 +87,8 @@ app.UseCors("AllowFrontend");
 // 4. Auth Middlewares
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseRateLimiter();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", timestamp = DateTime.UtcNow }))
    .WithTags("System")
