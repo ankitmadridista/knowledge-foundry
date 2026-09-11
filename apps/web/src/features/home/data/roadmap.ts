@@ -10,42 +10,49 @@ export const roadmap: RoadmapItem[] = [
     {
         title: "Project Foundation",
         description:
-            "Repository structure, Clean Architecture, AI Platform, CI/CD, and deployment.",
+            "Strict DDD, Clean Architecture, CI/CD, and multi-tenant Clerk authentication.",
         status: "completed",
     },
     {
-        title: "Prompt Templates",
+        title: "Prompt Orchestration",
         description:
-            "Versioned prompt management with validation and GraphQL APIs.",
+            "Version-controlled prompt management via RESTful Minimal APIs.",
         status: "completed",
     },
     {
         title: "Context Packs",
-        description: "Reusable contextual knowledge supplied to AI workflows.",
+        description:
+            "Reusable contextual knowledge mapped to specific generation pipelines.",
         status: "completed",
     },
     {
-        title: "Lesson Generation",
+        title: "Multi-Model AI Gateway",
         description:
-            "Generate educational content using orchestrated AI pipelines.",
-        status: "completed",
-    },
-    {
-        title: "Multi-Model Support",
-        description:
-            "Seamlessly switch between Gemini, Groq, and OpenRouter at runtime.",
+            "Token-bucket rate-limited execution across Gemini, Groq, and OpenRouter.",
         status: "completed",
     },
     {
         title: "Evaluation Engine",
         description:
-            "Automatically evaluate AI-generated content using configurable metrics.",
+            "Automated scoring of AI-generated content using strict structural rubrics.",
         status: "in-progress",
     },
     {
         title: "Reflection Loop",
         description:
-            "Allow AI to critique and improve its own outputs iteratively.",
+            "Autonomous LLM self-correction pipelines driven by critique feedback.",
+        status: "planned",
+    },
+    {
+        title: "Semantic RAG Upgrade",
+        description:
+            "Vector embedding search using pgvector for dynamic context injection.",
+        status: "planned",
+    },
+    {
+        title: "Asynchronous Generation",
+        description:
+            "Background processing queues with real-time SignalR WebSocket updates.",
         status: "planned",
     },
 ];
