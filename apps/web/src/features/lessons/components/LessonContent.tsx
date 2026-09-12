@@ -25,6 +25,8 @@ export function LessonContent({
     const [draftContent, setDraftContent] = useState("");
     const [isSaving, setIsSaving] = useState(false);
 
+    const [isReflectionOpen, setIsReflectionOpen] = useState(false);
+
     const handleEditClick = () => {
         setDraftContent(lesson.content || "");
         setIsEditing(true);
@@ -60,7 +62,6 @@ export function LessonContent({
         }
     };
 
-    // Helper to determine if we are in one of the active pipeline states
     const isProcessing = [
         "Generating",
         "Drafting",
@@ -74,7 +75,6 @@ export function LessonContent({
                 <div className="flex flex-col items-center justify-center h-full text-center py-20 animate-in fade-in duration-500">
                     <div className="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mb-6" />
 
-                    {/* Dynamic Real-Time Status Header */}
                     <h2 className="text-xl font-bold text-zinc-100 mb-2 tracking-wide">
                         {lesson.status === "Generating" &&
                             "Initializing AI Engine..."}
@@ -86,7 +86,6 @@ export function LessonContent({
                             "3/3: Applying Final Polish..."}
                     </h2>
 
-                    {/* Dynamic Subtext */}
                     <Text className="text-zinc-400 max-w-md h-12">
                         {lesson.status === "Drafting" &&
                             "The Actor is reading the Context Pack and writing the first draft."}
@@ -98,7 +97,6 @@ export function LessonContent({
                             "Warming up the background workers."}
                     </Text>
 
-                    {/* Visual Progress Steps */}
                     <div className="flex items-center justify-center gap-3 mt-8">
                         <div
                             className={`h-2 w-16 rounded-full transition-colors duration-500 ${["Drafting", "Critiquing", "Refining"].includes(lesson.status) ? "bg-indigo-500" : "bg-zinc-800"}`}
@@ -145,7 +143,6 @@ export function LessonContent({
 
             {lesson.status === "Completed" && lesson.content && (
                 <>
-                    {/* EDITING MODE */}
                     {isEditing ? (
                         <div className="flex flex-col h-full animate-in fade-in slide-in-from-bottom-2 duration-300">
                             <div className="flex justify-between items-center mb-4">
@@ -181,14 +178,39 @@ export function LessonContent({
                             />
                         </div>
                     ) : (
-                        /* VIEWING MODE */
                         <div className="flex flex-col h-full animate-in fade-in duration-700">
-                            {/* --- OPTIONAL: SHOW CRITIC FEEDBACK IF IT EXISTS --- */}
                             {lesson.critiqueNotes && (
-                                <div className="mb-8 p-4 rounded-lg bg-indigo-950/20 border border-indigo-500/20">
-                                    <div className="flex items-center gap-2 mb-2">
+                                <div className="mb-8 rounded-lg bg-zinc-900/50 border border-zinc-800 overflow-hidden">
+                                    <button
+                                        onClick={() =>
+                                            setIsReflectionOpen(
+                                                !isReflectionOpen,
+                                            )
+                                        }
+                                        className="w-full flex items-center justify-between p-4 bg-zinc-900 hover:bg-zinc-800/80 transition-colors text-left focus:outline-none"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-500/10">
+                                                <svg
+                                                    className="w-4 h-4 text-indigo-400"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                    />
+                                                </svg>
+                                            </div>
+                                            <span className="text-sm font-semibold text-zinc-100 tracking-wide">
+                                                AI Reflection & Critic Notes
+                                            </span>
+                                        </div>
                                         <svg
-                                            className="w-4 h-4 text-indigo-400"
+                                            className={`w-5 h-5 text-zinc-500 transition-transform duration-200 ${isReflectionOpen ? "rotate-180" : ""}`}
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             stroke="currentColor"
@@ -197,20 +219,25 @@ export function LessonContent({
                                                 strokeLinecap="round"
                                                 strokeLinejoin="round"
                                                 strokeWidth={2}
-                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                d="M19 9l-7 7-7-7"
                                             />
                                         </svg>
-                                        <span className="text-sm font-semibold text-indigo-300 uppercase tracking-wider">
-                                            Critic Feedback Applied
-                                        </span>
-                                    </div>
-                                    <Text className="text-sm text-zinc-300 italic">
-                                        "{lesson.critiqueNotes}"
-                                    </Text>
+                                    </button>
+
+                                    {isReflectionOpen && (
+                                        <div className="p-5 border-t border-zinc-800 bg-zinc-900/30 animate-in slide-in-from-top-2 duration-200">
+                                            <div className="prose prose-invert prose-sm max-w-none prose-p:text-zinc-400 prose-headings:text-zinc-300">
+                                                <MarkdownRenderer
+                                                    content={
+                                                        lesson.critiqueNotes
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
-                            {/* --- ACTION BAR --- */}
                             <div className="flex justify-end gap-2 mb-6 border-b border-zinc-800/50 pb-4 shrink-0">
                                 <button
                                     onClick={handleCopy}
@@ -258,7 +285,6 @@ export function LessonContent({
                                 <MarkdownRenderer content={lesson.content} />
                             </div>
 
-                            {/* --- TELEMETRY FOOTER --- */}
                             {lesson.model && (
                                 <div className="mt-8 pt-4 border-t border-zinc-800/50 flex flex-wrap gap-3 shrink-0 opacity-80">
                                     <Badge variant="neutral">

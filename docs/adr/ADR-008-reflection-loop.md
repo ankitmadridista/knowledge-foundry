@@ -1,7 +1,7 @@
 # ADR-008: Multi-Agent Reflection Loop for AI Generation
 
 > **Status:** ✅ Accepted  
-> **Date:** `2026-09-11`  
+> **Date:** `2026-09-12`  
 > **Authors:** **Knowledge Foundry Team**
 
 ---
@@ -19,15 +19,15 @@ Since our domain model already supports `CriticPromptTemplateId`, `CritiqueNotes
 
 ### 🎯 Goal
 
-Implement a **Formative Evaluation (Reflection) Loop** where multiple AI agents collaborate to produce high-quality output before it is presented to the user.
+Implement a **Formative Evaluation (Reflection) Loop** where multiple AI agents collaborate to produce high-quality output before it is presented to the user, without blocking the main HTTP request thread.
 
 ---
 
 ## 🧠 Decision
 
-We will implement a synchronous, multi-agent reflection loop orchestrated by the .NET 9 Application layer. 
+We will implement an **asynchronous**, multi-agent reflection loop orchestrated by a .NET 9 `BackgroundService` (`LessonGenerationWorker`). 
 
-When a user selects a `CriticPromptTemplateId` during lesson creation, the MediatR command handler will execute a three-step LLM pipeline:
+When a user selects a `CriticPromptTemplateId` during lesson creation, the MediatR command handler will queue the generation job and instantly return the Lesson ID. The background worker will then autonomously execute a three-step LLM pipeline:
 
 1. **Draft (Generator Agent):** The primary model generates an initial lesson draft.
 2. **Critique (Critic Agent):** The draft is passed to a secondary evaluator model using the Critic Prompt Template. The critic analyzes the draft against the original context and outputs structured feedback (`CritiqueNotes`).
@@ -37,50 +37,52 @@ When a user selects a `CriticPromptTemplateId` during lesson creation, the Media
 
 ## 🏗️ Architecture & State Machine Flow
 
-The orchestration logic maps directly to the existing `Lesson.cs` domain entity state machine.
+The orchestration logic maps directly to the existing `Lesson.cs` domain entity state machine, executed entirely in the background.
 
 ```mermaid
 sequenceDiagram
+    participant UI as 🌐 React UI
     participant API as 🚀 MediatR Handler
-    participant DB as 🐘 PostgreSQL (EF Core)
+    participant DB as 🐘 PostgreSQL
+    participant Worker as ⚙️ Background Worker
     participant Gen as 🤖 Generator LLM
     participant Critic as 🧐 Critic LLM
 
+    UI->>API: POST /generate (CriticTemplateId)
     API->>DB: Lesson.CreatePending()
+    API->>Worker: Enqueue LessonGenerationJob
+    API-->>UI: 202 Accepted (Lesson ID)
     
     rect rgb(24, 24, 27)
-        Note right of API: 1. DRAFTING PHASE
-        API->>Gen: Execute Primary Prompt + Context
-        Gen-->>API: Draft Content
+        Note right of Worker: 1. DRAFTING PHASE
+        Worker->>Gen: Execute Primary Prompt + Context
+        Gen-->>Worker: Draft Content
     end
     
     alt CriticTemplateId Exists
         rect rgb(24, 24, 27)
-            Note right of API: 2. CRITIQUING PHASE
-            API->>DB: Lesson.TransitionToCritiquing()
-            API->>Critic: Execute Critic Prompt + Draft Content
-            Critic-->>API: Critique Notes (Feedback)
+            Note right of Worker: 2. CRITIQUING PHASE
+            Worker->>DB: Lesson.TransitionToCritiquing()
+            Worker->>Critic: Execute Critic Prompt + Draft Content
+            Critic-->>Worker: Critique Notes (Feedback)
         end
         
         rect rgb(24, 24, 27)
-            Note right of API: 3. REFINING PHASE
-            API->>DB: Lesson.TransitionToRefining(notes)
-            API->>Gen: Execute Primary Prompt + Notes + Draft
-            Gen-->>API: Final Polished Content
+            Note right of Worker: 3. REFINING PHASE
+            Worker->>DB: Lesson.TransitionToRefining(notes)
+            Worker->>Gen: Execute Primary Prompt + Notes + Draft
+            Gen-->>Worker: Final Polished Content
         end
     end
     
-    API->>DB: Lesson.MarkAsCompleted(Final Content)
-    API-->>User: 200 OK (Lesson Ready)
-
+    Worker->>DB: Lesson.MarkAsCompleted(Final Content)
 ```
-
 
 ## ⚖️ Technical Trade-offs
 
 | Decision | Consequence | Justification |
 | :--- | :--- | :--- |
-| **Synchronous Execution** | The HTTP request will take 2-3x longer to complete. | Acceptable technical debt. Establishes the core pipeline logic now. Will force a natural evolution to async processing (SignalR/Background Queues) in a future milestone. |
+| **Asynchronous Processing** | The UI must poll the backend to retrieve the final lesson or status updates. | A multi-agent loop easily exceeds standard 30-second HTTP timeout limits. Background processing prevents browser timeouts and keeps the web threads free. |
 | **Multiple LLM Calls** | Token usage and API costs will increase significantly per lesson. | High-quality educational content requires rigorous validation. The Token Bucket rate limiter (ADR-007) is already in place to prevent cost overruns. |
 | **In-Memory State** | The orchestration holds the Draft and Critique strings in memory during the request. | Keeps the `Lessons` database table clean by only persisting the final content and the meta-notes, rather than storing intermediate garbage drafts. |
 | **Prompt vs. Model Routing** | Both Generator and Critic roles currently use the same underlying provider/model, differing only in the Prompt Template used. | Simplifies initial implementation. Future iterations can route Critic tasks to more capable (but slower/expensive) models like GPT-4o or Gemini 1.5 Pro. |
@@ -89,4 +91,6 @@ sequenceDiagram
 
 ## 🖥️ UX/UI Impact
 
-The React frontend will be updated to display the `CritiqueNotes` (if present) in an expandable "AI Reflection" accordion below the finished lesson. This exposes the multi-agent collaboration to the user, establishing high trust and showcasing the platform's advanced orchestration capabilities.
+The React frontend handles the asynchronous nature by polling the `GetLessonById` endpoint, displaying dynamic loading states (`Drafting...`, `Critique in progress...`, `Refining...`) based on the Lesson's status.
+
+Once complete, the `CritiqueNotes` are displayed in an expandable "AI Reflection & Critic Notes" accordion below the finished lesson. This exposes the multi-agent collaboration to the user, establishing high trust and showcasing the platform's advanced orchestration capabilities.

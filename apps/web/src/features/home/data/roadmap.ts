@@ -32,27 +32,25 @@ export const roadmap: RoadmapItem[] = [
         status: "completed",
     },
     {
+        title: "Asynchronous Generation",
+        description: "Background processing queues with real-time UI state polling and interception.",
+        status: "completed",
+    },
+    {
+        title: "Reflection Loop",
+        description: "Autonomous LLM self-correction pipelines driven by critique feedback.",
+        status: "completed",
+    },
+    {
         title: "Evaluation Engine",
         description:
             "Automated scoring of AI-generated content using strict structural rubrics.",
         status: "in-progress",
     },
     {
-        title: "Reflection Loop",
-        description:
-            "Autonomous LLM self-correction pipelines driven by critique feedback.",
-        status: "planned",
-    },
-    {
         title: "Semantic RAG Upgrade",
         description:
             "Vector embedding search using pgvector for dynamic context injection.",
         status: "planned",
-    },
-    {
-        title: "Asynchronous Generation",
-        description:
-            "Background processing queues with real-time SignalR WebSocket updates.",
-        status: "planned",
-    },
+    }
 ];
