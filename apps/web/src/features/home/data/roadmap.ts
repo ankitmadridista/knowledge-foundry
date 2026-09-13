@@ -45,12 +45,12 @@ export const roadmap: RoadmapItem[] = [
         title: "Evaluation Engine",
         description:
             "Automated scoring of AI-generated content using strict structural rubrics.",
-        status: "in-progress",
+        status: "completed",
     },
     {
         title: "Semantic RAG Upgrade",
         description:
             "Vector embedding search using pgvector for dynamic context injection.",
-        status: "planned",
+        status: "in-progress",
     }
 ];
