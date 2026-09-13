@@ -4,6 +4,7 @@ import type {
     UpdateLessonContentRequest,
     LessonSummaryDto,
     LessonDto,
+    EvaluateLessonRequest,
 } from "@/features/lessons/types";
 import type { PagedResponse } from "@/shared/types/pagination";
 
@@ -12,13 +13,26 @@ export const generateLesson = async (
 ): Promise<string> => {
     const response = await httpClient.post("/lessons/generate", request);
 
-    // Extract the GUID exactly like your createPromptTemplate pattern
     const id =
         typeof response.data === "string"
             ? response.data
             : response.data?.id || response.data?.value;
 
     return id.replace(/['"]/g, "");
+};
+
+export const evaluateLesson = async (
+    id: string,
+    request: EvaluateLessonRequest,
+): Promise<string> => {
+    const response = await httpClient.post(`/lessons/${id}/evaluate`, request);
+
+    const evaluationId =
+        typeof response.data === "string"
+            ? response.data
+            : response.data?.evaluationId || response.data?.value;
+
+    return evaluationId.replace(/['"]/g, "");
 };
 
 export const getLessons = async (
@@ -32,7 +46,8 @@ export const getLessons = async (
     params.append("pageSize", pageSize.toString());
 
     if (search) params.append("search", search);
-    if (status !== undefined && status !== null) params.append("status", status.toString());
+    if (status !== undefined && status !== null)
+        params.append("status", status.toString());
 
     const response = await httpClient.get(`/lessons?${params.toString()}`);
     return response.data;

@@ -22,7 +22,6 @@ export function CreateTemplatePage() {
     const [error, setError] = useState<string | null>(null);
     const [aiModels, setAiModels] = useState<AiModelDto[]>([]);
 
-    // --- NEW: Fetch live models on load ---
     useEffect(() => {
         let isMounted = true;
         const fetchModels = async () => {
@@ -60,7 +59,7 @@ export function CreateTemplatePage() {
                 identifier: formData.identifier,
                 name: formData.name,
                 description: formData.description,
-                purpose: 0,
+                purpose: formData.purpose,
                 provider: formData.provider,
                 model: formData.model,
                 tags: tagsArray,
@@ -126,7 +125,6 @@ export function CreateTemplatePage() {
                         </div>
                     )}
 
-                    {/* --- NEW: Show loading spinner while fetching models --- */}
                     {isLoadingModels ? (
                         <div className="text-center py-12 text-zinc-400 animate-pulse">
                             Discovering available AI models...

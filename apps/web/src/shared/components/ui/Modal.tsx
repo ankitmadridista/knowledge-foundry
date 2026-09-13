@@ -12,6 +12,7 @@ interface ModalProps {
     onPrimaryAction?: () => void;
     isPrimaryActionDestructive?: boolean;
     isPrimaryActionLoading?: boolean;
+    isPrimaryActionDisabled?: boolean;
     secondaryActionLabel?: string;
 }
 
@@ -25,6 +26,7 @@ export function Modal({
     onPrimaryAction,
     isPrimaryActionDestructive = false,
     isPrimaryActionLoading = false,
+    isPrimaryActionDisabled = false,
     secondaryActionLabel = "Cancel",
 }: ModalProps) {
     // Prevent scrolling on the body when the modal is open
@@ -93,7 +95,10 @@ export function Modal({
                             <Button
                                 variant="primary"
                                 onClick={onPrimaryAction}
-                                disabled={isPrimaryActionLoading}
+                                disabled={
+                                    isPrimaryActionLoading ||
+                                    isPrimaryActionDisabled
+                                }
                                 className={`w-full sm:w-auto ${
                                     isPrimaryActionDestructive
                                         ? "bg-red-500 hover:bg-red-600 text-white border-transparent"

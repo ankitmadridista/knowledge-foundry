@@ -39,6 +39,15 @@ internal sealed class GetLessonByIdQueryHandler
             executionLog = await _logRepository.GetByIdAsync(lesson.AiExecutionLogId.Value, cancellationToken);
         }
 
+        var evaluationsDto = lesson.Evaluations.Select(e => new LessonEvaluationDto(
+            e.Id,
+            e.EvaluatorPromptTemplateId,
+            e.ScorecardJson,
+            e.Provider,
+            e.Model.Value,
+            e.EvaluatedAt
+        )).ToList();
+
         var dto = new LessonDto(
             lesson.Id,
             lesson.Title.Value,
@@ -57,7 +66,8 @@ internal sealed class GetLessonByIdQueryHandler
             executionLog?.Provider,
             executionLog?.Model.Value,
             executionLog?.TokensUsed,
-            executionLog?.ExecutionTimeMs);
+            executionLog?.ExecutionTimeMs,
+            evaluationsDto);
 
         return Result<LessonDto>.Success(dto);
     }

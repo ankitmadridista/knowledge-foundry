@@ -1,4 +1,5 @@
 using KnowledgeFoundry.Domain.PromptTemplates;
+using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 
 namespace KnowledgeFoundry.Application.Abstractions.Persistence;
 
@@ -23,6 +24,7 @@ public interface IPromptTemplateRepository
         int pageSize,
         string? searchTerm = null,
         int? provider = null,
+        PromptPurpose? purpose = null,
         CancellationToken cancellationToken = default);
 
 

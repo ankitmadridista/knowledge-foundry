@@ -25,7 +25,6 @@ export function CreatePromptTemplateForm({
     onCancel,
     isSubmitting,
 }: CreatePromptTemplateFormProps) {
-    // Extract unique providers for the first dropdown
     const providers = Array.from(
         new Map(
             availableModels.map((m) => [m.providerId, m.providerName]),
@@ -44,13 +43,13 @@ export function CreatePromptTemplateForm({
         identifier: "",
         description: "",
         tags: "",
+        purpose: 0,
         provider: defaultProvider,
         model: defaultModelId,
         systemContext: "You are a helpful AI assistant.",
         userMessage: "",
     });
 
-    // Derive the list of models to show based on the CURRENTLY selected provider
     const modelsForCurrentProvider = availableModels.filter(
         (m) => m.providerId === formData.provider,
     );
@@ -75,7 +74,6 @@ export function CreatePromptTemplateForm({
                 identifier: autoIdentifier,
             }));
         } else if (name === "provider") {
-            // When provider changes, automatically select the first model of that new provider
             const newProviderInt = parseInt(value, 10);
             const newProviderModels = availableModels.filter(
                 (m) => m.providerId === newProviderInt,
@@ -88,6 +86,11 @@ export function CreatePromptTemplateForm({
                     newProviderModels.length > 0
                         ? newProviderModels[0].modelId
                         : "",
+            }));
+        } else if (name === "purpose") {
+            setFormData((prev) => ({
+                ...prev,
+                purpose: parseInt(value, 10),
             }));
         } else {
             setFormData((prev) => ({ ...prev, [name]: value }));
@@ -136,7 +139,20 @@ export function CreatePromptTemplateForm({
                     />
                 </div>
 
-                {/* --- DYNAMIC DROPDOWNS --- */}
+                <div>
+                    <Label>Template Purpose *</Label>
+                    <select
+                        name="purpose"
+                        value={formData.purpose}
+                        onChange={handleChange}
+                        className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    >
+                        <option value={0}>Lesson Generation</option>
+                        <option value={1}>Question Generation</option>
+                        <option value={2}>Evaluation</option>
+                    </select>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <Label>AI Provider *</Label>
@@ -222,6 +238,11 @@ export function CreatePromptTemplateForm({
                             <code className="text-indigo-200 bg-indigo-950/50 px-1.5 py-0.5 rounded font-mono">{`{Draft}`}</code>{" "}
                             - <i>(Critics Only)</i> The initial draft generated
                             by the Actor model.
+                        </li>
+                        <li>
+                            <code className="text-indigo-200 bg-indigo-950/50 px-1.5 py-0.5 rounded font-mono">{`{LessonContent}`}</code>{" "}
+                            - <i>(Evaluations Only)</i> The final completed
+                            lesson text.
                         </li>
                     </ul>
                 </div>

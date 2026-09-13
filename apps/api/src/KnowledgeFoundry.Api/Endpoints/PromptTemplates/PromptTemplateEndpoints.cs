@@ -232,6 +232,7 @@ public static class PromptTemplateEndpoints
         int? pageSize,
         string? search,
         int? provider,
+        int? purpose,
         ISender sender,
         CancellationToken cancellationToken)
     {
@@ -239,7 +240,8 @@ public static class PromptTemplateEndpoints
             pageNumber ?? 1,
             pageSize ?? 12,
             search,
-            provider);
+            provider,
+            purpose);
 
         var result = await sender.Send(query, cancellationToken);
 

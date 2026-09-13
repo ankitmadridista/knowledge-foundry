@@ -1,6 +1,7 @@
 using KnowledgeFoundry.Api.Extensions;
 using KnowledgeFoundry.Application.Common.Errors;
 using KnowledgeFoundry.Application.Lessons.Commands.DeleteLesson;
+using KnowledgeFoundry.Application.Lessons.Commands.EvaluateLesson;
 using KnowledgeFoundry.Application.Lessons.Commands.GenerateLesson;
 using KnowledgeFoundry.Application.Lessons.Commands.UpdateLessonContent;
 using KnowledgeFoundry.Application.Lessons.Queries.GetLessonById;
@@ -27,6 +28,11 @@ public sealed record GenerateLessonRequest(
 public sealed record UpdateLessonContentRequest(
     string NewContent);
 
+public sealed record EvaluateLessonRequest(
+    Guid EvaluatorPromptTemplateId,
+    int? Provider = null,
+    string? Model = null);
+
 // --- Endpoints ---
 
 public static class LessonEndpoints
@@ -40,6 +46,10 @@ public static class LessonEndpoints
 
         // Generation
         group.MapPost("/generate", GenerateLesson)
+            .RequireRateLimiting(RateLimiterExtensions.ExpensiveAiPolicy);
+
+        // Lesson Evaluation
+        group.MapPost("/{id:guid}/evaluate", EvaluateLesson)
             .RequireRateLimiting(RateLimiterExtensions.ExpensiveAiPolicy);
 
         // Queries
@@ -90,6 +100,31 @@ public static class LessonEndpoints
             value: new { Id = result.Value });
     }
 
+    private static async Task<IResult> EvaluateLesson(
+        Guid id,
+        EvaluateLessonRequest request,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var command = new EvaluateLessonCommand(
+            id,
+            request.EvaluatorPromptTemplateId,
+            request.Provider.HasValue ? (AiProvider)request.Provider.Value : null,
+            request.Model);
+
+        var result = await sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            if (result.Error == LessonErrors.NotFound || result.Error == LessonErrors.TemplateNotFound)
+                return Results.NotFound(result.Error);
+
+            return Results.BadRequest(result.Error);
+        }
+
+        return Results.Ok(new { EvaluationId = result.Value });
+    }
+
     private static async Task<IResult> GetLessons(
         int? pageNumber,
         int? pageSize,
@@ -98,7 +133,6 @@ public static class LessonEndpoints
         ISender sender,
         CancellationToken cancellationToken)
     {
-        // Pass the parameters, falling back to defaults if they aren't in the URL
         var query = new GetLessonsQuery(
             pageNumber ?? 1,
             pageSize ?? 6,
@@ -149,12 +183,12 @@ public static class LessonEndpoints
                 return Results.NotFound(result.Error);
 
             if (result.Error == LessonErrors.NotCompleted)
-                return Results.BadRequest(result.Error); // Can't edit generating/failed lessons
+                return Results.BadRequest(result.Error);
 
             return Results.BadRequest(result.Error);
         }
 
-        return Results.NoContent(); // 204 No Content is standard for a successful PUT
+        return Results.NoContent();
     }
 
     private static async Task<IResult> DeleteLesson(

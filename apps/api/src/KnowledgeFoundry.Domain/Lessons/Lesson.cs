@@ -34,6 +34,9 @@ public sealed class Lesson : Entity
     public Guid? CriticPromptTemplateId { get; private set; }
     public CritiqueNotes? CritiqueNotes { get; private set; }
 
+    private readonly List<LessonEvaluation> _evaluations = [];
+    public IReadOnlyCollection<LessonEvaluation> Evaluations => _evaluations.AsReadOnly();
+
     private Lesson(
         UserId ownerId,
         LessonTitle title,
@@ -127,5 +130,14 @@ public sealed class Lesson : Entity
         IsManuallyEdited = true;
 
         RaiseDomainEvent(new LessonManuallyEditedDomainEvent(Id, DateTime.UtcNow));
+    }
+
+    public void AddEvaluation(LessonEvaluation evaluation)
+    {
+        if (Status != LessonStatus.Completed)
+            throw new InvalidOperationException("Only completed lessons can be evaluated.");
+
+        _evaluations.Add(evaluation ?? throw new ArgumentNullException(nameof(evaluation)));
+        RaiseDomainEvent(new LessonEvaluatedDomainEvent(Id, evaluation.Id, DateTime.UtcNow));
     }
 }

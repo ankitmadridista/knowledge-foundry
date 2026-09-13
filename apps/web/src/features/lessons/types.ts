@@ -46,6 +46,7 @@ export interface LessonDto {
     model?: string | null;
     tokensUsed?: number | null;
     executionTimeMs?: number | null;
+    evaluations: LessonEvaluationDto[];
 }
 
 export interface GenerateLessonFormData {
@@ -59,4 +60,19 @@ export interface GenerateLessonFormData {
     criticPromptTemplateId?: string | null;
     criticProvider?: number;
     criticModel?: string;
+}
+
+export interface LessonEvaluationDto {
+    id: string;
+    evaluatorPromptTemplateId: string;
+    scorecardJson: string;
+    provider: number;
+    model: string;
+    evaluatedAt: string;
+}
+
+export interface EvaluateLessonRequest {
+    evaluatorPromptTemplateId: string;
+    provider?: number;
+    model?: string;
 }

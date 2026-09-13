@@ -9,5 +9,6 @@ public sealed record GetPromptTemplatesQuery(
     int PageNumber = 1,
     int PageSize = 12,
     string? SearchTerm = null,
-    int? Provider = null)
+    int? Provider = null,
+    int? Purpose = null)
     : IRequest<Result<PagedResponse<PromptTemplateSummaryDto>>>;
