@@ -1,9 +1,17 @@
-import { useAuth, RedirectToSignIn } from "@clerk/clerk-react";
-import { Outlet } from "react-router-dom";
+import { useEffect } from "react";
+import { useAuth, useClerk /*, RedirectToSignIn */ } from "@clerk/clerk-react";
+import { Outlet, Navigate } from "react-router-dom";
 import { AppConfigProvider } from "../providers/AppConfigProvider";
 
 export function RequireAuth() {
     const { isLoaded, isSignedIn } = useAuth();
+    const { openSignIn } = useClerk();
+
+    useEffect(() => {
+        if (isLoaded && !isSignedIn) {
+            openSignIn();
+        }
+    }, [isLoaded, isSignedIn, openSignIn]);
 
     if (!isLoaded) {
         return (
@@ -14,7 +22,12 @@ export function RequireAuth() {
     }
 
     if (!isSignedIn) {
-        return <RedirectToSignIn />;
+        // KEEP FOR FUTURE PRODUCTION USE:
+        // return <RedirectToSignIn />;
+
+        // WORKAROUND: Bounce the user back to the public home page.
+        // This prevents them from staring at a blank black screen while the modal floats above it.
+        return <Navigate to="/" replace />;
     }
 
     return (
