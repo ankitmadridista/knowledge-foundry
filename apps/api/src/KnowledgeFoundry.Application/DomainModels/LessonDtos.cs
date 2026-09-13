@@ -32,5 +32,15 @@ public sealed record LessonDto(
     AiProvider? Provider,
     string? Model,
     int? TokensUsed,
-    long? ExecutionTimeMs
+    long? ExecutionTimeMs,
+    IReadOnlyCollection<LessonEvaluationDto> Evaluations
+);
+
+public sealed record LessonEvaluationDto(
+    Guid Id,
+    Guid EvaluatorPromptTemplateId,
+    string ScorecardJson,
+    AiProvider Provider,
+    string Model,
+    DateTime EvaluatedAt
 );
