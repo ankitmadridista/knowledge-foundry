@@ -28,7 +28,7 @@ public sealed class KnowledgeFoundryDbContextFactory
         var optionsBuilder =
             new DbContextOptionsBuilder<KnowledgeFoundryDbContext>();
 
-        optionsBuilder.UseNpgsql(connectionString);
+        optionsBuilder.UseNpgsql(connectionString, o => o.UseVector());
 
         return new KnowledgeFoundryDbContext(optionsBuilder.Options);
     }

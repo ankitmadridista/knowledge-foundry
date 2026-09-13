@@ -2,6 +2,7 @@ using KnowledgeFoundry.Domain.Common.ValueObjects;
 using KnowledgeFoundry.Domain.ContextPacks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Pgvector;
 
 namespace KnowledgeFoundry.Infrastructure.Persistence.Configurations;
 
@@ -100,6 +101,42 @@ internal sealed class ContextPackConfiguration
 
                 section.Property(x => x.Order)
                     .IsRequired();
+            });
+
+            // Nested Entities: Chunks (Vector Data)
+            version.OwnsMany(x => x.Chunks, chunk =>
+            {
+                chunk.ToTable("ContextChunks");
+
+                chunk.WithOwner()
+                    .HasForeignKey("ContextPackVersionId");
+
+                chunk.HasKey(x => x.Id);
+                chunk.Property(x => x.Id).ValueGeneratedNever();
+
+                chunk.Property(x => x.SectionTitle)
+                    .HasMaxLength(200)
+                    .IsRequired();
+
+                chunk.Property(x => x.Content)
+                    .IsRequired();
+
+                chunk.Property(x => x.Embedding)
+                    .HasConversion(
+                        v => new Vector(v),       // Domain float[] -> DB Vector
+                        v => v.ToArray())         // DB Vector -> Domain float[]
+                    .HasColumnType("vector(768)")
+                    .IsRequired();
+
+                chunk.Property(x => x.TokenCount)
+                    .IsRequired();
+
+                chunk.Property(x => x.OrderIndex)
+                    .IsRequired();
+
+                chunk.HasIndex(x => x.Embedding)
+                    .HasMethod("hnsw")
+                    .HasOperators("vector_cosine_ops");
             });
         });
 

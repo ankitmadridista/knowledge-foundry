@@ -111,4 +111,14 @@ public sealed class ContextPack : Entity
 
         version.Activate();
     }
+
+    public void AttachChunksToVersion(ContextVersionNumber versionNumber, IEnumerable<ContextChunk> chunks)
+    {
+        var version = GetVersion(versionNumber);
+
+        if (version.Status == ContextPackStatus.Archived)
+            throw new InvalidOperationException("Cannot attach chunks to an archived version.");
+
+        version.AddChunks(chunks);
+    }
 }

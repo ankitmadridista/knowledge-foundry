@@ -17,6 +17,7 @@
         </PackageReference>
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
         <PackageReference Include="Microsoft.OpenApi" />
+        <PackageReference Include="Pgvector.EntityFrameworkCore" />
         <PackageReference Include="Swashbuckle.AspNetCore" />
     </ItemGroup>
 

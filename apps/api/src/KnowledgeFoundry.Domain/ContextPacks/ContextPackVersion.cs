@@ -7,10 +7,11 @@ namespace KnowledgeFoundry.Domain.ContextPacks;
 public sealed class ContextPackVersion : Entity
 {
     private readonly List<ContextSection> _sections = new();
-
+    private readonly List<ContextChunk> _chunks = new();
     public ContextVersionNumber VersionNumber { get; private set; } = null!;
 
     public IReadOnlyCollection<ContextSection> Sections => _sections.AsReadOnly();
+    public IReadOnlyCollection<ContextChunk> Chunks => _chunks.AsReadOnly();
 
     public ContextPackStatus Status { get; private set; }
 
@@ -40,6 +41,12 @@ public sealed class ContextPackVersion : Entity
     internal static ContextPackVersion Create(ContextVersionNumber versionNumber, IEnumerable<ContextSection> sections)
     {
         return new ContextPackVersion(versionNumber, sections);
+    }
+
+    internal void AddChunks(IEnumerable<ContextChunk> chunks)
+    {
+        ArgumentNullException.ThrowIfNull(chunks);
+        _chunks.AddRange(chunks);
     }
 
     internal void Publish()
