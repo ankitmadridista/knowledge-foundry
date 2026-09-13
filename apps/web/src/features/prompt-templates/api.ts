@@ -16,7 +16,8 @@ export const getPromptTemplates = async (
     pageNumber: number = 1,
     pageSize: number = 12,
     search?: string,
-    provider?: number
+    provider?: number,
+    purpose?: number,
 ): Promise<PagedResponse<PromptTemplateSummaryDto>> => {
     
     const params = new URLSearchParams();
@@ -25,6 +26,7 @@ export const getPromptTemplates = async (
     
     if (search) params.append("search", search);
     if (provider !== undefined && provider !== null) params.append("provider", provider.toString());
+    if (purpose !== undefined && purpose !== null) params.append("purpose", purpose.toString());
 
     const response = await httpClient.get(`/prompt-templates?${params.toString()}`);
     return response.data;

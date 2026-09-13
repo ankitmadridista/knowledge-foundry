@@ -4,6 +4,8 @@ export interface PromptTemplateSummaryDto {
     name: string;
     description: string;
     purpose: number;
+    provider: number;
+    model: string;
     tags: string[];
 }
 
