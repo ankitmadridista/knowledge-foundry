@@ -100,6 +100,7 @@ export interface CreatePromptTemplateFormData {
     identifier: string;
     description: string;
     tags: string;
+    purpose: number;
     provider: number;
     model: string;
     systemContext: string;

@@ -99,6 +99,7 @@ export function LessonEvaluationModal({
             }
             onPrimaryAction={handleEvaluate}
             isPrimaryActionLoading={isEvaluating}
+            isPrimaryActionDisabled={!selectedTemplateId || isLoadingTemplates}
         >
             <div className="flex flex-col gap-4 py-4">
                 {isLoadingTemplates ? (
