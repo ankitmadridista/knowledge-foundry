@@ -12,7 +12,8 @@ internal sealed class AiExecutionLogConfiguration : IEntityTypeConfiguration<AiE
 
         builder.HasKey(x => x.Id);
 
-        // Convert the Provider Enum to integer
+        builder.Property(x => x.Id).ValueGeneratedNever();
+
         builder.Property(x => x.Provider)
             .HasConversion<int>()
             .IsRequired();

@@ -96,6 +96,8 @@ internal sealed class LessonConfiguration : IEntityTypeConfiguration<Lesson>
 
             evaluation.HasKey(x => x.Id);
 
+            evaluation.Property(x => x.Id).ValueGeneratedNever();
+
             evaluation.Property(x => x.EvaluatorPromptTemplateId)
                 .IsRequired();
 

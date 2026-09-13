@@ -27,6 +27,7 @@ internal sealed class LessonRepository : ILessonRepository
         CancellationToken cancellationToken)
     {
         return await _dbContext.Lessons
+            .Include(x => x.Evaluations)
             .FirstOrDefaultAsync(
                 x => x.Id == id,
                 cancellationToken);
