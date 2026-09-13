@@ -62,7 +62,7 @@ public class DatabaseSeeder : IDatabaseSeeder
             name: "Cellular Biology Fundamentals",
             identifier: "BIO-CELLS-101",
             description: "Core biological concepts covering cell structure, types, and organelles.",
-            tags: [ "biology", "science", "cells" ]
+            tags: ["biology", "science", "cells"]
         );
 
         var bioVersion = bioPack.CreateVersion(
@@ -116,6 +116,42 @@ public class DatabaseSeeder : IDatabaseSeeder
         bioTemplate.PublishVersion(bioVersion.VersionNumber);
 
         bioTemplate.ActivateVersion(bioVersion.VersionNumber);
+
+        var evalTemplate = PromptTemplate.Create(
+             name: "Standard JSON Evaluator",
+             identifier: "EVAL-JSON-STD",
+             description: "A strict LLM judge that evaluates lessons for accuracy and readability, returning ONLY raw JSON.",
+             purpose: PromptPurpose.Evaluation,
+             provider: AiProvider.Groq,
+             model: "llama-3.3-70b-versatile",
+             tags: ["evaluation", "system", "json"]
+         );
+
+        var evalVersion = evalTemplate.CreateVersion(
+            [
+                new PromptMessage(
+                        role: PromptMessageRole.System,
+                        content: "You are an expert educational evaluator. Your job is to grade the provided lesson draft. " +
+                                 "You MUST respond with ONLY valid JSON matching this exact schema, with no additional markdown, text, or explanations:\n" +
+                                 "{\n" +
+                                 "  \"FactualAccuracyScore\": <integer 1-10>,\n" +
+                                 "  \"ReadabilityScore\": <integer 1-10>,\n" +
+                                 "  \"Feedback\": \"<string explaining the scores>\"\n" +
+                                 "}",
+                        order: 0),
+
+                new PromptMessage(
+                    role: PromptMessageRole.User,
+                    content: "Please evaluate the following lesson content:\n\n{LessonContent}",
+                    order: 1
+                )
+            ],
+            PromptCapability.GeneralChat
+        );
+
+        evalTemplate.PublishVersion(evalVersion.VersionNumber);
+
+        evalTemplate.ActivateVersion(evalVersion.VersionNumber);
 
         await _context.PromptTemplates.AddAsync(bioTemplate);
     }

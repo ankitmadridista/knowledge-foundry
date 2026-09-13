@@ -86,5 +86,43 @@ internal sealed class LessonConfiguration : IEntityTypeConfiguration<Lesson>
                 .HasColumnType("text")
                 .IsRequired(false);
         });
+
+        builder.OwnsMany(x => x.Evaluations, evaluation =>
+        {
+            evaluation.ToTable("LessonEvaluations");
+
+            evaluation.WithOwner()
+                .HasForeignKey("LessonId");
+
+            evaluation.HasKey(x => x.Id);
+
+            evaluation.Property(x => x.EvaluatorPromptTemplateId)
+                .IsRequired();
+
+            evaluation.Property(x => x.ScorecardJson)
+                .HasColumnType("jsonb")
+                .IsRequired();
+
+            evaluation.Property(x => x.Provider)
+                .HasConversion<int>()
+                .IsRequired();
+
+            evaluation.OwnsOne(x => x.Model, model =>
+            {
+                model.Property(x => x.Value)
+                    .HasColumnName("Model")
+                    .HasMaxLength(100)
+                    .IsRequired();
+            });
+
+            evaluation.Property(x => x.AiExecutionLogId)
+                .IsRequired();
+
+            evaluation.Property(x => x.EvaluatedAt)
+                .IsRequired();
+        });
+
+        builder.Metadata.FindNavigation(nameof(Lesson.Evaluations))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }
