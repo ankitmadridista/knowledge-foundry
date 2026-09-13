@@ -1,5 +1,6 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
 using KnowledgeFoundry.Domain.PromptTemplates;
+using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace KnowledgeFoundry.Infrastructure.Persistence.Repositories;
@@ -83,6 +84,7 @@ internal sealed class PromptTemplateRepository
         int pageSize,
         string? searchTerm = null,
         int? provider = null,
+        PromptPurpose? purpose = null,
         CancellationToken cancellationToken = default)
 
     {
@@ -103,6 +105,11 @@ internal sealed class PromptTemplateRepository
                 x.Description.Value.ToLower().Contains(search) ||
                 x.Tags.Any(t => t.Value.ToLower().Contains(search))
             );
+        }
+
+        if (purpose.HasValue)
+        {
+            query = query.Where(t => t.Purpose == purpose.Value);
         }
 
         var totalCount = await query.CountAsync(cancellationToken);

@@ -2,6 +2,7 @@ using KnowledgeFoundry.Application.Abstractions.Persistence;
 using KnowledgeFoundry.Application.Common.Models;
 using KnowledgeFoundry.Application.Common.Results;
 using KnowledgeFoundry.Application.DomainModels;
+using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using MediatR;
 
 namespace KnowledgeFoundry.Application.PromptTemplates.Queries.GetPromptTemplates;
@@ -25,6 +26,7 @@ public sealed class GetPromptTemplatesQueryHandler
             request.PageSize,
             request.SearchTerm,
             request.Provider,
+            request.Purpose.HasValue ? (PromptPurpose)request.Purpose.Value : null,
             cancellationToken);
 
         var dtos = templates.Select(t => new PromptTemplateSummaryDto(
