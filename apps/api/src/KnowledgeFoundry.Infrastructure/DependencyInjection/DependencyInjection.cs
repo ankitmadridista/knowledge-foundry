@@ -44,6 +44,7 @@ public static class DependencyInjection
         services.AddScoped<ICorrelationIdContext, CorrelationIdContext>();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+        services.AddSingleton<IContextIngestionQueue, ContextIngestionQueue>();
 
         return services;
     }

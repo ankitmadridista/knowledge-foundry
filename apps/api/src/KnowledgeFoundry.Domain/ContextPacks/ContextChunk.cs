@@ -28,7 +28,7 @@ public sealed class ContextChunk : Entity
         OrderIndex = orderIndex;
     }
 
-    internal static ContextChunk Create(
+    public static ContextChunk Create(
         string sectionTitle,
         string content,
         float[] embedding,
