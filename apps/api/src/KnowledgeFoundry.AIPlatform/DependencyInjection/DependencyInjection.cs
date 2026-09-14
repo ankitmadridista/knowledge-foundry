@@ -20,6 +20,7 @@ public static class DependencyInjection
 
         services.AddScoped<IPromptExecutionService, MultiModelExecutionService>();
         services.AddHttpClient<IAiModelDiscoveryService, AiModelDiscoveryService>();
+        services.AddScoped<IEmbeddingService, MultiModelEmbeddingService>();
         return services;
     }
 }
