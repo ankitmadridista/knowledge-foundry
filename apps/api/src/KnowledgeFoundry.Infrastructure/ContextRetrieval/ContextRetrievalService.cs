@@ -71,8 +71,8 @@ internal sealed class ContextRetrievalService : IContextRetrievalService
     {
         try
         {
-            var providerString = _configuration["Embeddings:DefaultProvider"] ?? "Gemini";
-            var model = _configuration["Embeddings:DefaultModel"] ?? "text-embedding-004";
+            var providerString = _configuration["Embeddings:DefaultProvider"];
+            var model = _configuration["Embeddings:DefaultModel"];
             var provider = Enum.TryParse<AiProvider>(providerString, true, out var p) ? p : AiProvider.Gemini;
 
             var telemetry = await _embeddingService.GenerateEmbeddingAsync(searchQuery, provider, model, cancellationToken);

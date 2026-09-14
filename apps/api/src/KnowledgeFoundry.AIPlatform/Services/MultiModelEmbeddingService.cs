@@ -58,9 +58,15 @@ internal sealed class MultiModelEmbeddingService : IEmbeddingService
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
-            // Generate the vector array
+            var embeddingOptions = new EmbeddingGenerationOptions
+            {
+                Dimensions = 768
+            };
+
+            // Generate the vector array using the options
             var response = await embeddingClient.GenerateEmbeddingsAsync(
                 new[] { text },
+                embeddingOptions,
                 cancellationToken: cancellationToken);
 
             sw.Stop();
@@ -72,7 +78,7 @@ internal sealed class MultiModelEmbeddingService : IEmbeddingService
             // pgvector strictly expects exactly 768 dimensions based on our EF Core configuration.
             if (vectorArray.Length != 768)
             {
-                throw new InvalidOperationException($"Dimension mismatch! The model '{model}' returned {vectorArray.Length} dimensions, but the database expects exactly 768. Please select a 768-dimension free model like 'text-embedding-004' (Gemini) or 'nomic-ai/nomic-embed-text' (OpenRouter).");
+                throw new InvalidOperationException($"Dimension mismatch! The model '{model}' returned {vectorArray.Length} dimensions, but the database expects exactly 768. Please ensure the provider respects the requested dimensions.");
             }
 
             return new EmbeddingTelemetry(vectorArray, tokensUsed, sw.ElapsedMilliseconds);
