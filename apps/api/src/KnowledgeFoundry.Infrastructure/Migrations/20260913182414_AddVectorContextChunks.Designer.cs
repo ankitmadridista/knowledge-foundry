@@ -3,6 +3,7 @@ using System;
 using KnowledgeFoundry.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pgvector;
@@ -12,9 +13,11 @@ using Pgvector;
 namespace KnowledgeFoundry.Infrastructure.Migrations
 {
     [DbContext(typeof(KnowledgeFoundryDbContext))]
-    partial class KnowledgeFoundryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260913182414_AddVectorContextChunks")]
+    partial class AddVectorContextChunks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -122,9 +125,6 @@ namespace KnowledgeFoundry.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<bool>("EnableDynamicModelDiscovery")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsSemanticRagEnabled")
                         .HasColumnType("boolean");
 
                     b.Property<int>("MaxContextPacks")

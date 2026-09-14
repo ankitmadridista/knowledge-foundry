@@ -24,6 +24,7 @@ builder.Services
 
 // 1. Worker registration
 builder.Services.AddHostedService<LessonGenerationWorker>();
+builder.Services.AddHostedService<ContextIngestionWorker>();
 
 // 2. JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

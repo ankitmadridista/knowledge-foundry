@@ -1,6 +1,9 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
 using KnowledgeFoundry.Domain.ContextPacks;
+using KnowledgeFoundry.Domain.ContextPacks.Enums;
 using Microsoft.EntityFrameworkCore;
+using Pgvector.EntityFrameworkCore;
+using Pgvector;
 
 namespace KnowledgeFoundry.Infrastructure.Persistence.Repositories;
 
@@ -119,4 +122,86 @@ internal sealed class ContextPackRepository : IContextPackRepository
     {
         return await _dbContext.ContextPacks.CountAsync(cancellationToken);
     }
+
+    public async Task<string> GetRelevantContextAsync(
+        Guid packId,
+        float[] queryEmbedding,
+        int maxTokens,
+        CancellationToken cancellationToken)
+    {
+        return await ExecuteVectorSearchAsync(
+            pack => pack.Id == packId,
+            queryEmbedding,
+            maxTokens,
+            cancellationToken);
+    }
+
+    public async Task<string> GetRelevantContextByIdentifierAsync(
+        string identifier,
+        float[] queryEmbedding,
+        int maxTokens,
+        CancellationToken cancellationToken)
+    {
+        var normalizedIdentifier = identifier.ToUpperInvariant();
+
+        return await ExecuteVectorSearchAsync(
+            pack => pack.Identifier.Value == normalizedIdentifier,
+            queryEmbedding,
+            maxTokens,
+            cancellationToken);
+    }
+
+    private async Task<string> ExecuteVectorSearchAsync(
+        System.Linq.Expressions.Expression<Func<ContextPack, bool>> packPredicate,
+        float[] queryEmbedding,
+        int maxTokens,
+        CancellationToken cancellationToken)
+    {
+        // 1. Convert the raw C# float array into the Pgvector type for the query
+        var queryVector = new Vector(queryEmbedding);
+
+        // 2. Ask Postgres to calculate Cosine Distance on the server
+        var relevantChunks = await _dbContext.ContextPacks
+            .Where(packPredicate)
+            .SelectMany(p => p.Versions)
+            .Where(v => v.Status == ContextPackStatus.Active)
+            .SelectMany(v => v.Chunks)
+            .OrderBy(c => EF.Property<Vector>(c, "Embedding").CosineDistance(queryVector))
+            .Take(20)
+            .ToListAsync(cancellationToken);
+
+        if (!relevantChunks.Any())
+        {
+            return string.Empty;
+        }
+
+        // 3. Reassemble the chunks into a clean markdown document up to the token limit
+        var sb = new System.Text.StringBuilder();
+        int currentTokens = 0;
+
+        var groupedChunks = relevantChunks.GroupBy(c => c.SectionTitle);
+
+        foreach (var group in groupedChunks)
+        {
+            sb.AppendLine($"## {group.Key}");
+
+            foreach (var chunk in group.OrderBy(c => c.OrderIndex))
+            {
+                if (currentTokens + chunk.TokenCount > maxTokens)
+                {
+                    break;
+                }
+
+                sb.AppendLine(chunk.Content);
+                sb.AppendLine("...");
+
+                currentTokens += chunk.TokenCount;
+            }
+
+            sb.AppendLine();
+        }
+
+        return sb.ToString().TrimEnd();
+    }
+
 }

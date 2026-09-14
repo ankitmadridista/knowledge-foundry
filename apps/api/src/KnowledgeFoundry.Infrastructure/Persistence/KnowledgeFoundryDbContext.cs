@@ -48,6 +48,8 @@ public sealed class KnowledgeFoundryDbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasPostgresExtension("vector");
+
         modelBuilder.ApplyConfigurationsFromAssembly(
             typeof(KnowledgeFoundryDbContext).Assembly);
 

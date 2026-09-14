@@ -48,6 +48,7 @@ public class LessonGenerationWorker : BackgroundService
                 var contextPackRepo = scope.ServiceProvider.GetRequiredService<IContextPackRepository>();
                 var executionLogRepo = scope.ServiceProvider.GetRequiredService<IAiExecutionLogRepository>();
                 var executionService = scope.ServiceProvider.GetRequiredService<IPromptExecutionService>();
+                var retrievalService = scope.ServiceProvider.GetRequiredService<IContextRetrievalService>();
 
                 _logger.LogInformation("Processing Lesson ID: {LessonId}", job.LessonId);
 
@@ -56,8 +57,17 @@ public class LessonGenerationWorker : BackgroundService
 
                 try
                 {
-                    // 1. Load Context Pack
-                    string contextContent = await LoadContextPackAsync(job.ContextPackId, contextPackRepo, stoppingToken);
+                    string contextContent = string.Empty;
+
+                    // 1. Load Context Pack (Now powered by Hybrid Semantic RAG!)
+                    if (job.ContextPackId.HasValue)
+                    {
+                        var searchQuery = $"{job.Topic} {job.Audience}";
+                        contextContent = await retrievalService.GetContextByIdAsync(
+                            job.ContextPackId.Value,
+                            searchQuery,
+                            stoppingToken);
+                    }
 
                     // 2. Load Actor Template
                     var actorTemplate = await templateRepo.GetByIdAsync(job.PromptTemplateId, stoppingToken);
@@ -155,24 +165,6 @@ public class LessonGenerationWorker : BackgroundService
         }
     }
 
-    private static async Task<string> LoadContextPackAsync(Guid? contextPackId, IContextPackRepository repo, CancellationToken cancellationToken)
-    {
-        if (!contextPackId.HasValue) return string.Empty;
-
-        var pack = await repo.GetByIdAsync(contextPackId.Value, cancellationToken);
-        var activePackVersion = pack?.Versions.FirstOrDefault(v => v.Status == ContextPackStatus.Active); // Also added FirstOrDefault here to be safe!
-
-        if (activePackVersion == null) return string.Empty;
-
-        var sb = new StringBuilder();
-        foreach (var section in activePackVersion.Sections.OrderBy(s => s.Order))
-        {
-            sb.AppendLine($"# {section.Title}");
-            sb.AppendLine(section.Content);
-            sb.AppendLine();
-        }
-        return sb.ToString();
-    }
 
     private static List<MessagePayloadDto> BuildMessages(
         IEnumerable<PromptMessage> templateMessages,

@@ -23,4 +23,16 @@ public interface IContextPackRepository
     Task SaveChangesAsync(CancellationToken cancellationToken);
 
     Task<int> CountAsync(CancellationToken cancellationToken = default);
+
+    Task<string> GetRelevantContextAsync(
+        Guid packId,
+        float[] queryEmbedding,
+        int maxTokens,
+        CancellationToken cancellationToken);
+
+    Task<string> GetRelevantContextByIdentifierAsync(
+        string identifier,
+        float[] queryEmbedding,
+        int maxTokens,
+        CancellationToken cancellationToken);
 }

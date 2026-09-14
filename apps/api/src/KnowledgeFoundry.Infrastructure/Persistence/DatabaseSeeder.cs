@@ -18,25 +18,23 @@ public class DatabaseSeeder : IDatabaseSeeder
 
     public async Task SeedAsync()
     {
-        // 1. Ensure the database is created and all migrations are applied.
-        // This is magic for new devs: they don't even need to run 'dotnet ef database update'!
         await _context.Database.MigrateAsync();
 
+        // 1. Seed CorpSettings with Semantic RAG Enabled!
         if (!await _context.CorpSettings.AnyAsync())
         {
             var defaultSettings = CorpSettings.Create(
                 maxPromptTemplates: 25,
                 maxContextPacks: 50,
                 maxLessons: 50,
-                enableDynamicModelDiscovery: false
+                enableDynamicModelDiscovery: false,
+                isSemanticRagEnabled: true
             );
 
-            // If you added the static Guid ID to the entity, it will use that automatically!
             await _context.CorpSettings.AddAsync(defaultSettings);
-            await _context.SaveChangesAsync(); // Save immediately so it's ready for the app
+            await _context.SaveChangesAsync();
         }
 
-        // 2. Check and seed tables independently
         if (!await _context.ContextPacks.AnyAsync())
         {
             await SeedContextPacksAsync();
@@ -47,21 +45,18 @@ public class DatabaseSeeder : IDatabaseSeeder
             await SeedPromptTemplatesAsync();
         }
 
-        // 3. Save all the new entities to the database!
-        await _context.SaveChangesAsync();
-
-        // 3. Save all the new entities to the database!
+        // Because bioPack.PublishVersion() adds a Domain Event to the aggregate, 
+        // calling SaveChangesAsync here will trigger the event dispatcher, 
+        // instantly queuing this pack into the background ContextIngestionWorker!
         await _context.SaveChangesAsync();
     }
 
     private async Task SeedContextPacksAsync()
     {
-        // ... [Existing WW2 Code] ...
-
         var bioPack = ContextPack.Create(
             name: "Cellular Biology Fundamentals",
             identifier: "BIO-CELLS-101",
-            description: "Core biological concepts covering cell structure, types, and organelles.",
+            description: "Core biological concepts covering cell structure, genetics, and energy.",
             tags: ["biology", "science", "cells"]
         );
 
@@ -72,12 +67,22 @@ public class DatabaseSeeder : IDatabaseSeeder
                     title: "Cell Types and Organelles",
                     content: "# Cellular Biology Fundamentals\n\n## Types of Cells\nThere are two primary categories of cells:\n* **Prokaryotic Cells:** Simple, single-celled organisms without a nucleus (e.g., bacteria).\n* **Eukaryotic Cells:** Complex cells with a true nucleus and membrane-bound organelles (e.g., plant and animal cells).\n\n## Key Organelles in Eukaryotes\n1. **Nucleus:** The control center of the cell, containing the organism's DNA.\n2. **Mitochondria:** Often called the powerhouse of the cell, responsible for generating ATP energy through cellular respiration.\n3. **Ribosomes:** The cellular machines responsible for protein synthesis.\n\n> \"The cell is the fundamental structural and functional unit of life.\"",
                     order: 0
+                ),
+                // ADDED SECTIONS for better RAG vector isolation
+                new ContextSection(
+                    title: "Genetics and DNA",
+                    content: "## Genetics\nDeoxyribonucleic acid (DNA) is the molecule that carries genetic instructions for the development, functioning, growth and reproduction of all known organisms. DNA is shaped like a double helix and is composed of four base pairs: Adenine (A), Thymine (T), Guanine (G), and Cytosine (C). A always pairs with T, and G always pairs with C.",
+                    order: 1
+                ),
+                new ContextSection(
+                    title: "Cellular Energy",
+                    content: "## Cellular Energy\nPlants generate energy through Photosynthesis, converting sunlight, water, and carbon dioxide into glucose and oxygen. Animals generate energy through Cellular Respiration, which breaks down glucose using oxygen to create ATP (Adenosine Triphosphate), releasing carbon dioxide and water as byproducts.",
+                    order: 2
                 )
             ]
         );
 
         bioPack.PublishVersion(bioVersion.VersionNumber);
-
         bioPack.ActivateVersion(bioVersion.VersionNumber);
 
         await _context.ContextPacks.AddAsync(bioPack);
@@ -85,7 +90,6 @@ public class DatabaseSeeder : IDatabaseSeeder
 
     private async Task SeedPromptTemplatesAsync()
     {
-
         var bioTemplate = PromptTemplate.Create(
              name: "Biology Lab Assistant",
              identifier: "BIO-ASSISTANT",
@@ -114,7 +118,6 @@ public class DatabaseSeeder : IDatabaseSeeder
         );
 
         bioTemplate.PublishVersion(bioVersion.VersionNumber);
-
         bioTemplate.ActivateVersion(bioVersion.VersionNumber);
 
         var evalTemplate = PromptTemplate.Create(
@@ -150,9 +153,9 @@ public class DatabaseSeeder : IDatabaseSeeder
         );
 
         evalTemplate.PublishVersion(evalVersion.VersionNumber);
-
         evalTemplate.ActivateVersion(evalVersion.VersionNumber);
 
         await _context.PromptTemplates.AddAsync(bioTemplate);
+        await _context.PromptTemplates.AddAsync(evalTemplate);
     }
 }

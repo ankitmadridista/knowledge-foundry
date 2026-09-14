@@ -16,11 +16,14 @@ public sealed class CorpSettings : Entity
 
     public static readonly Guid GlobalSettingsId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
+    public bool IsSemanticRagEnabled { get; private set; }
+
     private CorpSettings(
         int maxPromptTemplates,
         int maxContextPacks,
         int maxLessons,
-        bool enableDynamicModelDiscovery)
+        bool enableDynamicModelDiscovery,
+        bool isSemanticRagEnabled)
     {
         // Guard clauses to protect domain invariants
         if (maxPromptTemplates < 0)
@@ -38,15 +41,17 @@ public sealed class CorpSettings : Entity
         MaxContextPacks = maxContextPacks;
         MaxLessons = maxLessons;
         EnableDynamicModelDiscovery = enableDynamicModelDiscovery;
+        IsSemanticRagEnabled = isSemanticRagEnabled;
     }
 
     public static CorpSettings Create(
         int maxPromptTemplates = 25,
         int maxContextPacks = 50,
         int maxLessons = 50,
-        bool enableDynamicModelDiscovery = false)
+        bool enableDynamicModelDiscovery = false,
+        bool isSemanticRagEnabled = false)
     {
-        return new CorpSettings(maxPromptTemplates, maxContextPacks, maxLessons, enableDynamicModelDiscovery);
+        return new CorpSettings(maxPromptTemplates, maxContextPacks, maxLessons, enableDynamicModelDiscovery, isSemanticRagEnabled);
     }
 
     public void UpdateLimits(int newPromptLimit, int newContextLimit, int newLessonLimit)
@@ -62,5 +67,9 @@ public sealed class CorpSettings : Entity
     public void SetDynamicModelDiscovery(bool enable)
     {
         EnableDynamicModelDiscovery = enable;
+    }
+    public void SetSemanticRagStatus(bool isEnabled)
+    {
+        IsSemanticRagEnabled = isEnabled;
     }
 }
