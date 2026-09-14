@@ -48,9 +48,7 @@ public class LessonGenerationWorker : BackgroundService
                 var contextPackRepo = scope.ServiceProvider.GetRequiredService<IContextPackRepository>();
                 var executionLogRepo = scope.ServiceProvider.GetRequiredService<IAiExecutionLogRepository>();
                 var executionService = scope.ServiceProvider.GetRequiredService<IPromptExecutionService>();
-                var settingsRepo = scope.ServiceProvider.GetRequiredService<ICorpSettingsRepository>();
-                var embeddingService = scope.ServiceProvider.GetRequiredService<IEmbeddingService>();
-                var configuration = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
+                var retrievalService = scope.ServiceProvider.GetRequiredService<IContextRetrievalService>();
 
                 _logger.LogInformation("Processing Lesson ID: {LessonId}", job.LessonId);
 
@@ -59,17 +57,17 @@ public class LessonGenerationWorker : BackgroundService
 
                 try
                 {
+                    string contextContent = string.Empty;
 
-                    var searchQuery = $"{job.Topic} {job.Audience}";
-
-                    string contextContent = await LoadContextPackAsync(
-                        job.ContextPackId,
-                        searchQuery,
-                        contextPackRepo,
-                        settingsRepo,
-                        embeddingService,
-                        configuration,
-                        stoppingToken);
+                    // 1. Load Context Pack (Now powered by Hybrid Semantic RAG!)
+                    if (job.ContextPackId.HasValue)
+                    {
+                        var searchQuery = $"{job.Topic} {job.Audience}";
+                        contextContent = await retrievalService.GetContextByIdAsync(
+                            job.ContextPackId.Value,
+                            searchQuery,
+                            stoppingToken);
+                    }
 
                     // 2. Load Actor Template
                     var actorTemplate = await templateRepo.GetByIdAsync(job.PromptTemplateId, stoppingToken);
@@ -167,70 +165,6 @@ public class LessonGenerationWorker : BackgroundService
         }
     }
 
-    private static async Task<string> LoadContextPackAsync(
-        Guid? contextPackId,
-        string searchQuery,
-        IContextPackRepository repo,
-        ICorpSettingsRepository settingsRepo,
-        IEmbeddingService embeddingService,
-        Microsoft.Extensions.Configuration.IConfiguration configuration,
-        CancellationToken cancellationToken)
-    {
-        if (!contextPackId.HasValue) return string.Empty;
-
-        // 1. Fetch Corp Settings to check the feature toggle
-        var settings = await settingsRepo.GetSettingsAsync(cancellationToken);
-
-        // 2. VECTOR RAG PATH
-        if (settings.IsSemanticRagEnabled && !string.IsNullOrWhiteSpace(searchQuery))
-        {
-            try
-            {
-                var providerString = configuration["Embeddings:DefaultProvider"] ?? "Gemini";
-                var model = configuration["Embeddings:DefaultModel"] ?? "text-embedding-004";
-                var provider = Enum.TryParse<AiProvider>(providerString, true, out var p) ? p : AiProvider.Gemini;
-
-                var telemetry = await embeddingService.GenerateEmbeddingAsync(
-                    searchQuery,
-                    provider,
-                    model,
-                    cancellationToken);
-
-                var ragContext = await repo.GetRelevantContextAsync(
-                    contextPackId.Value,
-                    telemetry.Vector,
-                    maxTokens: 3000,
-                    cancellationToken);
-
-                if (!string.IsNullOrWhiteSpace(ragContext))
-                {
-                    return ragContext;
-                }
-            }
-            catch
-            {
-                // If embedding fails (e.g. rate limits), swallow the exception and fall through to full-text
-            }
-        }
-
-        // ==========================================
-        // 3. FULL-TEXT FALLBACK PATH
-        // ==========================================
-        var pack = await repo.GetByIdAsync(contextPackId.Value, cancellationToken);
-        var activePackVersion = pack?.Versions.FirstOrDefault(v => v.Status == ContextPackStatus.Active);
-
-        if (activePackVersion == null) return string.Empty;
-
-        var sb = new StringBuilder();
-        foreach (var section in activePackVersion.Sections.OrderBy(s => s.Order))
-        {
-            sb.AppendLine($"# {section.Title}");
-            sb.AppendLine(section.Content);
-            sb.AppendLine();
-        }
-
-        return sb.ToString().TrimEnd();
-    }
 
     private static List<MessagePayloadDto> BuildMessages(
         IEnumerable<PromptMessage> templateMessages,

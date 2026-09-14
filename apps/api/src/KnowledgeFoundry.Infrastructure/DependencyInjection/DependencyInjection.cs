@@ -1,6 +1,7 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
 using KnowledgeFoundry.Application.Abstractions.Services;
 using KnowledgeFoundry.Application.BackgroundProcessing;
+using KnowledgeFoundry.Application.Services;
 using KnowledgeFoundry.Infrastructure.BackgroundProcessing;
 using KnowledgeFoundry.Infrastructure.CorrelationContext;
 using KnowledgeFoundry.Infrastructure.DomainEvents;
@@ -45,6 +46,7 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
         services.AddSingleton<IContextIngestionQueue, ContextIngestionQueue>();
+        services.AddScoped<IContextRetrievalService, ContextRetrievalService>();
 
         return services;
     }
