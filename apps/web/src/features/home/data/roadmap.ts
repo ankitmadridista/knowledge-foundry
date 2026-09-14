@@ -51,6 +51,24 @@ export const roadmap: RoadmapItem[] = [
         title: "Semantic RAG Upgrade",
         description:
             "Vector embedding search using pgvector for dynamic context injection.",
-        status: "in-progress",
+        status: "completed",
+    },
+    {
+        title: "Telemetry & Cost Analytics",
+        description:
+            "Interactive dashboards visualizing token usage, latency, and AI execution logs.",
+        status: "planned",
+    },
+    {
+        title: "Automated Document Ingestion",
+        description:
+            "OCR and parsing pipeline to automatically convert PDFs and Word documents into semantic Context Packs.",
+        status: "planned",
+    },
+    {
+        title: "Real-Time Streaming",
+        description:
+            "SignalR integration for live WebSocket updates of background jobs and streaming LLM tokens.",
+        status: "planned",
     }
 ];
