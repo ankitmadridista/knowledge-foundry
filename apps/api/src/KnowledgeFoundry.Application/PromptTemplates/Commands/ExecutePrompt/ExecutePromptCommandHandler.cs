@@ -45,10 +45,12 @@ public sealed class ExecutePromptCommandHandler
 
         var contextDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
+        var searchQuery = string.Join(" ", request.Variables.Values);
+
         foreach (var identifier in uniqueContextIdentifiers)
         {
             var contextResult = await _mediator.Send(
-                new GetActiveContextPackPayloadQuery(identifier),
+                new GetActiveContextPackPayloadQuery(identifier, searchQuery), // Pass the search string!
                 cancellationToken);
 
             if (contextResult.IsFailure)
