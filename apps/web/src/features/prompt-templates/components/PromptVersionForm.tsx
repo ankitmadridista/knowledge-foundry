@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Button, Card, Label, Textarea, Text } from "@/shared/components/ui";
 import type { PromptVersionFormData } from "../type";
+import { CAPABILITY_CONFIG } from "@/features/prompt-templates/utils/capability";
 
 interface PromptVersionFormProps {
     initialSystemContext?: string;
     initialUserMessage?: string;
+    initialCapability?: number;
     onSubmit: (data: PromptVersionFormData) => void;
     onCancel: () => void;
     isSubmitting: boolean;
@@ -13,21 +15,46 @@ interface PromptVersionFormProps {
 export function PromptVersionForm({
     initialSystemContext = "",
     initialUserMessage = "",
+    initialCapability = 0, // <--- DEFAULT TO 0
     onSubmit,
     onCancel,
     isSubmitting,
 }: PromptVersionFormProps) {
     const [systemContext, setSystemContext] = useState(initialSystemContext);
     const [userMessage, setUserMessage] = useState(initialUserMessage);
+    const [capability, setCapability] = useState(initialCapability);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSubmit({ systemContext, userMessage });
+        onSubmit({ systemContext, userMessage, capability });
     };
 
     return (
         <Card className="p-6 md:p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
+                {/* NEW DROPDOWN */}
+                <div>
+                    <Label>Execution Capability *</Label>
+                    <select
+                        value={capability}
+                        onChange={(e) =>
+                            setCapability(parseInt(e.target.value, 10))
+                        }
+                        className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    >
+                        {Object.entries(CAPABILITY_CONFIG).map(
+                            ([value, config]) => (
+                                <option key={value} value={Number(value)}>
+                                    {config.label}
+                                </option>
+                            ),
+                        )}
+                    </select>
+                    <Text className="text-xs text-zinc-500 mt-1">
+                        {CAPABILITY_CONFIG[capability]?.description}
+                    </Text>
+                </div>
+
                 <div>
                     <Label>System Context *</Label>
                     <Text className="text-xs text-zinc-500 mb-3">

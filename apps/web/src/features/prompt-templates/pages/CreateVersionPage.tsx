@@ -22,6 +22,7 @@ export function CreateVersionPage() {
     );
     const [initialSystemContext, setInitialSystemContext] = useState("");
     const [initialUserMessage, setInitialUserMessage] = useState("");
+    const [initialCapability, setInitialCapability] = useState(0);
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,6 +59,7 @@ export function CreateVersionPage() {
 
                     if (sysMsg) setInitialSystemContext(sysMsg.content);
                     if (usrMsg) setInitialUserMessage(usrMsg.content);
+                    setInitialCapability(versionData.capability ?? 0);
                 }
             } catch (err) {
                 if (isMounted)
@@ -86,7 +88,7 @@ export function CreateVersionPage() {
                     { role: 0, content: formData.systemContext, order: 0 },
                     { role: 1, content: formData.userMessage, order: 1 },
                 ],
-                capability: 0,
+                capability: formData.capability,
             });
 
             navigate(`/templates/${identifier}`);
@@ -117,7 +119,6 @@ export function CreateVersionPage() {
         <Section>
             <Container>
                 <div className="mx-auto max-w-4xl">
-                    {/* Back Button */}
                     <button
                         onClick={() => navigate(`/templates/${identifier}`)}
                         className="text-indigo-400 hover:text-indigo-300 transition-colors mb-6 flex items-center gap-2 text-sm font-medium"
@@ -136,10 +137,10 @@ export function CreateVersionPage() {
                         </div>
                     )}
 
-                    {/* Form Component (Only rendered after loading is complete so initial props are populated) */}
                     <PromptVersionForm
                         initialSystemContext={initialSystemContext}
                         initialUserMessage={initialUserMessage}
+                        initialCapability={initialCapability}
                         onSubmit={handleSubmit}
                         onCancel={() => navigate(`/templates/${identifier}`)}
                         isSubmitting={isSubmitting}

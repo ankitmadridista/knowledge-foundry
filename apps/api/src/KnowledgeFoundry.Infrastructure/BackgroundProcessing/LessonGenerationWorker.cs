@@ -83,7 +83,7 @@ public class LessonGenerationWorker : BackgroundService
                     // ==========================================
                     // PHASE 1: DRAFTING
                     // ==========================================
-                    var draftResult = await executionService.ExecuteAsync(actorMessages, actorProvider, actorModel, stoppingToken);
+                    var draftResult = await executionService.ExecuteAsync(actorMessages, actorProvider, actorModel, actorVersion.Capability ,stoppingToken);
                     var draftLogId = await LogExecutionAsync(actorProvider, actorModel, draftResult, job.PromptTemplateId, executionLogRepo, stoppingToken);
 
                     if (!job.CriticPromptTemplateId.HasValue)
@@ -109,7 +109,7 @@ public class LessonGenerationWorker : BackgroundService
 
                     var criticMessages = BuildMessages(criticVersion.Messages, job.Topic, job.Audience, contextContent, draftResult.Response);
 
-                    var critiqueResult = await executionService.ExecuteAsync(criticMessages, criticProvider, criticModel, stoppingToken);
+                    var critiqueResult = await executionService.ExecuteAsync(criticMessages, criticProvider, criticModel, criticVersion.Capability, stoppingToken);
                     await LogExecutionAsync(criticProvider, criticModel, critiqueResult, job.CriticPromptTemplateId.Value, executionLogRepo, stoppingToken);
 
                     // ==========================================
@@ -124,7 +124,7 @@ public class LessonGenerationWorker : BackgroundService
                         new MessagePayloadDto("user", $"Please refine and rewrite the lesson based exactly on this critique feedback:\n\n{critiqueResult.Response}")
                     };
 
-                    var refineResult = await executionService.ExecuteAsync(refinementMessages, actorProvider, actorModel, stoppingToken);
+                    var refineResult = await executionService.ExecuteAsync(refinementMessages, actorProvider, actorModel, actorVersion.Capability, stoppingToken);
                     var refineLogId = await LogExecutionAsync(actorProvider, actorModel, refineResult, job.PromptTemplateId, executionLogRepo, stoppingToken);
 
                     lesson.MarkAsCompleted(refineResult.Response, refineLogId);

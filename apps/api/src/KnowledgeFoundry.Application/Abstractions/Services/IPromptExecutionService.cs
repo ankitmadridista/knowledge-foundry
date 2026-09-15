@@ -11,5 +11,6 @@ public interface IPromptExecutionService
         IEnumerable<MessagePayloadDto> messages,
         AiProvider provider,
         string model,
+        PromptCapability capability = PromptCapability.GeneralChat,
         CancellationToken cancellationToken = default);
 }

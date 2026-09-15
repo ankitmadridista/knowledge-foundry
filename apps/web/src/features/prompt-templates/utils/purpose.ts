@@ -1,4 +1,4 @@
-const PURPOSE_CONFIG: Record<number, { label: string; colorClass: string }> = {
+export const PURPOSE_CONFIG: Record<number, { label: string; colorClass: string }> = {
     0: {
         label: "Generator",
         colorClass: "bg-blue-500/10 text-blue-400 border-blue-500/20",

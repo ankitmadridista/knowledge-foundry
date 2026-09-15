@@ -105,9 +105,11 @@ export interface CreatePromptTemplateFormData {
     model: string;
     systemContext: string;
     userMessage: string;
+    capability: number;
 }
 
 export interface PromptVersionFormData {
     systemContext: string;
     userMessage: string;
+    capability: number;
 }

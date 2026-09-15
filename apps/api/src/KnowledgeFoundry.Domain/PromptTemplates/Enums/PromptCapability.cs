@@ -2,9 +2,8 @@ namespace KnowledgeFoundry.Domain.PromptTemplates.Enums
 {
     public enum PromptCapability
     {
-        GeneralChat,
-        StructuredOutput,
-        Reasoning,
-        Embedding
+        GeneralChat = 0,
+        StructuredOutput = 1,
+        Reasoning = 2
     }
 }

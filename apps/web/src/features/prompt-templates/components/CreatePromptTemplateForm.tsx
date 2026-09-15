@@ -11,6 +11,8 @@ import type {
     AiModelDto,
     CreatePromptTemplateFormData,
 } from "@/features/prompt-templates/type";
+import { PURPOSE_CONFIG } from "@/features/prompt-templates/utils/purpose";
+import { CAPABILITY_CONFIG } from "@/features/prompt-templates/utils/capability";
 
 interface CreatePromptTemplateFormProps {
     availableModels: AiModelDto[];
@@ -48,6 +50,7 @@ export function CreatePromptTemplateForm({
         model: defaultModelId,
         systemContext: "You are a helpful AI assistant.",
         userMessage: "",
+        capability: 0,
     });
 
     const modelsForCurrentProvider = availableModels.filter(
@@ -87,10 +90,10 @@ export function CreatePromptTemplateForm({
                         ? newProviderModels[0].modelId
                         : "",
             }));
-        } else if (name === "purpose") {
+        } else if (name === "purpose" || name === "capability") {
             setFormData((prev) => ({
                 ...prev,
-                purpose: parseInt(value, 10),
+                [name]: parseInt(value, 10),
             }));
         } else {
             setFormData((prev) => ({ ...prev, [name]: value }));
@@ -139,20 +142,52 @@ export function CreatePromptTemplateForm({
                     />
                 </div>
 
-                <div>
-                    <Label>Template Purpose *</Label>
-                    <select
-                        name="purpose"
-                        value={formData.purpose}
-                        onChange={handleChange}
-                        className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                    >
-                        <option value={0}>Lesson Generation</option>
-                        <option value={1}>Question Generation</option>
-                        <option value={2}>Evaluation</option>
-                    </select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <Label>Template Purpose *</Label>
+                        <select
+                            name="purpose"
+                            value={formData.purpose}
+                            onChange={handleChange}
+                            className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                        >
+                            {Object.entries(PURPOSE_CONFIG).map(
+                                ([value, config]) => (
+                                    <option key={value} value={Number(value)}>
+                                        {config.label}
+                                    </option>
+                                ),
+                            )}
+                        </select>
+                    </div>
+
+                    <div>
+                        <Label>Execution Capability *</Label>
+                        <select
+                            name="capability"
+                            value={formData.capability}
+                            onChange={handleChange}
+                            className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                        >
+                            {/* DYNAMICALLY RENDER CAPABILITY OPTIONS */}
+                            {Object.entries(CAPABILITY_CONFIG).map(
+                                ([value, config]) => (
+                                    <option key={value} value={Number(value)}>
+                                        {config.label}
+                                    </option>
+                                ),
+                            )}
+                        </select>
+                        <Text className="text-xs text-zinc-500 mt-1">
+                            {
+                                CAPABILITY_CONFIG[formData.capability]
+                                    ?.description
+                            }
+                        </Text>
+                    </div>
                 </div>
 
+                {/* Rest of the form stays identical */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <Label>AI Provider *</Label>
@@ -199,60 +234,8 @@ export function CreatePromptTemplateForm({
 
                 <hr className="border-zinc-800 my-8" />
 
-                <div className="bg-indigo-950/20 border border-indigo-500/30 rounded-lg p-4 mb-6">
-                    <h4 className="text-sm font-semibold text-indigo-300 mb-2 flex items-center gap-2">
-                        <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                        </svg>
-                        System Variables Guide
-                    </h4>
-                    <p className="text-xs text-zinc-300 mb-3">
-                        The Generation Engine automatically injects data into
-                        these exact placeholders. Use them in your prompts below
-                        to connect this template to the rest of the application:
-                    </p>
-                    <ul className="text-xs text-zinc-400 space-y-1.5 list-disc list-inside ml-2">
-                        <li>
-                            <code className="text-indigo-200 bg-indigo-950/50 px-1.5 py-0.5 rounded font-mono">{`{Topic}`}</code>{" "}
-                            - The specific subject matter requested by the user.
-                        </li>
-                        <li>
-                            <code className="text-indigo-200 bg-indigo-950/50 px-1.5 py-0.5 rounded font-mono">{`{Audience}`}</code>{" "}
-                            - The target demographic for the output.
-                        </li>
-                        <li>
-                            <code className="text-indigo-200 bg-indigo-950/50 px-1.5 py-0.5 rounded font-mono">{`{Context}`}</code>{" "}
-                            - The text content of the selected Knowledge Base.
-                        </li>
-                        <li>
-                            <code className="text-indigo-200 bg-indigo-950/50 px-1.5 py-0.5 rounded font-mono">{`{Draft}`}</code>{" "}
-                            - <i>(Critics Only)</i> The initial draft generated
-                            by the Actor model.
-                        </li>
-                        <li>
-                            <code className="text-indigo-200 bg-indigo-950/50 px-1.5 py-0.5 rounded font-mono">{`{LessonContent}`}</code>{" "}
-                            - <i>(Evaluations Only)</i> The final completed
-                            lesson text.
-                        </li>
-                    </ul>
-                </div>
-
                 <div>
                     <Label>System Context *</Label>
-                    <Text className="text-xs text-zinc-500 mb-3">
-                        Core instructions guiding the AI's behavior and
-                        constraints.
-                    </Text>
                     <Textarea
                         required
                         name="systemContext"
@@ -265,9 +248,6 @@ export function CreatePromptTemplateForm({
 
                 <div>
                     <Label>User Message *</Label>
-                    <Text className="text-xs text-zinc-500 mb-3">
-                        The prompt template containing your System Variables.
-                    </Text>
                     <Textarea
                         required
                         name="userMessage"

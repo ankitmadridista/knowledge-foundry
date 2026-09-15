@@ -31,6 +31,7 @@ internal sealed class MultiModelExecutionService : IPromptExecutionService
         IEnumerable<MessagePayloadDto> messages,
         AiProvider provider,
         string model,
+        PromptCapability capability = PromptCapability.GeneralChat,
         CancellationToken cancellationToken = default)
     {
         // =====================================================================
@@ -71,6 +72,21 @@ internal sealed class MultiModelExecutionService : IPromptExecutionService
                 "assistant" => new AssistantChatMessage(msg.Content),
                 _ => new UserChatMessage(msg.Content)
             });
+        }
+
+        // =====================================================================
+        // CAPABILITY ROUTING: Dynamically adjust API behavior
+        // =====================================================================
+        var chatOptions = new ChatCompletionOptions();
+
+        if (capability == PromptCapability.StructuredOutput)
+        {
+            // Forces the provider to return 100% valid JSON, ignoring markdown blockticks
+            chatOptions.ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat();
+        }
+        else if (capability == PromptCapability.Reasoning)
+        {
+            // Future-proofing: If you use o1-preview, you might merge system messages here!
         }
 
         try

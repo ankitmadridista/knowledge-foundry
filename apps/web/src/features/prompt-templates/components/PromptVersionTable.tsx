@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button, Card, Badge } from "@/shared/components/ui";
 import type { PromptTemplateDetailsDto } from "@/features/prompt-templates/type";
+import { CAPABILITY_CONFIG } from "@/features/prompt-templates/utils/capability";
 
 interface PromptVersionTableProps {
     templateId: string;
@@ -32,7 +33,6 @@ export function PromptVersionTable({
 
     return (
         <Card className="overflow-hidden mt-8">
-            {/* Table Header */}
             <div className="px-6 py-5 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/50">
                 <h2 className="text-lg font-bold text-zinc-100">
                     Version History
@@ -48,7 +48,6 @@ export function PromptVersionTable({
                 </Button>
             </div>
 
-            {/* The Table */}
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-zinc-800">
                     <thead className="bg-zinc-950/50">
@@ -58,6 +57,9 @@ export function PromptVersionTable({
                             </th>
                             <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">
                                 Status
+                            </th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                                Capability
                             </th>
                             <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">
                                 Created At
@@ -80,6 +82,9 @@ export function PromptVersionTable({
                                     {renderStatusBadge(
                                         version.status as string,
                                     )}
+                                </td>
+                                <td className="px-6 py-5 whitespace-nowrap text-sm text-zinc-300">
+                                    {CAPABILITY_CONFIG[version.capability]?.label || "Unknown"}
                                 </td>
                                 <td className="px-6 py-5 whitespace-nowrap text-sm text-zinc-400">
                                     {new Date(
@@ -124,7 +129,7 @@ export function PromptVersionTable({
                         {versions.length === 0 && (
                             <tr>
                                 <td
-                                    colSpan={4}
+                                    colSpan={5}
                                     className="px-6 py-12 text-center text-zinc-500 italic"
                                 >
                                     No versions created yet.

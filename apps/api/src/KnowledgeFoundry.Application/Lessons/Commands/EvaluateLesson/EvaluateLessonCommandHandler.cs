@@ -79,7 +79,7 @@ public sealed class EvaluateLessonCommandHandler
         }
 
         // 4. Execute the AI Pipeline synchronously
-        var executionResult = await _executionService.ExecuteAsync(messages, provider, model, cancellationToken);
+        var executionResult = await _executionService.ExecuteAsync(messages, provider, model, activeVersion.Capability, cancellationToken);
 
         // 5. Sanitize the output (Strip ```json markdown blocks)
         var sanitizedJson = SanitizeJsonOutput(executionResult.Response);

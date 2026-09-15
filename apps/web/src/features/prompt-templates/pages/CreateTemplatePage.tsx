@@ -72,7 +72,7 @@ export function CreateTemplatePage() {
                     { role: 0, content: formData.systemContext, order: 0 },
                     { role: 1, content: formData.userMessage, order: 1 },
                 ],
-                capability: 0,
+                capability: formData.capability,
             });
 
             navigate("/templates");

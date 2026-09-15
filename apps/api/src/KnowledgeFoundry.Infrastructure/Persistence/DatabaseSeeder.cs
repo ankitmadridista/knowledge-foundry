@@ -149,7 +149,7 @@ public class DatabaseSeeder : IDatabaseSeeder
                     order: 1
                 )
             ],
-            PromptCapability.GeneralChat
+            PromptCapability.StructuredOutput
         );
 
         evalTemplate.PublishVersion(evalVersion.VersionNumber);

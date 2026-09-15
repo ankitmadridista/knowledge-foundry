@@ -3,6 +3,7 @@ using KnowledgeFoundry.Application.Common.Results;
 using KnowledgeFoundry.Application.ContextPacks.Queries.GetActiveContextPackPayload;
 using KnowledgeFoundry.Application.DomainModels;
 using KnowledgeFoundry.Application.PromptTemplates.Queries.GetActivePromptPayload;
+using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using MediatR;
 using System.Text.RegularExpressions;
 
@@ -96,10 +97,15 @@ public sealed class ExecutePromptCommandHandler
                 ? request.OverrideModel
                 : payloadResult.Value.Model;
 
+            var capability = Enum.TryParse<PromptCapability>(payloadResult.Value.Capability, true, out var cap)
+                ? cap
+                : PromptCapability.GeneralChat;
+
             var response = await _executionService.ExecuteAsync(
                 injectedMessages,
                 provider,
                 model,
+                capability,
                 cancellationToken);
 
             return Result<ExecutionTelemetry>.Success(response);
