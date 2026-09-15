@@ -1,11 +1,8 @@
 # ADR-003: Prompt Template Domain Model
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-07-10
 - **Authors:** Ankit Suravkar
-- **Related ADRs:**
-  - ADR-001: Project Architecture
-  - ADR-002: Architecture Enforcement
 
 ---
 
@@ -205,6 +202,9 @@ PromptTemplate
 ├── TemplateName
 ├── TemplateDescription
 ├── Purpose
+├── DefaultProvider
+├── DefaultModel
+├── UserId
 ├── Tags
 │
 └── Versions
@@ -213,7 +213,8 @@ PromptTemplate
      │      ├── VersionNumber
      │      ├── Capability
      │      ├── Status
-     │      └── PromptMessages
+     │      ├── PromptMessages
+     │      └── Variables
      │
      ├── PromptTemplateVersion
      │
@@ -325,6 +326,7 @@ The aggregate enforces the following rules.
 - Purpose is mandatory.
 - Tags belong to the Template.
 - A PromptTemplate may temporarily exist without versions during initial creation.
+- Every PromptTemplate must define a Default Provider and Default Model to ensure predictable execution routing.
 
 ---
 
@@ -339,6 +341,7 @@ The aggregate enforces the following rules.
 - PromptMessages must have valid roles.
 - PromptMessage content cannot be empty.
 - Capability belongs to the Version.
+- PromptTemplateVersions maintain a collection of Prompt Variables required by the template messages.
 
 ---
 
@@ -367,11 +370,9 @@ Changes create new versions rather than modifying existing history.
 
 ---
 
-## Provider Independence
+## Execution Independence vs. Default Routing
 
-The domain models AI intent rather than AI vendors.
-
-No domain object references provider-specific concepts.
+While the Prompt Template domain model defines a Default Provider and Model (to ensure prompts are executed against the LLMs they were tuned for), the execution infrastructure remains decoupled. The model expresses routing preferences, not hard dependencies, allowing runtime overrides when necessary.
 
 ---
 
@@ -475,7 +476,6 @@ The Prompt Template model is intentionally designed for future expansion.
 
 Potential capabilities include:
 
-- Prompt Variables
 - Prompt Composition
 - Prompt Libraries
 - Output Schemas

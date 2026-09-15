@@ -1,8 +1,9 @@
-## ADR-004: Zero-Trust Free-Tier Model Verification and Execution Gate
+# ADR-004: Zero-Trust Free-Tier Model Verification and Execution Gate
 
-* **Status:** Accepted / Signed Off
+* **Status:** Accepted
 * **Date:** 2026-08-24
-* **Context:** Multi-Model AI Orchestration Pipeline (`Groq`, `OpenRouter`, `Gemini`)
+* **Authors:** Ankit Suravkar
+* **Context:** Multi-Model AI Orchestration Pipeline (\`Groq\`, \`OpenRouter\`, \`Gemini\`)
 * **Decision Drivers:** Cost Security, Zero Financial Liability, Fail-Closed Architecture
 
 ---

@@ -1,8 +1,8 @@
 # ADR-007: Token-Bucket Rate Limiting for AI Orchestration
 
-> **Status:** ✅ Accepted  
-> **Date:** `2026-09-05`  
-> **Authors:** **Knowledge Foundry Team**
+* **Status:** ✅ Accepted  
+* **Date:** 2026-09-05
+* **Authors:** Ankit Suravkar
 
 ---
 

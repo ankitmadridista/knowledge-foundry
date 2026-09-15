@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-06-30
-- **Authors:** Knowledge Foundry Team
+- **Authors:** Ankit Suravkar
 
 ---
 

@@ -1,7 +1,10 @@
 # ADR-006: Implementation of Hosted Identity and JWT Bearer Authentication
 
-**Date:** 2026-08-28  
-**Status:** Accepted  
+* **Date:** 2026-08-28  
+* **Status:** Accepted  
+* **Authors:** Ankit Suravkar
+
+---
 
 ## Context
 Our AI platform currently operates without user authentication. This exposes upstream AI provider APIs to anonymous abuse, prevents us from implementing identity-aware Rate Limiting (ADR-005), and makes it impossible to introduce future "Premium" billing tiers or private data ownership (e.g., a user's private Context Packs or Lessons). 

@@ -1,14 +1,13 @@
-# Architecture Decision Record (ADR)
-
-## ADR-009: End-to-End Correlation ID Propagation
+# ADR-005: End-to-End Correlation ID Propagation
 
 * **Status:** Accepted
 * **Date:** 2026-08-25
+* **Authors:** Ankit Suravkar
 * **Context:** API Requests, Background Processing, and AI Orchestration Pipelines
 * **Decision Drivers:** 
   * End-to-end observability and log traceability.
   * UI/Client support capabilities (returning Trace IDs to users).
-  * Strict adherence to Clean Architecture (no `HttpContext` in Application/Domain layers).
+  * Strict adherence to Clean Architecture (no \`HttpContext\` in Application/Domain layers).
   * Support for non-HTTP workflows (Background Services).
 
 ---

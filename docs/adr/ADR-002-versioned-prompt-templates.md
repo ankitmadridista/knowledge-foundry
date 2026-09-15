@@ -1,8 +1,8 @@
 # ADR-002: Versioned Prompt Templates
 
-## Status
-
-Accepted
+- **Status:** Accepted
+- **Date:** 2026-07-10
+- **Authors:** Ankit Suravkar
 
 ## Context
 
