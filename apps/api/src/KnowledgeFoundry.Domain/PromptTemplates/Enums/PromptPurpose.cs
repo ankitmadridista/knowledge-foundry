@@ -2,12 +2,8 @@ namespace KnowledgeFoundry.Domain.PromptTemplates.Enums
 {
     public enum PromptPurpose
     {
-        LessonGeneration,
-        QuestionGeneration,
-        Evaluation,
-        Summarization,
-        Reflection,
-        Translation,
-        Critic
+        LessonGeneration = 0,
+        Evaluation = 1,
+        Critic = 2
     }
 }
