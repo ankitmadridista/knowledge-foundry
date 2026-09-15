@@ -7,6 +7,7 @@ namespace KnowledgeFoundry.Domain.PromptTemplates.Enums
         Evaluation,
         Summarization,
         Reflection,
-        Translation
+        Translation,
+        Critic
     }
 }
