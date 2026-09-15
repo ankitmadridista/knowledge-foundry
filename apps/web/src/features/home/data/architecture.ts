@@ -6,22 +6,22 @@ export interface ArchitectureNode {
 export const architectureNodes: ArchitectureNode[] = [
     {
         title: "API",
-        description: "HTTP, GraphQL, authentication and transport."
+        description: "RESTful Minimal APIs, secure authentication, and edge routing."
     },
     {
         title: "Application",
-        description: "Business use cases and workflow orchestration."
+        description: "CQRS-driven business workflows and asynchronous job orchestration."
     },
     {
         title: "Business Domain",
-        description: "Entities, value objects and business rules."
+        description: "Strict DDD aggregates, value objects, and invariant business rules."
     },
     {
         title: "AI Platform",
-        description: "Prompt orchestration, evaluation and reasoning."
+        description: "Multi-model prompt execution, Semantic RAG, and autonomous evaluation."
     },
     {
         title: "Infrastructure",
-        description: "Database, storage, providers and external systems."
+        description: "PostgreSQL, pgvector search, and robust background processing."
     }
 ];

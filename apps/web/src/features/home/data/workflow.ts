@@ -5,33 +5,33 @@ export interface WorkflowStepModel {
 
 export const workflowSteps: WorkflowStepModel[] = [
     {
-        title: "Knowledge Injection",
+        title: "Semantic Knowledge Retrieval",
         description:
-            "Domain-specific Context Packs are loaded to ground the AI and prevent hallucinations.",
+            "User prompts are vectorized to query Context Packs via pgvector, injecting only the most relevant facts to prevent hallucinations.",
     },
     {
-        title: "Prompt Orchestration",
+        title: "Dynamic Prompt Orchestration",
         description:
-            "Version-controlled templates format the request for optimal LLM comprehension.",
+            "Version-controlled templates and runtime variables are dynamically compiled into precise LLM instructions.",
     },
     {
-        title: "Model Execution",
+        title: "Asynchronous Generation",
         description:
-            "Payloads are routed to the selected AI provider (Gemini, Groq, or OpenRouter).",
+            "Payloads are queued in background channels and routed securely through a rate-limited, multi-model AI gateway.",
     },
     {
-        title: "Automated Evaluation",
+        title: "Autonomous Critique",
         description:
-            "Responses are strictly validated against predefined educational quality metrics.",
+            "A secondary Evaluator agent strictly scores the initial draft against predefined structural and educational rubrics.",
     },
     {
-        title: "Iterative Reflection",
+        title: "Iterative Refinement",
         description:
-            "Feedback loops prompt the AI to refine and improve the content autonomously.",
+            "The primary AI agent receives the critique feedback and autonomously rewrites the content to meet target thresholds.",
     },
     {
-        title: "Curated Output",
+        title: "Curated Delivery",
         description:
-            "A polished, high-fidelity educational lesson is delivered to the learner.",
+            "A highly accurate, polished educational lesson is finalized, persisted to the database, and delivered to the learner.",
     },
 ];

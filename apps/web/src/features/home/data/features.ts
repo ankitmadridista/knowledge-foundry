@@ -1,32 +1,32 @@
 export const features = [
   {
-    title: "Context Packs",
+    title: "Semantic RAG Knowledge",
     description:
-      "Inject curated educational knowledge before generation.",
+      "Dynamically inject hyper-relevant context using pgvector similarity search.",
   },
   {
-    title: "Prompt Library",
+    title: "Versioned Prompt Orchestration",
     description:
-      "Version and compare prompts for consistent AI outputs.",
+      "Govern, version, and route AI interactions securely across multiple LLM providers.",
   },
   {
-    title: "Evaluation Engine",
+    title: "Autonomous Evaluation",
     description:
-      "Score AI responses for quality, readability, and factual accuracy.",
+      "Strictly score AI responses for factual accuracy, readability, and schema compliance.",
   },
   {
-    title: "Reflection Loop",
+    title: "Self-Correcting Pipelines",
     description:
-      "Automatically improve generated lessons until quality targets are met.",
+      "Multi-agent workflows that draft, critique, and iteratively refine generated content.",
   },
   {
-    title: "Experiment Harness",
+    title: "Zero-Trust AI Gateway",
     description:
-      "Compare prompts, models, latency, and quality across AI providers.",
+      "Compare models, monitor latency, and strictly enforce free-tier API usage limits.",
   },
   {
-    title: "Analytics Dashboard",
+    title: "Execution Telemetry",
     description:
-      "Visualize generations, experiments, and performance trends.",
+      "Visualize token consumption, execution times, and multi-provider performance trends.",
   },
 ];
