@@ -70,5 +70,11 @@ export const roadmap: RoadmapItem[] = [
         description:
             "SignalR integration for live WebSocket updates of background jobs and streaming LLM tokens.",
         status: "planned",
+    },
+    {
+        title: "Public Status Page",
+        description:
+            "Real-time infrastructure monitoring and upstream AI provider uptime tracking.",
+        status: "planned",
     }
 ];
