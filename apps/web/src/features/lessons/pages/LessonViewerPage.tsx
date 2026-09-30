@@ -28,8 +28,6 @@ export function LessonViewerPage() {
     const [error, setError] = useState<string | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-
-    // NEW: Evaluation Modal State & Refresh Trigger
     const [isEvalModalOpen, setIsEvalModalOpen] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
 
@@ -137,7 +135,6 @@ export function LessonViewerPage() {
                             &larr; Back to Library
                         </button>
 
-                        {/* NEW: Run Evaluation Button */}
                         {lesson.status === "Completed" && (
                             <Button
                                 variant="secondary"
@@ -203,7 +200,7 @@ export function LessonViewerPage() {
                                         parsedScorecard = JSON.parse(
                                             evaluation.scorecardJson,
                                         ) as Record<string, string | number>;
-                                    } catch(err) {
+                                    } catch (err) {
                                         parsedScorecard = {
                                             Error: `Failed to parse JSON scorecard: ${err}`,
                                         };

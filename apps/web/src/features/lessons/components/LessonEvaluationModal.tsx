@@ -39,7 +39,7 @@ export function LessonEvaluationModal({
                         50,
                         undefined,
                         undefined,
-                        2,
+                        1,// evaluation
                     );
                     if (!isMounted) return;
 
