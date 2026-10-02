@@ -8,7 +8,8 @@ export function Card({
 }: HTMLAttributes<HTMLDivElement>) {
     return (
         <div
-            className={`rounded-2xl border border-zinc-800 bg-zinc-900 shadow-sm overflow-hidden ${className}`}
+            // FIXED: Removed "overflow-hidden" so absolutely positioned dropdowns can escape the card box
+            className={`rounded-2xl border border-zinc-800 bg-zinc-900 shadow-sm ${className}`}
             {...props}
         />
     );

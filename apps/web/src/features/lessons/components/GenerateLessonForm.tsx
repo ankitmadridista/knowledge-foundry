@@ -8,6 +8,7 @@ import {
     Text,
     type AsyncSelectItem,
     AsyncSelect,
+    Select,
 } from "@/shared/components/ui";
 import type {
     GenerateLessonFormData,
@@ -61,6 +62,57 @@ export function GenerateLessonForm({
         criticProvider: undefined,
         criticModel: undefined,
     });
+
+    const handleCustomSelectChange = useCallback(
+        (name: string, value: string) => {
+            if (name === "provider") {
+                if (value === "") {
+                    setFormData((prev) => ({
+                        ...prev,
+                        provider: undefined,
+                        model: undefined,
+                    }));
+                } else {
+                    const newProviderInt = parseInt(value, 10);
+                    const newProviderModels = availableModels.filter(
+                        (m) => m.providerId === newProviderInt,
+                    );
+                    setFormData((prev) => ({
+                        ...prev,
+                        provider: newProviderInt,
+                        model:
+                            newProviderModels.length > 0
+                                ? newProviderModels[0].modelId
+                                : "",
+                    }));
+                }
+            } else if (name === "criticProvider") {
+                if (value === "") {
+                    setFormData((prev) => ({
+                        ...prev,
+                        criticProvider: undefined,
+                        criticModel: undefined,
+                    }));
+                } else {
+                    const newProviderInt = parseInt(value, 10);
+                    const newProviderModels = availableModels.filter(
+                        (m) => m.providerId === newProviderInt,
+                    );
+                    setFormData((prev) => ({
+                        ...prev,
+                        criticProvider: newProviderInt,
+                        criticModel:
+                            newProviderModels.length > 0
+                                ? newProviderModels[0].modelId
+                                : "",
+                    }));
+                }
+            } else {
+                setFormData((prev) => ({ ...prev, [name]: value }));
+            }
+        },
+        [availableModels],
+    );
 
     const handleSelectChange = useCallback((name: string, value: string) => {
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -127,7 +179,13 @@ export function GenerateLessonForm({
 
     const fetchActorTemplates = useCallback(
         async (search: string): Promise<AsyncSelectItem[]> => {
-            const response = await getPromptTemplates(1, 10, search, undefined, 0);
+            const response = await getPromptTemplates(
+                1,
+                10,
+                search,
+                undefined,
+                0,
+            );
             return response.items.map((item) => ({
                 value: item.id,
                 label: item.name,
@@ -135,10 +193,16 @@ export function GenerateLessonForm({
         },
         [],
     );
-    
+
     const fetchCriticTemplates = useCallback(
         async (search: string): Promise<AsyncSelectItem[]> => {
-            const response = await getPromptTemplates(1, 10, search, undefined, 2);
+            const response = await getPromptTemplates(
+                1,
+                10,
+                search,
+                undefined,
+                2,
+            );
             return response.items.map((item) => ({
                 value: item.id,
                 label: item.name,
@@ -158,22 +222,32 @@ export function GenerateLessonForm({
         [],
     );
 
-    const providers = Array.from(
-        new Map(
-            (availableModels || []).map((m) => [m.providerId, m.providerName]),
-        ).entries(),
-    ).map(([id, name]) => ({ id, name }));
+    const providerOptions = [
+        { value: "", label: "(Use Template Default)" },
+        ...(availableModels || [])
+            .map((m) => m.providerId)
+            .filter((val, idx, arr) => arr.indexOf(val) === idx)
+            .map((id) => {
+                const name =
+                    availableModels.find((m) => m.providerId === id)
+                        ?.providerName || "";
+                return { value: id.toString(), label: name };
+            }),
+    ];
 
-    const modelsForCurrentProvider = (availableModels || []).filter(
-        (m) => m.providerId === formData.provider,
-    );
+    const actorModelOptions =
+        formData.provider === undefined
+            ? [{ value: "", label: "(Use Template Default)" }]
+            : (availableModels || [])
+                  .filter((m) => m.providerId === formData.provider)
+                  .map((m) => ({ value: m.modelId, label: m.modelId }));
 
-    const modelsForCriticProvider = (availableModels || []).filter(
-        (m) => m.providerId === formData.criticProvider,
-    );
-
-    const selectClasses =
-        "flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm ring-offset-zinc-950 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50";
+    const criticModelOptions =
+        formData.criticProvider === undefined
+            ? [{ value: "", label: "(Use Template Default)" }]
+            : (availableModels || [])
+                  .filter((m) => m.providerId === formData.criticProvider)
+                  .map((m) => ({ value: m.modelId, label: m.modelId }));
 
     return (
         <Card className="p-6 md:p-8 border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.05)]">
@@ -258,54 +332,30 @@ export function GenerateLessonForm({
 
                 {/* --- ACTOR MODEL OVERRIDES --- */}
                 <div className="mt-4 p-4 rounded-lg border border-zinc-800 bg-zinc-950/40 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-xs font-medium text-zinc-400 mb-1">
-                            AI Provider Override (Optional)
-                        </label>
-                        <select
-                            name="provider"
-                            value={
-                                formData.provider !== undefined
-                                    ? formData.provider
-                                    : ""
-                            }
-                            onChange={handleChange}
-                            className={selectClasses}
-                        >
-                            <option value="">(Use Template Default)</option>
-                            {providers.map((p) => (
-                                <option key={p.id} value={p.id}>
-                                    {p.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-xs font-medium text-zinc-400 mb-1">
-                            Model Override
-                        </label>
-                        <select
-                            name="model"
-                            value={formData.model || ""}
-                            onChange={handleChange}
-                            disabled={formData.provider === undefined}
-                            className={selectClasses}
-                        >
-                            {formData.provider === undefined ? (
-                                <option value="">(Use Template Default)</option>
-                            ) : (
-                                modelsForCurrentProvider.map((m) => (
-                                    <option key={m.modelId} value={m.modelId}>
-                                        {m.modelId}
-                                    </option>
-                                ))
-                            )}
-                        </select>
-                    </div>
+                    <Select
+                        name="provider"
+                        label="AI Provider Override (Optional)"
+                        value={
+                            formData.provider !== undefined
+                                ? formData.provider.toString()
+                                : ""
+                        }
+                        onChange={handleCustomSelectChange}
+                        options={providerOptions}
+                    />
+                    <Select
+                        name="model"
+                        label="Model Override"
+                        value={formData.model || ""}
+                        onChange={handleCustomSelectChange}
+                        options={actorModelOptions}
+                        disabled={formData.provider === undefined}
+                    />
                 </div>
 
                 <hr className="border-zinc-800 my-8" />
 
+                {/* --- CRITIC SELECTION --- */}
                 <div>
                     <AsyncSelect
                         name="criticPromptTemplateId"
@@ -323,64 +373,47 @@ export function GenerateLessonForm({
                         }
                     />
 
-                    {formData.criticPromptTemplateId && (
-                        <div className="mt-4 p-4 rounded-lg border border-zinc-800/80 bg-indigo-950/10 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {/* ... (Keep the critic provider/model <select> blocks exactly as they were) ... */}
-                            <div>
-                                <label className="block text-xs font-medium text-zinc-400 mb-1">
-                                    Critic AI Provider
-                                </label>
-                                <select
+                    {/* FIXED: Single Wrapper with Dynamic Overflow */}
+                    <div
+                        className={`grid transition-all duration-300 ease-in-out ${
+                            formData.criticPromptTemplateId
+                                ? "grid-rows-[1fr] opacity-100 mt-4"
+                                : "grid-rows-[0fr] opacity-0"
+                        }`}
+                    >
+                        {/* THE MAGIC FIX: Switch to visible when active! */}
+                        <div
+                            className={
+                                formData.criticPromptTemplateId
+                                    ? "overflow-visible"
+                                    : "overflow-hidden"
+                            }
+                        >
+                            <div className="p-4 rounded-lg border border-zinc-800/80 bg-indigo-950/10 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <Select
                                     name="criticProvider"
+                                    label="Critic AI Provider"
                                     value={
                                         formData.criticProvider !== undefined
-                                            ? formData.criticProvider
+                                            ? formData.criticProvider.toString()
                                             : ""
                                     }
-                                    onChange={handleChange}
-                                    className={selectClasses}
-                                >
-                                    <option value="">
-                                        (Use Template Default)
-                                    </option>
-                                    {providers.map((p) => (
-                                        <option key={p.id} value={p.id}>
-                                            {p.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-zinc-400 mb-1">
-                                    Critic Model
-                                </label>
-                                <select
+                                    onChange={handleCustomSelectChange}
+                                    options={providerOptions}
+                                />
+                                <Select
                                     name="criticModel"
+                                    label="Critic Model"
                                     value={formData.criticModel || ""}
-                                    onChange={handleChange}
+                                    onChange={handleCustomSelectChange}
+                                    options={criticModelOptions}
                                     disabled={
                                         formData.criticProvider === undefined
                                     }
-                                    className={selectClasses}
-                                >
-                                    {formData.criticProvider === undefined ? (
-                                        <option value="">
-                                            (Use Template Default)
-                                        </option>
-                                    ) : (
-                                        modelsForCriticProvider.map((m) => (
-                                            <option
-                                                key={m.modelId}
-                                                value={m.modelId}
-                                            >
-                                                {m.modelId}
-                                            </option>
-                                        ))
-                                    )}
-                                </select>
+                                />
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
 
                 <div className="flex justify-end gap-4 pt-6 mt-6 border-t border-zinc-800">
