@@ -141,6 +141,7 @@ export function CreateVersionPage() {
                         initialSystemContext={initialSystemContext}
                         initialUserMessage={initialUserMessage}
                         initialCapability={initialCapability}
+                        templatePurpose={template.purpose}
                         onSubmit={handleSubmit}
                         onCancel={() => navigate(`/templates/${identifier}`)}
                         isSubmitting={isSubmitting}

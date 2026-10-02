@@ -125,9 +125,20 @@ export function GenerateLessonForm({
         onSubmit(formData);
     };
 
-    const fetchTemplates = useCallback(
+    const fetchActorTemplates = useCallback(
         async (search: string): Promise<AsyncSelectItem[]> => {
-            const response = await getPromptTemplates(1, 10, search);
+            const response = await getPromptTemplates(1, 10, search, undefined, 0);
+            return response.items.map((item) => ({
+                value: item.id,
+                label: item.name,
+            }));
+        },
+        [],
+    );
+    
+    const fetchCriticTemplates = useCallback(
+        async (search: string): Promise<AsyncSelectItem[]> => {
+            const response = await getPromptTemplates(1, 10, search, undefined, 2);
             return response.items.map((item) => ({
                 value: item.id,
                 label: item.name,
@@ -220,7 +231,7 @@ export function GenerateLessonForm({
                         label="AI Persona (Prompt Template)"
                         value={formData.promptTemplateId}
                         onChange={handleSelectChange}
-                        fetchData={fetchTemplates}
+                        fetchData={fetchActorTemplates}
                         placeholder="Search templates..."
                         required
                         disabled={isSubmitting}
@@ -295,7 +306,6 @@ export function GenerateLessonForm({
 
                 <hr className="border-zinc-800 my-8" />
 
-                {/* --- NEW: CRITIC SELECTION --- */}
                 <div>
                     <AsyncSelect
                         name="criticPromptTemplateId"
@@ -303,7 +313,7 @@ export function GenerateLessonForm({
                         description="Select a Critic Persona to review the initial draft and enforce rules. The Actor will rewrite the lesson based on the Critic's feedback."
                         value={formData.criticPromptTemplateId || ""}
                         onChange={handleSelectChange}
-                        fetchData={fetchTemplates}
+                        fetchData={fetchCriticTemplates}
                         placeholder="Search for a Critic..."
                         disabled={isSubmitting}
                         initialLabel={
