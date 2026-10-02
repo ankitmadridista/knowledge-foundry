@@ -163,7 +163,7 @@ export function AsyncSelect({
 
             {/* --- FIXED: Dropdown Menu Elevation & Mobile Scrolling --- */}
             {isOpen && (
-                <div className="absolute z-50 w-full mt-2 bg-zinc-900/95 backdrop-blur-md border border-zinc-700/50 rounded-md shadow-2xl shadow-black/50 flex flex-col overflow-hidden">
+                <div className="absolute z-50 w-full mt-2 bg-zinc-900/95 backdrop-blur-md border border-zinc-700/50 rounded-md shadow-lg flex flex-col overflow-hidden">
                     <div className="p-2 border-b border-zinc-800/80 shrink-0">
                         <input
                             type="text"

@@ -99,7 +99,7 @@ export function Select({
             </div>
 
             {isOpen && (
-                <div className="absolute z-50 w-full mt-2 bg-zinc-900/95 backdrop-blur-md border border-zinc-700/50 rounded-md shadow-2xl shadow-black/50 overflow-hidden">
+                <div className="absolute z-50 w-full mt-2 bg-zinc-900/95 backdrop-blur-md border border-zinc-700/50 rounded-md shadow-lg overflow-hidden">
                     <ul className="overflow-y-auto max-h-52 p-1 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
                         {options.map((opt) => (
                             <li
