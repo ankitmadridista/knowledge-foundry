@@ -54,6 +54,12 @@ export const roadmap: RoadmapItem[] = [
         status: "completed",
     },
     {
+        title: "Assessment Engine",
+        description:
+            "AI-driven quiz generation mapped to lessons, featuring structured JSON outputs and a human-in-the-loop audit UI.",
+        status: "in-progress",
+    },
+    {
         title: "Telemetry & Cost Analytics",
         description:
             "Interactive dashboards visualizing token usage, latency, and AI execution logs.",
