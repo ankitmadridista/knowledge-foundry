@@ -52,6 +52,32 @@ namespace KnowledgeFoundry.Infrastructure.Migrations
                     b.ToTable("AiExecutionLogs", (string)null);
                 });
 
+            modelBuilder.Entity("KnowledgeFoundry.Domain.Assessments.Quiz", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AiExecutionLogId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("LessonId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Quizzes", (string)null);
+                });
+
             modelBuilder.Entity("KnowledgeFoundry.Domain.ContextPacks.ContextPack", b =>
                 {
                     b.Property<Guid>("Id")
@@ -185,6 +211,124 @@ namespace KnowledgeFoundry.Infrastructure.Migrations
                         });
 
                     b.Navigation("Model")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("KnowledgeFoundry.Domain.Assessments.Quiz", b =>
+                {
+                    b.OwnsMany("KnowledgeFoundry.Domain.Assessments.Question", "Questions", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Explanation")
+                                .HasColumnType("text");
+
+                            b1.Property<Guid>("QuizId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("Type")
+                                .HasColumnType("integer");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("QuizId");
+
+                            b1.ToTable("Questions", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("QuizId");
+
+                            b1.OwnsMany("KnowledgeFoundry.Domain.Assessments.Option", "Options", b2 =>
+                                {
+                                    b2.Property<Guid>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("uuid");
+
+                                    b2.Property<bool>("IsCorrect")
+                                        .HasColumnType("boolean");
+
+                                    b2.Property<Guid>("QuestionId")
+                                        .HasColumnType("uuid");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("QuestionId");
+
+                                    b2.ToTable("Options", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("QuestionId");
+
+                                    b2.OwnsOne("KnowledgeFoundry.Domain.Assessments.ValueObjects.OptionText", "Text", b3 =>
+                                        {
+                                            b3.Property<Guid>("OptionId")
+                                                .HasColumnType("uuid");
+
+                                            b3.Property<string>("Value")
+                                                .IsRequired()
+                                                .HasColumnType("text")
+                                                .HasColumnName("Text");
+
+                                            b3.HasKey("OptionId");
+
+                                            b3.ToTable("Options");
+
+                                            b3.WithOwner()
+                                                .HasForeignKey("OptionId");
+                                        });
+
+                                    b2.Navigation("Text")
+                                        .IsRequired();
+                                });
+
+                            b1.OwnsOne("KnowledgeFoundry.Domain.Assessments.ValueObjects.QuestionText", "Text", b2 =>
+                                {
+                                    b2.Property<Guid>("QuestionId")
+                                        .HasColumnType("uuid");
+
+                                    b2.Property<string>("Value")
+                                        .IsRequired()
+                                        .HasColumnType("text")
+                                        .HasColumnName("Text");
+
+                                    b2.HasKey("QuestionId");
+
+                                    b2.ToTable("Questions");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("QuestionId");
+                                });
+
+                            b1.Navigation("Options");
+
+                            b1.Navigation("Text")
+                                .IsRequired();
+                        });
+
+                    b.OwnsOne("KnowledgeFoundry.Domain.Assessments.ValueObjects.QuizTitle", "Title", b1 =>
+                        {
+                            b1.Property<Guid>("QuizId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("Title");
+
+                            b1.HasKey("QuizId");
+
+                            b1.ToTable("Quizzes");
+
+                            b1.WithOwner()
+                                .HasForeignKey("QuizId");
+                        });
+
+                    b.Navigation("Questions");
+
+                    b.Navigation("Title")
                         .IsRequired();
                 });
 
