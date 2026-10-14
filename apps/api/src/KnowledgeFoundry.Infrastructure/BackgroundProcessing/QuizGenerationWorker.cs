@@ -98,7 +98,28 @@ public class QuizGenerationWorker : BackgroundService
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failed to generate quiz {QuizId}", job.QuizId);
-                    // In a production app, you might want to mark the Quiz as "Failed" here.
+
+                    try
+                    {
+                        using var failScope = _serviceProvider.CreateScope();
+                        var failDb = failScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                        var failRepo = failScope.ServiceProvider.GetRequiredService<IQuizRepository>();
+
+                        var failedQuiz = await failRepo.GetByIdAsync(job.QuizId, CancellationToken.None);
+                        if (failedQuiz != null)
+                        {
+                            // Truncate the error message just in case it exceeds column limits
+                            var safeErrorMessage = ex.Message.Length > 2000 ? ex.Message.Substring(0, 2000) + "..." : ex.Message;
+                            failedQuiz.MarkAsFailed(safeErrorMessage);
+
+                            // Use CancellationToken.None so this saves even if the user refreshed the page
+                            await failDb.SaveChangesAsync(CancellationToken.None);
+                        }
+                    }
+                    catch (Exception fatalEx)
+                    {
+                        _logger.LogCritical(fatalEx, "FATAL: Could not even save the Failed status for Quiz {QuizId} to the database.", job.QuizId);
+                    }
                 }
             }
             catch (OperationCanceledException) { }

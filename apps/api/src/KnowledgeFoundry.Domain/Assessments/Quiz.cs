@@ -16,11 +16,10 @@ public sealed class Quiz : Entity
     public Guid LessonId { get; private set; }
     public QuizTitle Title { get; private set; } = null!;
     public QuizStatus Status { get; private set; }
-
     public Guid? AiExecutionLogId { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? PublishedAt { get; private set; }
-
+    public string? ErrorMessage { get; private set; }
     public IReadOnlyCollection<Question> Questions => _questions.AsReadOnly();
 
     private Quiz(
@@ -79,5 +78,14 @@ public sealed class Quiz : Entity
 
         Status = QuizStatus.Published;
         PublishedAt = DateTime.UtcNow;
+    }
+
+    public void MarkAsFailed(string errorReason)
+    {
+        if (Status == QuizStatus.Published)
+            throw new InvalidOperationException("Cannot fail a published quiz.");
+
+        ErrorMessage = errorReason;
+        Status = QuizStatus.Failed;
     }
 }
