@@ -93,6 +93,7 @@ public class QuizGenerationWorker : BackgroundService
                         }
                     }
 
+                    quiz.MarkAsReadyForReview(logId);
                     await db.SaveChangesAsync(stoppingToken);
                 }
                 catch (Exception ex)

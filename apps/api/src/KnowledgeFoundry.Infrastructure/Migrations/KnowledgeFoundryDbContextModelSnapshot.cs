@@ -64,6 +64,10 @@ namespace KnowledgeFoundry.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2050)
+                        .HasColumnType("character varying(2050)");
+
                     b.Property<Guid>("LessonId")
                         .HasColumnType("uuid");
 

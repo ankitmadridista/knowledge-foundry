@@ -80,6 +80,15 @@ public sealed class Quiz : Entity
         PublishedAt = DateTime.UtcNow;
     }
 
+    public void MarkAsReadyForReview(Guid aiExecutionLogId)
+    {
+        if (Status != QuizStatus.Draft)
+            throw new DomainException("Only draft quizzes can move to review.");
+
+        AiExecutionLogId = aiExecutionLogId;
+        Status = QuizStatus.Review;
+    }
+
     public void MarkAsFailed(string errorReason)
     {
         if (Status == QuizStatus.Published)

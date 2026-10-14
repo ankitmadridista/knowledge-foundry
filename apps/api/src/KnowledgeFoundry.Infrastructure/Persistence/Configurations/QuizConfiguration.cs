@@ -34,6 +34,9 @@ internal sealed class QuizConfiguration : IEntityTypeConfiguration<Quiz>
 
         builder.Property(x => x.PublishedAt);
 
+        builder.Property(x => x.ErrorMessage)
+            .HasMaxLength(2050);
+
         // Configure the child Question entities
         builder.OwnsMany(x => x.Questions, question =>
         {
