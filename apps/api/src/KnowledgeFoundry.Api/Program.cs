@@ -1,5 +1,6 @@
 using KnowledgeFoundry.AIPlatform;
 using KnowledgeFoundry.Api.Endpoints.AiPlatform;
+using KnowledgeFoundry.Api.Endpoints.Assessments;
 using KnowledgeFoundry.Api.Endpoints.ContextPacks;
 using KnowledgeFoundry.Api.Endpoints.Lessons;
 using KnowledgeFoundry.Api.Endpoints.PromptTemplates;
@@ -102,6 +103,7 @@ app.MapPromptTemplateEndpoints();
 app.MapContextPackEndpoints();
 app.MapLessonEndpoints();
 app.MapAiModelEndpoints();
+app.MapQuizEndpoints();
 
 // Database migration & seeding
 using (var scope = app.Services.CreateScope())
