@@ -25,21 +25,21 @@ public sealed class Question : Entity
         Explanation = explanation;
     }
 
-    internal void UpdateDetails(QuestionText text, QuestionType type, string? explanation)
+    public void UpdateDetails(QuestionText text, QuestionType type, string? explanation)
     {
         Text = text ?? throw new ArgumentNullException(nameof(text));
         Type = type;
         Explanation = explanation;
     }
 
-    internal Option AddOption(OptionText text, bool isCorrect)
+    public Option AddOption(OptionText text, bool isCorrect)
     {
         var option = new Option(text, isCorrect);
         _options.Add(option);
         return option;
     }
 
-    internal void RemoveOption(Guid optionId)
+    public void RemoveOption(Guid optionId)
     {
         var option = _options.SingleOrDefault(o => o.Id == optionId);
         if (option is not null)

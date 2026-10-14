@@ -4,6 +4,7 @@ namespace KnowledgeFoundry.Domain.PromptTemplates.Enums
     {
         LessonGeneration = 0,
         Evaluation = 1,
-        Critic = 2
+        Critic = 2,
+        QuizGeneration = 3
     }
 }

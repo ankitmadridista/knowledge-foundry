@@ -4,13 +4,11 @@ using KnowledgeFoundry.Application.BackgroundProcessing;
 using KnowledgeFoundry.Application.DomainModels;
 using KnowledgeFoundry.Domain.AiPlatform;
 using KnowledgeFoundry.Domain.AiPlatform.Enums;
-using KnowledgeFoundry.Domain.ContextPacks.Enums;
 using KnowledgeFoundry.Domain.PromptTemplates.Enums;
 using KnowledgeFoundry.Domain.PromptTemplates.ValueObjects;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace KnowledgeFoundry.Infrastructure.BackgroundProcessing;
