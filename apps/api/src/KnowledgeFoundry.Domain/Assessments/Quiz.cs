@@ -126,6 +126,9 @@ public sealed class Quiz : Entity
         if (Status == QuizStatus.Published)
             throw new DomainException("Quiz is already published.");
 
+        if (Status != QuizStatus.Review)
+            throw new DomainException("Only quizzes in the Review state can be published.");
+
         if (_questions.Count == 0)
             throw new DomainException("Cannot publish a quiz with no questions.");
 

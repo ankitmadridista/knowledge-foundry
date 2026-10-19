@@ -1,5 +1,7 @@
 using KnowledgeFoundry.Api.Extensions;
+using KnowledgeFoundry.Application.Assessments.Commands.DeleteQuiz;
 using KnowledgeFoundry.Application.Assessments.Commands.GenerateQuiz;
+using KnowledgeFoundry.Application.Assessments.Commands.PublishQuiz;
 using KnowledgeFoundry.Application.Assessments.Queries.GetQuizById;
 using KnowledgeFoundry.Application.Assessments.Queries.GetQuizzes;
 using MediatR;
@@ -33,6 +35,10 @@ public static class QuizEndpoints
 
         // Queries
         group.MapGet("/", GetQuizzes);
+
+        // Mutations
+        group.MapPut("/{id:guid}/publish", PublishQuiz);
+        group.MapDelete("/{id:guid}", DeleteQuiz);
 
         group.MapGet("/{id:guid}", GetQuizById)
             .WithName("GetQuiz");
@@ -113,5 +119,43 @@ public static class QuizEndpoints
         return Results.Created(
             $"/api/quizzes/{result.Value}",
             new { Id = result.Value });
+    }
+
+    private static async Task<IResult> PublishQuiz(
+        Guid id,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var command = new PublishQuizCommand(id);
+        var result = await sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            if (result.Error.Code == "Quiz.NotFound")
+                return Results.NotFound(result.Error);
+
+            return Results.BadRequest(result.Error);
+        }
+
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> DeleteQuiz(
+        Guid id,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var command = new DeleteQuizCommand(id);
+        var result = await sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            if (result.Error.Code == "Quiz.NotFound")
+                return Results.NotFound(result.Error);
+
+            return Results.BadRequest(result.Error);
+        }
+
+        return Results.NoContent();
     }
 }
