@@ -65,10 +65,24 @@ namespace KnowledgeFoundry.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ErrorMessage")
-                        .HasMaxLength(2050)
-                        .HasColumnType("character varying(2050)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<bool>("IsManuallyEdited")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<Guid>("LessonId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("OwnerId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("OwnerId");
+
+                    b.Property<Guid>("PromptTemplateId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("PublishedAt")
@@ -223,7 +237,6 @@ namespace KnowledgeFoundry.Infrastructure.Migrations
                     b.OwnsMany("KnowledgeFoundry.Domain.Assessments.Question", "Questions", b1 =>
                         {
                             b1.Property<Guid>("Id")
-                                .ValueGeneratedOnAdd()
                                 .HasColumnType("uuid");
 
                             b1.Property<string>("Explanation")
@@ -247,7 +260,6 @@ namespace KnowledgeFoundry.Infrastructure.Migrations
                             b1.OwnsMany("KnowledgeFoundry.Domain.Assessments.Option", "Options", b2 =>
                                 {
                                     b2.Property<Guid>("Id")
-                                        .ValueGeneratedOnAdd()
                                         .HasColumnType("uuid");
 
                                     b2.Property<bool>("IsCorrect")
