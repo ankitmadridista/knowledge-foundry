@@ -6,4 +6,7 @@
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
       <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Assessments\Commands\UpdateQuiz\" />
+  </ItemGroup>
 </Project>

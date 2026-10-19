@@ -110,7 +110,7 @@ public class QuizGenerationWorker : BackgroundService
                         if (failedQuiz != null)
                         {
                             // Truncate the error message just in case it exceeds column limits
-                            var safeErrorMessage = ex.Message.Length > 2000 ? ex.Message.Substring(0, 2000) + "..." : ex.Message;
+                            var safeErrorMessage = ex.Message.Length > 2000 ? ex.Message.Substring(0, 1997) + "..." : ex.Message;
                             failedQuiz.MarkAsFailed(safeErrorMessage);
 
                             // Use CancellationToken.None so this saves even if the user refreshed the page

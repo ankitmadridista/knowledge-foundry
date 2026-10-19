@@ -1,4 +1,5 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
+using KnowledgeFoundry.Application.Abstractions.Services;
 using KnowledgeFoundry.Application.BackgroundProcessing;
 using KnowledgeFoundry.Application.Common.Results;
 using KnowledgeFoundry.Domain.Assessments;
@@ -16,25 +17,34 @@ public sealed class GenerateQuizCommandHandler
     private readonly IPromptTemplateRepository _templateRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IQuizGenerationQueue _queue;
+    private readonly ICurrentUserContext _currentUserContext;
 
     public GenerateQuizCommandHandler(
         ILessonRepository lessonRepository,
         IQuizRepository quizRepository,
         IPromptTemplateRepository templateRepository,
         IUnitOfWork unitOfWork,
-        IQuizGenerationQueue queue)
+        IQuizGenerationQueue queue,
+        ICurrentUserContext currentUserContext)
     {
         _lessonRepository = lessonRepository;
         _quizRepository = quizRepository;
         _templateRepository = templateRepository;
         _unitOfWork = unitOfWork;
         _queue = queue;
+        _currentUserContext = currentUserContext;
     }
 
     public async Task<Result<Guid>> Handle(
         GenerateQuizCommand request,
         CancellationToken cancellationToken)
     {
+        var userId = _currentUserContext.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Result<Guid>.Failure(new Error("Unauthorized", "You must be logged in."));
+        }
+
         // 1. Validate the Lesson exists and is completed
         var lesson = await _lessonRepository.GetByIdAsync(request.LessonId, cancellationToken);
         if (lesson is null)
@@ -57,7 +67,11 @@ public sealed class GenerateQuizCommandHandler
 
         // 3. Create the Draft Quiz Entity
         var quizTitle = $"Assessment: {lesson.Title.Value}";
-        var quiz = Quiz.Create(lesson.Id, quizTitle);
+        var quiz = Quiz.Create(
+            userId,
+            lesson.Id,
+            quizTitle,
+            request.PromptTemplateId);
 
         await _quizRepository.AddAsync(quiz, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
