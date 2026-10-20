@@ -4,5 +4,6 @@ public enum ExecutionInitiator
 {
     Sandbox = 1,
     LessonGeneration = 2,
-    LessonEvaluation = 3
+    LessonEvaluation = 3,
+    QuizGeneration = 4,
 }

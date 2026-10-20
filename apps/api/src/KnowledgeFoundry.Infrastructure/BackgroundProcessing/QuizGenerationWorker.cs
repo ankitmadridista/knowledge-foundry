@@ -156,7 +156,7 @@ public class QuizGenerationWorker : BackgroundService
         AiProvider provider, string model, ExecutionTelemetry result, Guid templateId,
         IAiExecutionLogRepository repo, CancellationToken cancellationToken)
     {
-        var log = AiExecutionLog.LogExecution(provider, model, result.TokensUsed, result.ExecutionTimeMs, ExecutionInitiator.LessonGeneration, templateId);
+        var log = AiExecutionLog.LogExecution(provider, model, result.TokensUsed, result.ExecutionTimeMs, ExecutionInitiator.QuizGeneration, templateId);
         await repo.AddAsync(log, cancellationToken);
         return log.Id;
     }
