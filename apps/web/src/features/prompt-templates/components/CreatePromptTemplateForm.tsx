@@ -154,6 +154,31 @@ export function CreatePromptTemplateForm({
                         </li>
                     </>
                 );
+            case 3: // QuizGeneration
+                return (
+                    <>
+                        <li>
+                            <code className="text-indigo-200 bg-indigo-950/50 px-1.5 py-0.5 rounded font-mono">{`{Topic}`}</code>{" "}
+                            - The specific subject matter of the quiz.
+                        </li>
+                        <li>
+                            <code className="text-indigo-200 bg-indigo-950/50 px-1.5 py-0.5 rounded font-mono">{`{Audience}`}</code>{" "}
+                            - The target demographic.
+                        </li>
+                        <li>
+                            <code className="text-indigo-200 bg-indigo-950/50 px-1.5 py-0.5 rounded font-mono">{`{LessonContent}`}</code>{" "}
+                            - The final completed lesson text to assess.
+                        </li>
+                        <li>
+                            <code className="text-indigo-200 bg-indigo-950/50 px-1.5 py-0.5 rounded font-mono">{`{QuestionCount}`}</code>{" "}
+                            - The integer number of questions requested by the user.
+                        </li>
+                        <li>
+                            <code className="text-indigo-200 bg-indigo-950/50 px-1.5 py-0.5 rounded font-mono">{`{QuizFormat}`}</code>{" "}
+                            - The format style (e.g., Multiple Choice, True/False).
+                        </li>
+                    </>
+                );
             default:
                 return null;
         }

@@ -17,6 +17,7 @@ import {
 import { LessonHeader } from "@/features/lessons/components/LessonHeader";
 import { LessonContent } from "@/features/lessons/components/LessonContent";
 import { LessonEvaluationModal } from "@/features/lessons/components/LessonEvaluationModal";
+import { GenerateQuizModal } from "@/features/quizzes/components/GenerateQuizModal";
 import toast from "react-hot-toast";
 
 export function LessonViewerPage() {
@@ -30,6 +31,7 @@ export function LessonViewerPage() {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isEvalModalOpen, setIsEvalModalOpen] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
+    const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
@@ -135,28 +137,32 @@ export function LessonViewerPage() {
                             &larr; Back to Library
                         </button>
 
-                        {lesson.status === "Completed" && (
-                            <Button
-                                variant="secondary"
-                                onClick={() => setIsEvalModalOpen(true)}
-                                className="flex items-center gap-2 py-1.5!"
-                            >
-                                <svg
-                                    className="w-4 h-4 text-emerald-400"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-                                    />
-                                </svg>
-                                Run Evaluation
-                            </Button>
-                        )}
+                        {/* Wrap the buttons in a flex container */}
+                        <div className="flex items-center gap-3">
+                            {lesson.status === "Completed" && (
+                                <>
+                                    <Button
+                                        variant="primary" // Highlighting the Quiz as a primary action
+                                        onClick={() => setIsQuizModalOpen(true)}
+                                        className="flex items-center gap-2 py-1.5!"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        Generate Quiz
+                                    </Button>
+
+                                    <Button
+                                        variant="secondary"
+                                        onClick={() => setIsEvalModalOpen(true)}
+                                        className="flex items-center gap-2 py-1.5!"
+                                    >
+                                        {/* ... (Existing SVG & Run Evaluation text) ... */}
+                                        Run Evaluation
+                                    </Button>
+                                </>
+                            )}
+                        </div>
                     </div>
 
                     <LessonHeader
@@ -273,6 +279,12 @@ export function LessonViewerPage() {
             </Container>
 
             {/* Modals */}
+            <GenerateQuizModal 
+                isOpen={isQuizModalOpen}
+                onClose={() => setIsQuizModalOpen(false)}
+                lessonId={lesson.id}
+            />
+            
             <Modal
                 isOpen={isDeleteModalOpen}
                 onClose={() => !isDeleting && setIsDeleteModalOpen(false)}
