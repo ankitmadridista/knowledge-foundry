@@ -1,5 +1,6 @@
 using KnowledgeFoundry.Application.Abstractions.Persistence;
 using KnowledgeFoundry.Domain.AiPlatform;
+using KnowledgeFoundry.Domain.Assessments;
 using KnowledgeFoundry.Domain.ContextPacks;
 using KnowledgeFoundry.Domain.Lessons;
 using KnowledgeFoundry.Domain.Settings;
@@ -45,6 +46,7 @@ public sealed class KnowledgeFoundryDbContext
     public DbSet<Lesson> Lessons => Set<Lesson>();
     public DbSet<AiExecutionLog> AiExecutionLogs => Set<AiExecutionLog>();
     public DbSet<CorpSettings> CorpSettings => Set<CorpSettings>();
+    public DbSet<Quiz> Quizzes => Set<Quiz>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

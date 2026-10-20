@@ -16,6 +16,7 @@ import { LessonsPage } from "@/features/lessons/pages/LessonsPage";
 import { LessonViewerPage } from "@/features/lessons/pages/LessonViewerPage";
 import { GlobalRouteError } from "@/shared/components/layout/GlobalRouteError";
 import { RequireAuth } from "../guards/RequireAuth";
+import { QuizViewerPage } from "@/features/quizzes/pages/QuizViewerPage";
 
 export const router = createBrowserRouter([
     {
@@ -63,6 +64,7 @@ export const router = createBrowserRouter([
                     { path: "lessons/new", element: <GenerateLessonPage /> },
                     { path: "lessons", element: <LessonsPage /> },
                     { path: "lessons/:id", element: <LessonViewerPage /> },
+                    { path: "/quizzes/:id", element: <QuizViewerPage /> },
                 ],
             },
         ],

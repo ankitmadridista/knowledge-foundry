@@ -58,7 +58,7 @@ public sealed class PromptTemplate : Entity
         string description,
         PromptPurpose purpose,
         AiProvider provider = AiProvider.Groq,
-        string model = "llama-3.3-70b-versatile",
+        string model = "openai/gpt-oss-120b",
         string? ownerId = null,
         IEnumerable<string>? tags = null)
     {

@@ -96,7 +96,7 @@ public class DatabaseSeeder : IDatabaseSeeder
              description: "A friendly AI lab assistant that explains cellular biology concepts to students.",
              purpose: PromptPurpose.LessonGeneration,
              provider: AiProvider.Groq,
-             model: "llama-3.3-70b-versatile",
+             model: "openai/gpt-oss-120b",
              tags: ["biology", "tutor", "science"]
          );
 
@@ -126,7 +126,7 @@ public class DatabaseSeeder : IDatabaseSeeder
              description: "A strict LLM judge that evaluates lessons for accuracy and readability, returning ONLY raw JSON.",
              purpose: PromptPurpose.Evaluation,
              provider: AiProvider.Groq,
-             model: "llama-3.3-70b-versatile",
+             model: "openai/gpt-oss-120b",
              tags: ["evaluation", "system", "json"]
          );
 
@@ -155,7 +155,58 @@ public class DatabaseSeeder : IDatabaseSeeder
         evalTemplate.PublishVersion(evalVersion.VersionNumber);
         evalTemplate.ActivateVersion(evalVersion.VersionNumber);
 
+        // --- QUIZ GENERATION TEMPLATE ---
+        var quizTemplate = PromptTemplate.Create(
+            name: "Standard Quiz Generator",
+            identifier: "QUIZ-STD-JSON",
+            description: "Generates multiple-choice quizzes based on lesson content, returning strictly formatted JSON.",
+            purpose: PromptPurpose.QuizGeneration,
+            provider: AiProvider.Groq,
+            model: "openai/gpt-oss-120b",
+            tags: ["quiz", "assessment", "json"]
+        );
+
+        var quizVersion = quizTemplate.CreateVersion(
+            [
+                new PromptMessage(
+                    role: PromptMessageRole.System,
+                    content: @"You are an expert educational assessor designing tests for {Audience}.
+                        Based ONLY on the provided lesson content, generate exactly {QuestionCount} questions.
+                        The overall format emphasis should be: {QuizFormat}.
+
+                        CRITICAL INSTRUCTION: 
+                        You must output ONLY a valid JSON array of objects. Do not wrap the JSON in markdown blocks (```json). Do not add any conversational text before or after the array.
+
+                        Each object in the array MUST strictly adhere to this JSON schema:
+                        [
+                          {
+                            ""Text"": ""The actual question being asked"",
+                            ""Type"": ""MultipleChoice"", // Must be exactly: MultipleChoice, TrueFalse, or Descriptive
+                            ""Explanation"": ""A brief explanation of why the correct answer is correct"",
+                            ""Options"": [
+                              {
+                                ""Text"": ""The text of the option"",
+                                ""IsCorrect"": true // Boolean indicating if this is the right answer
+                              }
+                            ]
+                          }
+                        ]",
+                    order: 0),
+
+                new PromptMessage(
+                    role: PromptMessageRole.User,
+                    content: "LESSON CONTENT TO ASSESS:\n\n{LessonContent}",
+                    order: 1
+                )
+            ],
+            PromptCapability.StructuredOutput
+        );
+
+        quizTemplate.PublishVersion(quizVersion.VersionNumber);
+        quizTemplate.ActivateVersion(quizVersion.VersionNumber);
+
         await _context.PromptTemplates.AddAsync(bioTemplate);
         await _context.PromptTemplates.AddAsync(evalTemplate);
+        await _context.PromptTemplates.AddAsync(quizTemplate);
     }
 }

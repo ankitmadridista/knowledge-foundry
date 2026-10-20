@@ -1,32 +1,26 @@
 import type { ButtonHTMLAttributes } from "react";
 
-type ButtonVariant =
-  | "primary"
-  | "secondary";
+type ButtonVariant = "primary" | "secondary";
 
-interface ButtonProps
-  extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant;
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+    variant?: ButtonVariant;
 }
 
 export function Button({
-  variant = "primary",
-  className = "",
-  ...props
+    variant = "primary",
+    className = "",
+    ...props
 }: ButtonProps) {
+    const variants = {
+        primary: "bg-indigo-600 hover:bg-indigo-500 text-white",
 
-  const variants = {
-    primary:
-      "bg-indigo-600 hover:bg-indigo-500 text-white",
+        secondary: "border border-zinc-700 hover:bg-zinc-800 text-zinc-100",
+    };
 
-    secondary:
-      "border border-zinc-700 hover:bg-zinc-800 text-zinc-100"
-  };
-
-  return (
-    <button
-      {...props}
-      className={`rounded-xl px-5 py-3 transition ${variants[variant]} ${className}`}
-    />
-  );
+    return (
+        <button
+            {...props}
+            className={`rounded-xl px-5 py-3 transition disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${className}`}
+        />
+    );
 }

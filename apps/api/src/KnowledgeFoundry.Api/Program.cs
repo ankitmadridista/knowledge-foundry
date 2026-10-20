@@ -1,5 +1,6 @@
 using KnowledgeFoundry.AIPlatform;
 using KnowledgeFoundry.Api.Endpoints.AiPlatform;
+using KnowledgeFoundry.Api.Endpoints.Assessments;
 using KnowledgeFoundry.Api.Endpoints.ContextPacks;
 using KnowledgeFoundry.Api.Endpoints.Lessons;
 using KnowledgeFoundry.Api.Endpoints.PromptTemplates;
@@ -25,6 +26,7 @@ builder.Services
 // 1. Worker registration
 builder.Services.AddHostedService<LessonGenerationWorker>();
 builder.Services.AddHostedService<ContextIngestionWorker>();
+builder.Services.AddHostedService<QuizGenerationWorker>();
 
 // 2. JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -101,6 +103,7 @@ app.MapPromptTemplateEndpoints();
 app.MapContextPackEndpoints();
 app.MapLessonEndpoints();
 app.MapAiModelEndpoints();
+app.MapQuizEndpoints();
 
 // Database migration & seeding
 using (var scope = app.Services.CreateScope())

@@ -47,6 +47,8 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
         services.AddSingleton<IContextIngestionQueue, ContextIngestionQueue>();
         services.AddScoped<IContextRetrievalService, ContextRetrievalService>();
+        services.AddSingleton<IQuizGenerationQueue, QuizGenerationQueue>();
+        services.AddScoped<IQuizRepository, QuizRepository>();
 
         return services;
     }
