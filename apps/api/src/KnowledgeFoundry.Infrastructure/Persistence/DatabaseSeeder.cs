@@ -96,7 +96,7 @@ public class DatabaseSeeder : IDatabaseSeeder
              description: "A friendly AI lab assistant that explains cellular biology concepts to students.",
              purpose: PromptPurpose.LessonGeneration,
              provider: AiProvider.Groq,
-             model: "llama-3.3-70b-versatile",
+             model: "openai/gpt-oss-120b",
              tags: ["biology", "tutor", "science"]
          );
 
@@ -126,7 +126,7 @@ public class DatabaseSeeder : IDatabaseSeeder
              description: "A strict LLM judge that evaluates lessons for accuracy and readability, returning ONLY raw JSON.",
              purpose: PromptPurpose.Evaluation,
              provider: AiProvider.Groq,
-             model: "llama-3.3-70b-versatile",
+             model: "openai/gpt-oss-120b",
              tags: ["evaluation", "system", "json"]
          );
 
@@ -162,7 +162,7 @@ public class DatabaseSeeder : IDatabaseSeeder
             description: "Generates multiple-choice quizzes based on lesson content, returning strictly formatted JSON.",
             purpose: PromptPurpose.QuizGeneration,
             provider: AiProvider.Groq,
-            model: "llama-3.3-70b-versatile",
+            model: "openai/gpt-oss-120b",
             tags: ["quiz", "assessment", "json"]
         );
 
