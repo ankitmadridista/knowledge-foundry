@@ -25,7 +25,7 @@ export function GenerateQuizModal({
 }: GenerateQuizModalProps) {
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false); // NEW: Tracks if they tried to submit
+    const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
     const [formData, setFormData] = useState({
         promptTemplateId: "",
@@ -78,7 +78,7 @@ export function GenerateQuizModal({
 
             toast.success("Quiz generation started!");
             onClose();
-            navigate(`/quizzes/${quizId}`);
+            navigate(`/quizzes/${quizId}`, { state: { fromLesson: true } });
         } catch (err) {
             console.error("Failed to generate quiz:", err);
             toast.error("Failed to start quiz generation. Please try again.");

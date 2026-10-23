@@ -5,7 +5,9 @@ import {
     deleteLesson,
     updateLessonContent,
 } from "@/features/lessons/api";
+import { getQuizzes } from "@/features/quizzes/api"; // NEW IMPORT
 import type { LessonDto } from "@/features/lessons/types";
+import type { QuizSummaryDto } from "@/features/quizzes/types"; // NEW IMPORT
 import { Section, Container } from "@/shared/components/layout";
 import {
     ErrorState,
@@ -13,6 +15,7 @@ import {
     Modal,
     Button,
     Card,
+    Badge, // ADDED BADGE
 } from "@/shared/components/ui";
 import { LessonHeader } from "@/features/lessons/components/LessonHeader";
 import { LessonContent } from "@/features/lessons/components/LessonContent";
@@ -25,6 +28,7 @@ export function LessonViewerPage() {
     const navigate = useNavigate();
 
     const [lesson, setLesson] = useState<LessonDto | null>(null);
+    const [quizzes, setQuizzes] = useState<QuizSummaryDto[]>([]); // NEW STATE
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -33,6 +37,7 @@ export function LessonViewerPage() {
     const [refreshKey, setRefreshKey] = useState(0);
     const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
 
+    // 1. Fetch Lesson Data
     useEffect(() => {
         let isMounted = true;
         let timeoutId: ReturnType<typeof setTimeout>;
@@ -72,11 +77,37 @@ export function LessonViewerPage() {
             isMounted = false;
             clearTimeout(timeoutId);
         };
-    }, [id, refreshKey]); // Re-run when refreshKey changes!
+    }, [id, refreshKey]);
+
+    // 2. Fetch Local Quizzes for this Lesson
+    useEffect(() => {
+        let isMounted = true;
+        if (!id) return;
+
+        const fetchLocalQuizzes = async () => {
+            try {
+                // Fetch page 1, size 50, no search, no status filter, just lessonId
+                const response = await getQuizzes(
+                    1,
+                    50,
+                    undefined,
+                    undefined,
+                    id,
+                );
+                if (isMounted) setQuizzes(response.items);
+            } catch (err) {
+                console.error("Failed to load local quizzes:", err);
+            }
+        };
+
+        fetchLocalQuizzes();
+        return () => {
+            isMounted = false;
+        };
+    }, [id]);
 
     const handleUpdateContent = async (newContent: string) => {
         if (!lesson) return;
-
         try {
             await updateLessonContent(lesson.id, { newContent });
             setLesson({
@@ -92,13 +123,10 @@ export function LessonViewerPage() {
         }
     };
 
-    const handleDeleteClick = () => {
-        setIsDeleteModalOpen(true);
-    };
+    const handleDeleteClick = () => setIsDeleteModalOpen(true);
 
     const confirmDelete = async () => {
         if (!lesson) return;
-
         setIsDeleting(true);
         try {
             await deleteLesson(lesson.id);
@@ -113,8 +141,7 @@ export function LessonViewerPage() {
     };
 
     if (isLoading) return <LoadingState message="Loading lesson details..." />;
-
-    if (error || !lesson) {
+    if (error || !lesson)
         return (
             <Section>
                 <Container>
@@ -122,7 +149,6 @@ export function LessonViewerPage() {
                 </Container>
             </Section>
         );
-    }
 
     return (
         <Section>
@@ -137,17 +163,26 @@ export function LessonViewerPage() {
                             &larr; Back to Library
                         </button>
 
-                        {/* Wrap the buttons in a flex container */}
                         <div className="flex items-center gap-3">
                             {lesson.status === "Completed" && (
                                 <>
                                     <Button
-                                        variant="primary" // Highlighting the Quiz as a primary action
+                                        variant="primary"
                                         onClick={() => setIsQuizModalOpen(true)}
                                         className="flex items-center gap-2 py-1.5!"
                                     >
-                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        <svg
+                                            className="w-4 h-4"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                            />
                                         </svg>
                                         Generate Quiz
                                     </Button>
@@ -157,7 +192,19 @@ export function LessonViewerPage() {
                                         onClick={() => setIsEvalModalOpen(true)}
                                         className="flex items-center gap-2 py-1.5!"
                                     >
-                                        {/* ... (Existing SVG & Run Evaluation text) ... */}
+                                        <svg
+                                            className="w-4 h-4 text-emerald-400"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                                            />
+                                        </svg>
                                         Run Evaluation
                                     </Button>
                                 </>
@@ -169,6 +216,7 @@ export function LessonViewerPage() {
                         lesson={lesson}
                         onDelete={handleDeleteClick}
                     />
+
                     <LessonContent
                         lesson={lesson}
                         onRetry={() =>
@@ -177,6 +225,71 @@ export function LessonViewerPage() {
                         onUpdateContent={handleUpdateContent}
                     />
 
+                    {/* Local Bridge (Associated Quizzes) */}
+                    {quizzes.length > 0 && (
+                        <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            <h3 className="text-xl font-bold text-zinc-100 mb-4 flex items-center gap-2">
+                                <svg
+                                    className="w-5 h-5 text-fuchsia-400"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
+                                </svg>
+                                Associated Assessments
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {quizzes.map((q) => (
+                                    <Card
+                                        key={q.id}
+                                        className="p-5 bg-zinc-900/80 border-zinc-800 cursor-pointer hover:border-fuchsia-500/30 transition-colors group flex flex-col h-full"
+                                        // CRITICAL: We pass state to tell the Quiz Viewer where we came from!
+                                        onClick={() =>
+                                            navigate(`/quizzes/${q.id}`, {
+                                                state: { fromLesson: true },
+                                            })
+                                        }
+                                    >
+                                        <div className="flex justify-between items-start mb-3">
+                                            <Badge
+                                                variant={
+                                                    q.status === "Published"
+                                                        ? "success"
+                                                        : q.status === "Failed"
+                                                          ? "danger"
+                                                          : "neutral"
+                                                }
+                                            >
+                                                {q.status}
+                                            </Badge>
+                                            <span className="text-xs text-zinc-500">
+                                                {q.questionCount} Questions
+                                            </span>
+                                        </div>
+                                        <h4 className="font-bold text-zinc-100 group-hover:text-fuchsia-400 transition-colors mb-4">
+                                            {q.title}
+                                        </h4>
+                                        <div className="mt-auto pt-4 border-t border-zinc-800/50 text-xs text-zinc-500 flex justify-between">
+                                            <span>Generated Quiz</span>
+                                            <span>
+                                                {new Date(
+                                                    q.createdAt,
+                                                ).toLocaleDateString()}
+                                            </span>
+                                        </div>
+                                    </Card>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Existing Evaluations Section */}
                     {lesson.evaluations && lesson.evaluations.length > 0 && (
                         <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                             <h3 className="text-xl font-bold text-zinc-100 mb-4 flex items-center gap-2">
@@ -196,12 +309,12 @@ export function LessonViewerPage() {
                                 Evaluation Scorecards
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* ... (Your existing evaluation logic stays exactly the same) ... */}
                                 {lesson.evaluations.map((evaluation) => {
                                     let parsedScorecard: Record<
                                         string,
                                         string | number
                                     >;
-
                                     try {
                                         parsedScorecard = JSON.parse(
                                             evaluation.scorecardJson,
@@ -211,7 +324,6 @@ export function LessonViewerPage() {
                                             Error: `Failed to parse JSON scorecard: ${err}`,
                                         };
                                     }
-
                                     return (
                                         <Card
                                             key={evaluation.id}
@@ -245,7 +357,6 @@ export function LessonViewerPage() {
                                                                 )
                                                                 .trim()}
                                                         </span>
-
                                                         {typeof value ===
                                                         "number" ? (
                                                             <div className="flex items-center gap-3">
@@ -279,12 +390,12 @@ export function LessonViewerPage() {
             </Container>
 
             {/* Modals */}
-            <GenerateQuizModal 
+            <GenerateQuizModal
                 isOpen={isQuizModalOpen}
                 onClose={() => setIsQuizModalOpen(false)}
                 lessonId={lesson.id}
             />
-            
+
             <Modal
                 isOpen={isDeleteModalOpen}
                 onClose={() => !isDeleting && setIsDeleteModalOpen(false)}
@@ -300,7 +411,7 @@ export function LessonViewerPage() {
                 isOpen={isEvalModalOpen}
                 onClose={() => setIsEvalModalOpen(false)}
                 lessonId={lesson.id}
-                onEvaluationComplete={() => setRefreshKey((prev) => prev + 1)} // Forces useEffect to re-fetch the lesson
+                onEvaluationComplete={() => setRefreshKey((prev) => prev + 1)}
             />
         </Section>
     );

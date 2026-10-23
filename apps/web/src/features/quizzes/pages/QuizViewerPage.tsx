@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
     getQuizById,
     publishQuiz,
@@ -23,6 +23,9 @@ import toast from "react-hot-toast";
 export function QuizViewerPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const location = useLocation(); // Grab the location object
+    // Check if we passed { state: { fromLesson: true } }
+    const fromLesson = location.state?.fromLesson;
 
     const [quiz, setQuiz] = useState<QuizDto | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -130,7 +133,11 @@ export function QuizViewerPage() {
         try {
             await deleteQuiz(quiz.id);
             toast.success("Quiz deleted successfully!");
-            navigate(`/lessons/${quiz.lessonId}`);
+            if (fromLesson) {
+                navigate(`/lessons/${quiz.lessonId}`);
+            } else {
+                navigate("/quizzes");
+            }
         } catch (err) {
             console.error("Failed to delete quiz:", err);
             toast.error("Failed to delete quiz.");
@@ -159,11 +166,14 @@ export function QuizViewerPage() {
                     <div className="flex justify-between items-center mb-6">
                         <button
                             onClick={() =>
-                                navigate(`/lessons/${quiz.lessonId}`)
+                                fromLesson
+                                    ? navigate(`/lessons/${quiz.lessonId}`)
+                                    : navigate("/quizzes")
                             }
                             className="text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-2 text-sm font-medium"
                         >
-                            &larr; Back to Lesson
+                            &larr; Back to{" "}
+                            {fromLesson ? "Lesson" : "Assessments"}
                         </button>
 
                         <div className="flex items-center gap-3">
@@ -228,10 +238,12 @@ export function QuizViewerPage() {
                             <Button
                                 variant="secondary"
                                 onClick={() =>
-                                    navigate(`/lessons/${quiz.lessonId}`)
+                                    fromLesson
+                                        ? navigate(`/lessons/${quiz.lessonId}`)
+                                        : navigate("/quizzes")
                                 }
                             >
-                                Return to Lesson
+                                Return to {fromLesson ? "Lesson" : "Assessments"}
                             </Button>
                         </Card>
                     )}
