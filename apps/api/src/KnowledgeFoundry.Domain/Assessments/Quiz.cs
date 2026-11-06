@@ -27,6 +27,8 @@ public sealed class Quiz : Entity
 
     public DateTime CreatedAt { get; private set; }
     public DateTime? PublishedAt { get; private set; }
+    public Guid QuizGroupId { get; private set; }
+    public int Version { get; private set; }
 
     public IReadOnlyCollection<Question> Questions => _questions.AsReadOnly();
 
@@ -35,13 +37,18 @@ public sealed class Quiz : Entity
         Guid lessonId,
         QuizTitle title,
         Guid promptTemplateId,
-        Guid? aiExecutionLogId)
+        Guid? aiExecutionLogId,
+        Guid? quizGroupId = null,
+        int version = 1)
     {
         OwnerId = ownerId ?? throw new ArgumentNullException(nameof(ownerId));
         LessonId = lessonId;
         Title = title ?? throw new ArgumentNullException(nameof(title));
         PromptTemplateId = promptTemplateId;
         AiExecutionLogId = aiExecutionLogId;
+
+        QuizGroupId = quizGroupId ?? Guid.NewGuid();
+        Version = version;
 
         Status = QuizStatus.Draft;
         IsManuallyEdited = false;
@@ -53,14 +60,18 @@ public sealed class Quiz : Entity
         Guid lessonId,
         string title,
         Guid promptTemplateId,
-        Guid? aiExecutionLogId = null)
+        Guid? aiExecutionLogId = null,
+        Guid? quizGroupId = null,
+        int version = 1)
     {
         return new Quiz(
             new UserId(ownerId),
             lessonId,
             new QuizTitle(title),
             promptTemplateId,
-            aiExecutionLogId);
+            aiExecutionLogId,
+            quizGroupId,
+            version);
     }
 
     public Question AddQuestion(QuestionText text, QuestionType type, string? explanation)
@@ -134,5 +145,50 @@ public sealed class Quiz : Entity
 
         Status = QuizStatus.Published;
         PublishedAt = DateTime.UtcNow;
+    }
+
+    public void Archive()
+    {
+        if (Status == QuizStatus.Archived)
+            return;
+
+        Status = QuizStatus.Archived;
+    }
+
+    public Quiz CreateNextVersion()
+    {
+        if (Status != QuizStatus.Published)
+            throw new DomainException("Only a published quiz can be versioned.");
+
+        // 1. Create the clone using the existing lineage
+        var newQuiz = new Quiz(
+            this.OwnerId,
+            this.LessonId,
+            this.Title,
+            this.PromptTemplateId,
+            this.AiExecutionLogId,
+            this.QuizGroupId, // CRITICAL: Link to the same historical lineage
+            this.Version + 1  // CRITICAL: Increment the version
+        )
+        {
+            // 2. Advance status directly to Review so it skips generation and can be edited
+            Status = QuizStatus.Review,
+            IsManuallyEdited = this.IsManuallyEdited
+        };
+
+        // 3. Deep copy all questions and their options
+        foreach (var question in this.Questions)
+        {
+            var newQuestion = newQuiz.AddQuestion(question.Text, question.Type, question.Explanation);
+
+            // Note: Assuming your Question entity has an AddOption method and Options collection.
+            // If the method signature is slightly different, adjust it here.
+            foreach (var option in question.Options)
+            {
+                newQuestion.AddOption(option.Text, option.IsCorrect);
+            }
+        }
+
+        return newQuiz;
     }
 }
