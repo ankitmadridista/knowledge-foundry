@@ -4,7 +4,9 @@ using KnowledgeFoundry.Application.Assessments.Commands.GenerateQuiz;
 using KnowledgeFoundry.Application.Assessments.Commands.PublishQuiz;
 using KnowledgeFoundry.Application.Assessments.Queries.GetQuizById;
 using KnowledgeFoundry.Application.Assessments.Queries.GetQuizzes;
+using KnowledgeFoundry.Application.Quizzes.Commands.CreateQuizVersion;
 using MediatR;
+using System.Security.Claims;
 
 namespace KnowledgeFoundry.Api.Endpoints.Assessments;
 
@@ -42,6 +44,8 @@ public static class QuizEndpoints
 
         group.MapGet("/{id:guid}", GetQuizById)
             .WithName("GetQuiz");
+
+        group.MapPost("/{id:guid}/versions", CreateQuizVersion);
     }
 
     private static async Task<IResult> GetQuizzes(
@@ -157,5 +161,37 @@ public static class QuizEndpoints
         }
 
         return Results.NoContent();
+    }
+
+    private static async Task<IResult> CreateQuizVersion(
+        Guid id,
+        ClaimsPrincipal user,
+        ISender sender,
+        CancellationToken cancellationToken)
+    {
+        var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var command = new CreateQuizVersionCommand(id, userId);
+        var result = await sender.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            if (result.Error.Code == "Quiz.NotFound")
+                return Results.NotFound(result.Error);
+
+            if (result.Error.Code == "Quiz.Unauthorized")
+                return Results.Unauthorized();
+
+            return Results.BadRequest(result.Error);
+        }
+
+        return Results.Created(
+            $"/api/quizzes/{result.Value}",
+            new { Id = result.Value });
     }
 }
