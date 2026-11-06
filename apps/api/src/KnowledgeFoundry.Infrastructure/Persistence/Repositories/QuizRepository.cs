@@ -86,4 +86,11 @@ internal sealed class QuizRepository : IQuizRepository
     {
         return await _dbContext.Quizzes.CountAsync(cancellationToken);
     }
+
+    public async Task<List<Quiz>> GetByGroupIdAsync(Guid groupId, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Quizzes
+            .Where(q => q.QuizGroupId == groupId)
+            .ToListAsync(cancellationToken);
+    }
 }

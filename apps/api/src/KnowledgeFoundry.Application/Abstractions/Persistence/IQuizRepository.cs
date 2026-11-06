@@ -16,4 +16,6 @@ public interface IQuizRepository
         CancellationToken cancellationToken = default);
     void Remove(Quiz quiz);
     Task<int> CountAsync(CancellationToken cancellationToken = default);
+
+    Task<List<Quiz>> GetByGroupIdAsync(Guid groupId, CancellationToken cancellationToken = default);
 }

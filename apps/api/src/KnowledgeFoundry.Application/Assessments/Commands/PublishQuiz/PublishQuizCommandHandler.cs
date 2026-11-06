@@ -49,7 +49,19 @@ public sealed class PublishQuizCommandHandler
                 new Error("Quiz.NoQuestions", "Cannot publish a quiz with no questions."));
         }
 
+        // 1. Publish the current version
         quiz.Publish();
+
+        // 2. Archive previous published versions in the same lineage
+        var allGroupVersions = await _repository.GetByGroupIdAsync(quiz.QuizGroupId, cancellationToken);
+
+        var previousPublishedVersions = allGroupVersions
+            .Where(q => q.Id != quiz.Id && q.Status == QuizStatus.Published);
+
+        foreach (var previousVersion in previousPublishedVersions)
+        {
+            previousVersion.Archive();
+        }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
